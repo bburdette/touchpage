@@ -1,13 +1,16 @@
 [package]
+
 name = "touchpage"
 version = "0.2.2"
 authors = ["Ben Burdette <bburdette@gmail.com>"]
+
 description = "OSC 'control panel' server with shared-state web controls"
 documentation = "https://github.com/bburdette/oscpad/wiki/Get-started-with-oscpad"
 homepage = "https://github.com/bburdette/oscpad"
 repository = "https://github.com/bburdette/oscpad.git"
 readme = "README.md"
 keywords = ["osc", "audio", "opensoundcontrol"]
+
 license = "MIT"
 include = [ "src/**/*", 
             "example_projects/**/*", 
@@ -23,6 +26,7 @@ include = [ "src/**/*",
             "ns.sh"]
 
 [dependencies]
+
 websocket = "0.15.0"
 serde_json = "0.7.0"
 serde = "0.5.3"

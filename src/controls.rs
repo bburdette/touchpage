@@ -12,6 +12,7 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::error::Error;
 use stringerror;
+use control_updates as cu;
 
 // --------------------------------------------------------
 // root obj.  contains controls.
@@ -47,9 +48,9 @@ pub trait Control : Debug + Send {
   fn control_id(&self) -> &Vec<i32>;
   fn clone_trol(&self) -> Box<Control>;
   fn sub_controls(&self) -> Option<&Vec<Box<Control>>>; 
-  fn update(&mut self, _: &UpdateMsg); 
+  fn update(&mut self, _: &cu::UpdateMsg); 
   // build full update message of current state.
-  fn to_update(&self) -> Option<UpdateMsg>;
+  fn to_update(&self) -> Option<cu::UpdateMsg>;
   fn oscname(&self) -> &str;
 }
 
@@ -73,16 +74,16 @@ impl Control for Slider {
                pressed: self.pressed.clone(), 
                location: self.location.clone() } ) }
   fn sub_controls(&self) -> Option<&Vec<Box<Control>>> { None } 
-  fn update(&mut self, um: &UpdateMsg) {
+  fn update(&mut self, um: &cu::UpdateMsg) {
     match um { 
-      &UpdateMsg::Slider { control_id: _
+      &cu::UpdateMsg::Slider { control_id: _
                          , state: ref opt_state
                          , location: ref opt_loc
                          , label: ref opt_label
                          } => {
         if let &Some(ref st) = opt_state {
-          self.pressed = match st { &SliderState::Pressed => true
-                                  , &SliderState::Unpressed => false };
+          self.pressed = match st { &cu::SliderState::Pressed => true
+                                  , &cu::SliderState::Unpressed => false };
           };
         if let &Some(ref loc) = opt_loc { 
           self.location = *loc as f32;
@@ -95,10 +96,10 @@ impl Control for Slider {
       _ => ()
       }
     }
-  fn to_update(&self) -> Option<UpdateMsg> {
-    let state = if self.pressed { SliderState::Pressed  } 
-                else { SliderState::Unpressed };
-    Some(UpdateMsg::Slider  { control_id: self.control_id.clone()
+  fn to_update(&self) -> Option<cu::UpdateMsg> {
+    let state = if self.pressed { cu::SliderState::Pressed  } 
+                else { cu::SliderState::Unpressed };
+    Some(cu::UpdateMsg::Slider  { control_id: self.control_id.clone()
                             , state: Some(state)
                             , location: Some(self.location as f64) 
                             , label: self.label.clone()
@@ -125,14 +126,14 @@ impl Control for Button {
                label: self.label.clone(), 
                pressed: self.pressed.clone() } ) }
   fn sub_controls(&self) -> Option<&Vec<Box<Control>>> { None } 
-  fn update(&mut self, um: &UpdateMsg) {
+  fn update(&mut self, um: &cu::UpdateMsg) {
     match um { 
-      &UpdateMsg::Button { control_id: _ 
+      &cu::UpdateMsg::Button { control_id: _ 
                          , state: ref opt_state
                          , label: ref opt_label } => {
         if let &Some(ref st) = opt_state { 
-          self.pressed = match st { &ButtonState::Pressed => true
-                                  , &ButtonState::Unpressed => false };
+          self.pressed = match st { &cu::ButtonState::Pressed => true
+                                  , &cu::ButtonState::Unpressed => false };
           };
         if let &Some(ref t) = opt_label {
           self.label = Some(t.clone());
@@ -142,10 +143,10 @@ impl Control for Button {
       _ => ()
       }
     }
-  fn to_update(&self) -> Option<UpdateMsg> {
-    let ut = if self.pressed { ButtonState::Pressed  } 
-                        else { ButtonState::Unpressed };
-    Some(UpdateMsg::Button { control_id: self.control_id.clone()
+  fn to_update(&self) -> Option<cu::UpdateMsg> {
+    let ut = if self.pressed { cu::ButtonState::Pressed  } 
+                        else { cu::ButtonState::Unpressed };
+    Some(cu::UpdateMsg::Button { control_id: self.control_id.clone()
                            , state: Some(ut)
                            , label: self.label.clone() })
   }
@@ -168,17 +169,17 @@ impl Control for Label {
               name: self.name.clone(), 
               label: self.label.clone() } ) }
   fn sub_controls(&self) -> Option<&Vec<Box<Control>>> { None } 
-  fn update(&mut self, um: &UpdateMsg) {
+  fn update(&mut self, um: &cu::UpdateMsg) {
     match um { 
-      &UpdateMsg::Label { control_id: _, label: ref l } => {
+      &cu::UpdateMsg::Label { control_id: _, label: ref l } => {
         self.label = l.clone();
         ()
         }
       _ => ()
       }
     }
-  fn to_update(&self) -> Option<UpdateMsg> {
-    Some(UpdateMsg::Label { control_id: self.control_id.clone(), label: self.label.clone() })
+  fn to_update(&self) -> Option<cu::UpdateMsg> {
+    Some(cu::UpdateMsg::Label { control_id: self.control_id.clone(), label: self.label.clone() })
   }
   fn oscname(&self) -> &str { &self.name[..] }
 }
@@ -198,8 +199,8 @@ impl Control for Sizer {
       Sizer { control_id: self.control_id.clone(), 
               controls: Vec::new() } ) } 
   fn sub_controls(&self) -> Option<&Vec<Box<Control>>> { Some(&self.controls) } 
-  fn update(&mut self, _: &UpdateMsg) {}
-  fn to_update(&self) -> Option<UpdateMsg> { None }
+  fn update(&mut self, _: &cu::UpdateMsg) {}
+  fn to_update(&self) -> Option<cu::UpdateMsg> { None }
   fn oscname(&self) -> &str { "" }
 }
 
@@ -269,57 +270,13 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<Control>, Box<E
   }
 }
 
-// --------------------------------------------------------
-// control update messages.
-// --------------------------------------------------------
+// -------------------------------------------------------------------------
 
-/*
-
-  JE.object [ ("controlType", JE.string "button")
-            , ("controlId", SvgThings.encodeControlId um.control_id)
-            , ("updateType", encodeUpdateType um.updateType)
-            ]
-
-  JE.object [ ("controlType", JE.string "slider")
-            , ("controlId", SvgThings.encodeControlId um.control_id)
-            , ("updateType", encodeUpdateType um.updateType)
-            , ("location", (JE.float um.location))
-
-*/
-
-#[derive(Debug,Clone)]
-pub enum ButtonState { 
-  Pressed,
-  Unpressed
-  }
-
-#[derive(Debug,Clone)]
-pub enum SliderState { 
-  Pressed,
-  Unpressed
-  }
-
-#[derive(Debug,Clone)]
-pub enum UpdateMsg { 
-  Button  { control_id: Vec<i32>
-          , state: Option<ButtonState>
-          , label: Option<String>
-          },
-  Slider  { control_id: Vec<i32>
-          , state: Option<SliderState>
-          , location: Option<f64>
-          , label: Option<String>
-          },
-  Label   { control_id: Vec<i32>
-          , label: String 
-          },
-}
-
-pub fn get_um_id(um: &UpdateMsg) -> &Vec<i32> {
+pub fn get_um_id(um: &cu::UpdateMsg) -> &Vec<i32> {
   match um { 
-    &UpdateMsg::Button { control_id: ref cid, state: _, label: _ } => &cid,
-    &UpdateMsg::Slider { control_id: ref cid, state: _, label: _, location: _ } => &cid, 
-    &UpdateMsg::Label { control_id: ref cid, label: _ } => &cid, 
+    &cu::UpdateMsg::Button { control_id: ref cid, state: _, label: _ } => &cid,
+    &cu::UpdateMsg::Slider { control_id: ref cid, state: _, label: _, location: _ } => &cid, 
+    &cu::UpdateMsg::Label { control_id: ref cid, label: _ } => &cid, 
     }
 }
 
@@ -331,9 +288,9 @@ fn convarrayi32(inp: &Vec<Value>) -> Vec<i32> {
   inp.into_iter().map(|x|{x.as_i64().unwrap() as i32}).collect()
 }
 
-pub fn encode_update_message(um: &UpdateMsg) -> Value { 
+pub fn encode_update_message(um: &cu::UpdateMsg) -> Value { 
   match um { 
-    &UpdateMsg::Button { control_id: ref cid 
+    &cu::UpdateMsg::Button { control_id: ref cid 
                        , state: ref opt_state
                        , label: ref opt_label } => {
       let mut btv = BTreeMap::new();
@@ -342,8 +299,8 @@ pub fn encode_update_message(um: &UpdateMsg) -> Value {
       if let &Some(ref st) = opt_state { 
         btv.insert(String::from("state"), 
           Value::String(String::from( 
-            (match st { &ButtonState::Pressed => "Press", 
-                        &ButtonState::Unpressed => "Unpress", }))));
+            (match st { &cu::ButtonState::Pressed => "Press", 
+                        &cu::ButtonState::Unpressed => "Unpress", }))));
         };
       if let &Some(ref lb) = opt_label { 
         btv.insert(String::from("label"), 
@@ -352,7 +309,7 @@ pub fn encode_update_message(um: &UpdateMsg) -> Value {
       
       Value::Object(btv)
     }, 
-    &UpdateMsg::Slider { control_id: ref cid
+    &cu::UpdateMsg::Slider { control_id: ref cid
                        , state: ref opt_state
                        , label: ref opt_label 
                        , location: ref opt_loc } => 
@@ -365,8 +322,8 @@ pub fn encode_update_message(um: &UpdateMsg) -> Value {
       if let &Some(ref st) = opt_state { 
         btv.insert(String::from("state"), 
           Value::String(String::from( 
-            (match st { &SliderState::Pressed => "Press",
-                        &SliderState::Unpressed => "Unpress" }))));
+            (match st { &cu::SliderState::Pressed => "Press",
+                        &cu::SliderState::Unpressed => "Unpress" }))));
       };
       if let &Some(loc) = opt_loc { 
         btv.insert(String::from("location"), Value::F64(loc));
@@ -378,7 +335,7 @@ pub fn encode_update_message(um: &UpdateMsg) -> Value {
       
       Value::Object(btv)
     },
-    &UpdateMsg::Label { control_id: ref cid, label: ref labtext } => {
+    &cu::UpdateMsg::Label { control_id: ref cid, label: ref labtext } => {
       let mut btv = BTreeMap::new();
       btv.insert(String::from("controlType"), Value::String(String::from("label")));
       btv.insert(String::from("controlId"), Value::Array(convi32array(cid)));
@@ -388,7 +345,7 @@ pub fn encode_update_message(um: &UpdateMsg) -> Value {
    } 
 }
  
-pub fn decode_update_message(data: &Value) -> Option<UpdateMsg> {
+pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
   let obj = try_opt!(data.as_object());
   let contype = try_opt!(try_opt!(obj.get("controlType")).as_string());
   let conid = convarrayi32(try_opt!(try_opt!(obj.get("controlId")).as_array()));
@@ -400,12 +357,12 @@ pub fn decode_update_message(data: &Value) -> Option<UpdateMsg> {
         { Some(Some(loc)) => Some(loc)
         , _ => None };
       let optst = match mbst 
-        { Some(Some("Press")) => Some( SliderState::Pressed ) 
-        , Some(Some("Unpress")) => Some( SliderState::Unpressed )
+        { Some(Some("Press")) => Some( cu::SliderState::Pressed ) 
+        , Some(Some("Unpress")) => Some( cu::SliderState::Unpressed )
         , _ => None
         };
       let lab = obj.get("label").and_then(|s| s.as_string()).map(|s| String::from(s));
-      Some( UpdateMsg::Slider { control_id: conid
+      Some( cu::UpdateMsg::Slider { control_id: conid
                               , state: optst
                               , location: location 
                               , label: lab
@@ -413,13 +370,13 @@ pub fn decode_update_message(data: &Value) -> Option<UpdateMsg> {
       },
     "button" => {
       let optst = match mbst 
-        { Some(Some("Press")) => Some( ButtonState::Pressed ) 
-        , Some(Some("Unpress")) => Some( ButtonState::Unpressed )
+        { Some(Some("Press")) => Some( cu::ButtonState::Pressed ) 
+        , Some(Some("Unpress")) => Some( cu::ButtonState::Unpressed )
         , _ => None
         };
       let lab = obj.get("label").and_then(|s| s.as_string()).map(|s| String::from(s));
         
-      Some( UpdateMsg::Button { control_id: conid
+      Some( cu::UpdateMsg::Button { control_id: conid
                               , state: optst 
                               , label: lab } )
       },
@@ -484,7 +441,7 @@ pub fn control_map_to_name_map(cmap: &ControlMap) -> ControlNameMap
   cnm
 }
 
-pub fn cm_to_update_array(cm: &ControlMap) -> Vec<UpdateMsg>
+pub fn cm_to_update_array(cm: &ControlMap) -> Vec<cu::UpdateMsg>
 {
   let mut iter = cm.iter();
   let mut result = Vec::new();

@@ -127,14 +127,58 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
       }
     });
 
-    // use this thread for the web server.
-    try!(Iron::new(move | _: &mut Request| {
-        let content_type = "text/html".parse::<Mime>().unwrap();
-        Ok(Response::with((content_type, status::Ok, &*htmlstring)))
-    }).http(&http_ip[..]));
 
-    // return when the web server dies, if it ever does. 
+    thread::spawn(move || { 
+      // use this thread for the web server.
+      Iron::new(move | _: &mut Request| {
+          let content_type = "text/html".parse::<Mime>().unwrap();
+          Ok(Response::with((content_type, status::Ok, &*htmlstring)))
+      }).http(&http_ip[..]);
+      // return when the web server dies, if it ever does. 
+      });
+      
     Ok(())
+
+}
+
+// need to lock the control structs and stuff, refresh them, then send out the 
+// updates.
+
+static mut mutie: Mutex<i32> = Mutex::default();
+
+pub fn loadguistring(guistring: &str) -> Result<(), Box<std::error::Error> >
+{
+  match serde_json::from_str(guistring) { 
+    Ok(guival) => { 
+      match controls::deserialize_root(&guival) {
+        Ok(controltree) => { 
+          println!("new control layout recieved!");
+
+          println!("title: {} count: {} ", 
+            controltree.title, controltree.root_control.control_type());
+          println!("controls: {:?}", controltree.root_control);
+
+          // from control tree, make a map of ids->controls.
+          let mapp = controls::make_control_map(&*controltree.root_control);
+          let cnm = controls::control_map_to_name_map(&mapp);
+/*
+          sci.cm = mapp;
+          sci.guijson = guistring.to_string();
+          bc.broadcast(Message::text(guistring.to_string()));
+*/
+          Ok(())
+        },
+        Err(e) => { 
+          println!("error reading guiconfig from json: {:?}", e);
+          let s = format!("error reading guiconfig json: {:?}", e);
+          Err(Box::new(Error::new(ErrorKind::Other, s))) },
+      }
+    },
+    Err(e) => {
+      // println!("error reading guiconfig json: {:?}", e);
+      let s = format!("error reading guiconfig json: {:?}", e);
+      Err(Box::new(Error::new(ErrorKind::Other, s))) },
+  }
 }
 
 // TODO: refactor to return a (rx/sx) pair for sending, recieving messages.

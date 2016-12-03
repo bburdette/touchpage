@@ -5,15 +5,10 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 use std::fs::File;
 use std::path::Path;
-use std::env;
 use std::io::Read;
 use std::io::Write;
 use std::io::{Error,ErrorKind};
 use std::string::*;
-use std::collections::BTreeMap;
-use std::fmt::format;
-
-use std::net::UdpSocket;
 
 use websocket::{Server, Message, Sender, Receiver};
 use websocket::header::WebSocketProtocol;
@@ -58,10 +53,29 @@ fn write_string(text: &str, file_name: &str) -> Result<(), Box<std::error::Error
 
 pub struct ControlInfo {
   cm: controls::ControlMap,
+  cnm: controls::ControlNameMap,
   guijson: String,
 }
 
-pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port: &str, htmltemplatefile: Option<&str> ) -> Result<(), Box<std::error::Error> >
+pub struct ControlServer { 
+  ci: Arc<Mutex<ControlInfo>>,
+  bc: broadcaster::Broadcaster,
+//  iron-server-canceler: ???
+//  websocket-thread-canceler: ???
+//  fn lookup_control(name) -> index
+//  fn modify_control(index, ftn) -> result   <-- will this work with types??  have to cast.
+//  load_guistring
+
+
+//  how about ftns like the ones for faust, for building the gui tree?
+//  addbutton
+//  addslider
+//  addlabel
+//  startsizer
+//  endsizer
+}
+
+pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port: &str, htmltemplatefile: Option<&str> ) -> Result<ControlServer, Box<std::error::Error> >
 {
     let mut http_ip = String::from(ip);
     http_ip.push_str(":");
@@ -95,9 +109,10 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
 
     // from control tree, make a map of ids->controls.
     let mapp = controls::make_control_map(&*blah.root_control);
+    let cnm = controls::control_map_to_name_map(&mapp);
     let guijson = guistring.clone();
 
-    let ci = ControlInfo { cm: mapp, guijson: guijson };
+    let ci = ControlInfo { cm: mapp, cnm: cnm, guijson: guijson };
 
     let cmshare = Arc::new(Mutex::new(ci));
     let wscmshare = cmshare.clone();
@@ -109,6 +124,8 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
     // let wsos = try!(oscsendsocket.try_clone());
     let wsbc = bc.clone();
     // let wsoscsendip = oscsendip.clone();
+
+    let cs_ret = ControlServer { ci: cmshare, bc: bc };
 
     /*
     thread::spawn(move || { 
@@ -127,7 +144,6 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
       }
     });
 
-
     thread::spawn(move || { 
       // use this thread for the web server.
       Iron::new(move | _: &mut Request| {
@@ -137,16 +153,14 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
       // return when the web server dies, if it ever does. 
       });
       
-    Ok(())
+    Ok(cs_ret)
 
 }
 
 // need to lock the control structs and stuff, refresh them, then send out the 
 // updates.
 
-static mut mutie: Mutex<i32> = Mutex::default();
-
-pub fn loadguistring(guistring: &str) -> Result<(), Box<std::error::Error> >
+pub fn loadguistring(guistring: &str, server: &ControlServer) -> Result<(), Box<std::error::Error> >
 {
   match serde_json::from_str(guistring) { 
     Ok(guival) => { 
@@ -159,13 +173,34 @@ pub fn loadguistring(guistring: &str) -> Result<(), Box<std::error::Error> >
           println!("controls: {:?}", controltree.root_control);
 
           // from control tree, make a map of ids->controls.
-          let mapp = controls::make_control_map(&*controltree.root_control);
-          let cnm = controls::control_map_to_name_map(&mapp);
+          // let mapp = controls::make_control_map(&*controltree.root_control);
+          // let cnm = controls::control_map_to_name_map(&mapp);
 /*
           sci.cm = mapp;
           sci.guijson = guistring.to_string();
           bc.broadcast(Message::text(guistring.to_string()));
+
+
+pub struct ControlInfo {
+  cm: controls::ControlMap,
+  cnm: controls::ControlNameMap,
+  guijson: String,
+}
+
+
 */
+          let mut guard = match server.ci.lock() {
+              Ok(guard) => guard,
+              Err(poisoned) => poisoned.into_inner(),
+          };
+
+          (*guard).cm = controls::make_control_map(&*controltree.root_control);
+          (*guard).cnm = controls::control_map_to_name_map(&(*guard).cm);
+          (*guard).guijson = guistring.to_string();
+           
+          // send the updated gui string to all clients.
+          server.bc.broadcast(Message::text(guistring.to_string()));
+          
           Ok(())
         },
         Err(e) => { 

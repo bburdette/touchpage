@@ -34,7 +34,7 @@ impl Broadcaster {
     tvs.push(sender);
   }
 
-  pub fn broadcast(&mut self, msg : Message) {
+  pub fn broadcast(&self, msg : Message) {
     let mut tvs = self.tvs.lock().unwrap();
 
     for tv in tvs.iter_mut() {
@@ -48,7 +48,7 @@ impl Broadcaster {
     }
   }
    
-  pub fn broadcast_others(&mut self, sa: &SocketAddr , msg : Message) {
+  pub fn broadcast_others(&self, sa: &SocketAddr , msg : Message) {
     let mut tvs = self.tvs.lock().unwrap();
 
     for tv in tvs.iter_mut() {

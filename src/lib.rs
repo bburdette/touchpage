@@ -26,7 +26,7 @@ mod stringerror;
 mod controls;
 mod broadcaster;
 mod string_defaults; 
-mod control_updates;
+pub mod control_updates;
 
 extern crate serde_json;
 use serde_json::Value;
@@ -60,6 +60,7 @@ pub struct ControlInfo {
 pub struct ControlServer { 
   ci: Arc<Mutex<ControlInfo>>,
   bc: broadcaster::Broadcaster,
+  on_update_received: fn(&control_updates::UpdateMsg) -> (),
 //  iron-server-canceler: ???
 //  websocket-thread-canceler: ???
 //  fn lookup_control(name) -> index
@@ -75,7 +76,12 @@ pub struct ControlServer {
 //  endsizer
 }
 
-pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port: &str, htmltemplatefile: Option<&str> ) -> Result<ControlServer, Box<std::error::Error> >
+pub fn startserver(guistring: &str, 
+    on_update_received: fn(&control_updates::UpdateMsg) -> (),
+    ip: &str, 
+    http_port: &str, 
+    websockets_port: &str, 
+    htmltemplatefile: Option<&str> ) -> Result<ControlServer, Box<std::error::Error> >
 {
     let mut http_ip = String::from(ip);
     http_ip.push_str(":");
@@ -98,8 +104,9 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
 
     // println!("{}", htmlstring);
 
-    let guistring = try!(load_string(&guifilename[..]));
-    let guival: Value = try!(serde_json::from_str(&guistring[..])); 
+    // let guistring = try!(load_string(&guifilename[..]));
+    // let guival: Value = try!(serde_json::from_str(&guistring[..])); 
+    let guival: Value = try!(serde_json::from_str(guistring)); 
 
     let blah = try!(controls::deserialize_root(&guival));
 
@@ -110,9 +117,9 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
     // from control tree, make a map of ids->controls.
     let mapp = controls::make_control_map(&*blah.root_control);
     let cnm = controls::control_map_to_name_map(&mapp);
-    let guijson = guistring.clone();
+    // let guijson = guistring.clone();
 
-    let ci = ControlInfo { cm: mapp, cnm: cnm, guijson: guijson };
+    let ci = ControlInfo { cm: mapp, cnm: cnm, guijson: String::new() + guistring };
 
     let cmshare = Arc::new(Mutex::new(ci));
     let wscmshare = cmshare.clone();
@@ -125,7 +132,10 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
     let wsbc = bc.clone();
     // let wsoscsendip = oscsendip.clone();
 
-    let cs_ret = ControlServer { ci: cmshare, bc: bc };
+    let cs_ret = ControlServer { ci: cmshare, 
+                                 bc: bc,
+                                 on_update_received: on_update_received,
+                               };
 
     /*
     thread::spawn(move || { 
@@ -138,7 +148,7 @@ pub fn startserver(guifilename: &str, ip: &str, http_port: &str, websockets_port
 
     // Spawn a thread for the websockets handler.
     thread::spawn(move || { 
-      match websockets_main(websockets_ip, wscmshare, wsbc) {
+      match websockets_main(websockets_ip, wscmshare, wsbc, on_update_received) {
         Ok(_) => (),
         Err(e) => println!("error in websockets_main: {:?}", e),
       }
@@ -221,7 +231,9 @@ pub struct ControlInfo {
 // then, can send the various control structs and receive the messages.  
 fn websockets_main( ipaddr: String, 
                     ci: Arc<Mutex<ControlInfo>>,
-                    broadcaster: broadcaster::Broadcaster)
+                    broadcaster: broadcaster::Broadcaster,
+                    on_update_received: fn(&control_updates::UpdateMsg) -> (),
+                    )
                   -> Result<(), Box<std::error::Error> >
 {
 	let server = try!(Server::bind(&ipaddr[..]));
@@ -240,7 +252,8 @@ fn websockets_main( ipaddr: String,
     thread::spawn(move || {
       match websockets_client(conn,
                             sci,
-                            broadcaster) {
+                            broadcaster,
+                            on_update_received) {
         Ok(_) => (), 
         Err(e) => {
           println!("error in websockets thread: {:?}", e);
@@ -256,6 +269,7 @@ fn websockets_main( ipaddr: String,
 fn websockets_client(connection: websocket::server::Connection<websocket::stream::WebSocketStream, websocket::stream::WebSocketStream>,
                     ci: Arc<Mutex<ControlInfo>>,
                     mut broadcaster: broadcaster::Broadcaster, 
+                    on_update_received: fn(&control_updates::UpdateMsg) -> (),
                     ) -> Result<(), Box<std::error::Error> >
 {
   // Get the request
@@ -364,7 +378,9 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
                     println!("error building osc message: {:?}", e),
                 };
                 */
-                
+
+                on_update_received(&updmsg);
+
                 println!("websockets control update recieved: {:?}", updmsg);
                 ()
               },

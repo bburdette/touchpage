@@ -61,6 +61,38 @@ pub struct ControlServer {
   ci: Arc<Mutex<ControlInfo>>,
   bc: broadcaster::Broadcaster,
   on_update_received: fn(&control_updates::UpdateMsg) -> (),
+}
+
+impl ControlServer { 
+  fn get_cid_by_name(&self, name: &str) -> Option<Vec<i32> > {
+    let guard = match self.ci.lock() {
+      Ok(guard) => guard,
+      Err(poisoned) => poisoned.into_inner(),
+    };
+
+    match guard.cnm.get(name) {
+      Some(cid) => Some(cid.clone()),
+      _ => None,
+    }
+  }
+  fn make_update_msg(&self, name: &str) -> Option<control_updates::UpdateMsg> {
+    let guard = match self.ci.lock() {
+      Ok(guard) => guard,
+      Err(poisoned) => poisoned.into_inner(),
+    };
+
+    match guard.cnm.get(name) {
+      Some(cid) =>
+        match guard.cm.get(cid) {
+          Some(ctrl) => ctrl.empty_update(),
+          None => None,
+        }, 
+      _ => None,
+    }
+  }    
+}
+   
+
 //  iron-server-canceler: ???
 //  websocket-thread-canceler: ???
 //  fn lookup_control(name) -> index
@@ -74,7 +106,8 @@ pub struct ControlServer {
 //  addlabel
 //  startsizer
 //  endsizer
-}
+
+
 
 pub fn startserver(guistring: &str, 
     on_update_received: fn(&control_updates::UpdateMsg) -> (),

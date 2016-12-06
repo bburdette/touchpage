@@ -49,6 +49,7 @@ pub trait Control : Debug + Send {
   fn clone_trol(&self) -> Box<Control>;
   fn sub_controls(&self) -> Option<&Vec<Box<Control>>>; 
   fn update(&mut self, _: &cu::UpdateMsg); 
+  fn empty_update(&self) -> Option<cu::UpdateMsg>;
   // build full update message of current state.
   fn to_update(&self) -> Option<cu::UpdateMsg>;
   fn oscname(&self) -> &str;
@@ -96,6 +97,13 @@ impl Control for Slider {
       _ => ()
       }
     }
+  fn empty_update(&self) -> Option<cu::UpdateMsg> {
+    Some(cu::UpdateMsg::Slider  { control_id: self.control_id.clone()
+                            , state: None
+                            , location: None
+                            , label: None 
+                            })
+  }
   fn to_update(&self) -> Option<cu::UpdateMsg> {
     let state = if self.pressed { cu::SliderState::Pressed  } 
                 else { cu::SliderState::Unpressed };
@@ -143,6 +151,11 @@ impl Control for Button {
       _ => ()
       }
     }
+  fn empty_update(&self) -> Option<cu::UpdateMsg> {
+    Some(cu::UpdateMsg::Button { control_id: self.control_id.clone()
+                           , state: None 
+                           , label: None })
+  }
   fn to_update(&self) -> Option<cu::UpdateMsg> {
     let ut = if self.pressed { cu::ButtonState::Pressed  } 
                         else { cu::ButtonState::Unpressed };
@@ -178,6 +191,9 @@ impl Control for Label {
       _ => ()
       }
     }
+  fn empty_update(&self) -> Option<cu::UpdateMsg> {
+    Some(cu::UpdateMsg::Label { control_id: self.control_id.clone(), label: String::from("") })
+  }
   fn to_update(&self) -> Option<cu::UpdateMsg> {
     Some(cu::UpdateMsg::Label { control_id: self.control_id.clone(), label: self.label.clone() })
   }
@@ -200,6 +216,7 @@ impl Control for Sizer {
               controls: Vec::new() } ) } 
   fn sub_controls(&self) -> Option<&Vec<Box<Control>>> { Some(&self.controls) } 
   fn update(&mut self, _: &cu::UpdateMsg) {}
+  fn empty_update(&self) -> Option<cu::UpdateMsg> { None }
   fn to_update(&self) -> Option<cu::UpdateMsg> { None }
   fn oscname(&self) -> &str { "" }
 }

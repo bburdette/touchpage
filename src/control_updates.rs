@@ -5,6 +5,8 @@
 
 /*
 
+  code in elm.  you never get label updates from there.
+
   JE.object [ ("controlType", JE.string "button")
             , ("controlId", SvgThings.encodeControlId um.control_id)
             , ("updateType", encodeUpdateType um.updateType)
@@ -44,5 +46,4 @@ pub enum UpdateMsg {
           , label: String 
           },
 }
-
 

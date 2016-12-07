@@ -75,7 +75,7 @@ impl ControlServer {
       _ => None,
     }
   }
-  fn make_update_msg(&self, name: &str) -> Option<control_updates::UpdateMsg> {
+  pub fn make_update_msg(&self, name: &str) -> Option<control_updates::UpdateMsg> {
     let guard = match self.ci.lock() {
       Ok(guard) => guard,
       Err(poisoned) => poisoned.into_inner(),
@@ -89,7 +89,81 @@ impl ControlServer {
         }, 
       _ => None,
     }
-  }    
+  }  
+  pub fn update(&self, updmsg: &control_updates::UpdateMsg) {
+    let mut ci = match self.ci.lock() {
+      Ok(guard) => guard,
+      Err(poisoned) => poisoned.into_inner(),
+    };
+
+    match ci.cm.get_mut(controls::get_um_id(&updmsg)) {
+    Some(ctl) => {
+      (*ctl).update(&updmsg);
+      let val = controls::encode_update_message(&updmsg); 
+      match serde_json::ser::to_string(&val) { 
+        Ok(s) => self.bc.broadcast(Message::text(s)), 
+        Err(_) => ()
+        }
+      }
+    None => (),
+    }
+  }
+  pub fn load_gui_string(&self, guistring: &str) -> Result<(), Box<std::error::Error> >
+  {
+    match serde_json::from_str(guistring) { 
+      Ok(guival) => { 
+        match controls::deserialize_root(&guival) {
+          Ok(controltree) => { 
+            println!("new control layout recieved!");
+
+            println!("title: {} count: {} ", 
+              controltree.title, controltree.root_control.control_type());
+            println!("controls: {:?}", controltree.root_control);
+
+            // from control tree, make a map of ids->controls.
+            // let mapp = controls::make_control_map(&*controltree.root_control);
+            // let cnm = controls::control_map_to_name_map(&mapp);
+  /*
+            sci.cm = mapp;
+            sci.guijson = guistring.to_string();
+            bc.broadcast(Message::text(guistring.to_string()));
+
+
+  pub struct ControlInfo {
+    cm: controls::ControlMap,
+    cnm: controls::ControlNameMap,
+    guijson: String,
+  }
+
+
+  */
+            let mut guard = match self.ci.lock() {
+                Ok(guard) => guard,
+                Err(poisoned) => poisoned.into_inner(),
+            };
+
+            (*guard).cm = controls::make_control_map(&*controltree.root_control);
+            (*guard).cnm = controls::control_map_to_name_map(&(*guard).cm);
+            (*guard).guijson = guistring.to_string();
+             
+            // send the updated gui string to all clients.
+            self.bc.broadcast(Message::text(guistring.to_string()));
+            
+            Ok(())
+          },
+          Err(e) => { 
+            println!("error reading guiconfig from json: {:?}", e);
+            let s = format!("error reading guiconfig json: {:?}", e);
+            Err(Box::new(Error::new(ErrorKind::Other, s))) },
+        }
+      },
+      Err(e) => {
+        // println!("error reading guiconfig json: {:?}", e);
+        let s = format!("error reading guiconfig json: {:?}", e);
+        Err(Box::new(Error::new(ErrorKind::Other, s))) },
+    }
+  }
+
 }
    
 
@@ -202,62 +276,6 @@ pub fn startserver(guistring: &str,
 
 // need to lock the control structs and stuff, refresh them, then send out the 
 // updates.
-
-pub fn loadguistring(guistring: &str, server: &ControlServer) -> Result<(), Box<std::error::Error> >
-{
-  match serde_json::from_str(guistring) { 
-    Ok(guival) => { 
-      match controls::deserialize_root(&guival) {
-        Ok(controltree) => { 
-          println!("new control layout recieved!");
-
-          println!("title: {} count: {} ", 
-            controltree.title, controltree.root_control.control_type());
-          println!("controls: {:?}", controltree.root_control);
-
-          // from control tree, make a map of ids->controls.
-          // let mapp = controls::make_control_map(&*controltree.root_control);
-          // let cnm = controls::control_map_to_name_map(&mapp);
-/*
-          sci.cm = mapp;
-          sci.guijson = guistring.to_string();
-          bc.broadcast(Message::text(guistring.to_string()));
-
-
-pub struct ControlInfo {
-  cm: controls::ControlMap,
-  cnm: controls::ControlNameMap,
-  guijson: String,
-}
-
-
-*/
-          let mut guard = match server.ci.lock() {
-              Ok(guard) => guard,
-              Err(poisoned) => poisoned.into_inner(),
-          };
-
-          (*guard).cm = controls::make_control_map(&*controltree.root_control);
-          (*guard).cnm = controls::control_map_to_name_map(&(*guard).cm);
-          (*guard).guijson = guistring.to_string();
-           
-          // send the updated gui string to all clients.
-          server.bc.broadcast(Message::text(guistring.to_string()));
-          
-          Ok(())
-        },
-        Err(e) => { 
-          println!("error reading guiconfig from json: {:?}", e);
-          let s = format!("error reading guiconfig json: {:?}", e);
-          Err(Box::new(Error::new(ErrorKind::Other, s))) },
-      }
-    },
-    Err(e) => {
-      // println!("error reading guiconfig json: {:?}", e);
-      let s = format!("error reading guiconfig json: {:?}", e);
-      Err(Box::new(Error::new(ErrorKind::Other, s))) },
-  }
-}
 
 // TODO: refactor to return a (rx/sx) pair for sending, recieving messages.
 // library users start the websockets_main and get that pair of things.

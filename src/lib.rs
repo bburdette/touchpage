@@ -57,13 +57,17 @@ pub struct ControlInfo {
   guijson: String,
 }
 
-pub struct ControlServer { 
+pub struct ControlServer<'a> { 
   ci: Arc<Mutex<ControlInfo>>,
   bc: broadcaster::Broadcaster,
-  on_update_received: fn(&control_updates::UpdateMsg) -> (),
+  on_update_received: &'a ControlUpdateProcessor,
 }
 
-impl ControlServer { 
+pub trait ControlUpdateProcessor { 
+  fn on_update_received(&self, &control_updates::UpdateMsg) -> ();
+}
+
+impl<'a> ControlServer<'a> { 
   fn get_cid_by_name(&self, name: &str) -> Option<Vec<i32> > {
     let guard = match self.ci.lock() {
       Ok(guard) => guard,
@@ -75,6 +79,22 @@ impl ControlServer {
       _ => None,
     }
   }
+
+  pub fn get_osc_name(&self, id: &Vec<i32>) -> Option<String>
+  {
+    let ci = match self.ci.lock() {
+      Ok(guard) => guard,
+      Err(poisoned) => poisoned.into_inner(),
+    };
+
+    match ci.cm.get(id) {
+      Some(ctrl) => Some(String::from(ctrl.oscname())),
+      _ => None,
+    }
+
+    
+  }
+
   pub fn make_update_msg(&self, name: &str) -> Option<control_updates::UpdateMsg> {
     let guard = match self.ci.lock() {
       Ok(guard) => guard,
@@ -183,12 +203,12 @@ impl ControlServer {
 
 
 
-pub fn startserver(guistring: &str, 
-    on_update_received: fn(&control_updates::UpdateMsg) -> (),
+pub fn startserver<'a>(guistring: &str, 
+    on_update_received: &'a ControlUpdateProcessor,
     ip: &str, 
     http_port: &str, 
     websockets_port: &str, 
-    htmltemplatefile: Option<&str> ) -> Result<ControlServer, Box<std::error::Error> >
+    htmltemplatefile: Option<&str> ) -> Result<ControlServer<'a>, Box<std::error::Error> >
 {
     let mut http_ip = String::from(ip);
     http_ip.push_str(":");
@@ -280,10 +300,10 @@ pub fn startserver(guistring: &str,
 // TODO: refactor to return a (rx/sx) pair for sending, recieving messages.
 // library users start the websockets_main and get that pair of things.
 // then, can send the various control structs and receive the messages.  
-fn websockets_main( ipaddr: String, 
+fn websockets_main<'a>( ipaddr: String, 
                     ci: Arc<Mutex<ControlInfo>>,
                     broadcaster: broadcaster::Broadcaster,
-                    on_update_received: fn(&control_updates::UpdateMsg) -> (),
+                    on_update_received: &'a ControlUpdateProcessor,
                     )
                   -> Result<(), Box<std::error::Error> >
 {

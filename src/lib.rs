@@ -74,7 +74,6 @@ impl ControlInfo {
 pub struct ControlServer { 
   ci: Arc<Mutex<ControlInfo>>,
   bc: broadcaster::Broadcaster,
-//  cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
 }
 
 impl ControlServer { 
@@ -150,23 +149,6 @@ impl ControlServer {
               controltree.title, controltree.root_control.control_type());
             println!("controls: {:?}", controltree.root_control);
 
-            // from control tree, make a map of ids->controls.
-            // let mapp = controls::make_control_map(&*controltree.root_control);
-            // let cnm = controls::control_map_to_name_map(&mapp);
-  /*
-            sci.cm = mapp;
-            sci.guijson = guistring.to_string();
-            bc.broadcast(Message::text(guistring.to_string()));
-
-
-  pub struct ControlInfo {
-    cm: controls::ControlMap,
-    cnm: controls::ControlNameMap,
-    guijson: String,
-  }
-
-
-  */
             let mut guard = match self.ci.lock() {
                 Ok(guard) => guard,
                 Err(poisoned) => poisoned.into_inner(),
@@ -241,8 +223,6 @@ pub fn startserver<'a>(guistring: &str,
 
     // println!("{}", htmlstring);
 
-    // let guistring = try!(load_string(&guifilename[..]));
-    // let guival: Value = try!(serde_json::from_str(&guistring[..])); 
     let guival: Value = try!(serde_json::from_str(guistring)); 
 
     let blah = try!(controls::deserialize_root(&guival));
@@ -254,42 +234,22 @@ pub fn startserver<'a>(guistring: &str,
     // from control tree, make a map of ids->controls.
     let mapp = controls::make_control_map(&*blah.root_control);
     let cnm = controls::control_map_to_name_map(&mapp);
-    // let guijson = guistring.clone();
 
     let ci = ControlInfo { cm: mapp, 
                            cnm: cnm, 
                            guijson: String::new() + guistring,
-                           // cup: cup, 
                            };
 
     let cmshare = Arc::new(Mutex::new(ci));
     let wscmshare = cmshare.clone();
-    // let oscsocket = try!(UdpSocket::bind(&oscrecvip[..]));
     // for sending, bind to this.  if we bind to localhost, we can't
     // send messages to other machines.  
-    // let oscsendsocket = try!(UdpSocket::bind("0.0.0.0:0"));
     let bc = broadcaster::Broadcaster::new();
-    // let wsos = try!(oscsendsocket.try_clone());
     let wsbc = bc.clone();
-    // let wsoscsendip = oscsendip.clone();
-
-    
-    // let amcup = Arc::new(Mutex::new(cup));
 
     let cs_ret = ControlServer { ci: cmshare, 
                                  bc: bc,
-                            //     cup: amcup.clone(),
                                };
-
-    /*
-    thread::spawn(move || { 
-      match oscmain(oscsocket, bc, cmshare) {
-        Err(e) => println!("oscmain exited with error: {:?}", e),
-        Ok(_) => (),
-      }
-      }); 
-    */
-
 
     // Spawn a thread for the websockets handler.
     thread::spawn(move || { 
@@ -331,17 +291,13 @@ fn websockets_main( ipaddr: String,
 	let server = try!(Server::bind(&ipaddr[..]));
 
 	for connection in server {
-
-    println!("new websockets connection!");
 		// Spawn a new thread for each connection.
-    
+
+println!("new websockets connection!");
+    let conn = try!(connection);
     let sci = ci.clone();
-//    let osock = try!(oscsocket.try_clone());
- //   let osend = oscsendip.clone();
     let broadcaster = broadcaster.clone();
     let cup = cup.clone();
-
-    let conn = try!(connection);
     thread::spawn(move || {
       match websockets_client(conn,
                             sci,
@@ -463,19 +419,6 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
                   (*cntrl).update(&updmsg);
                   broadcaster.broadcast_others(&ip, Message::text(str));
                   
-                  // TODO: callback ftn??  
-                  /*
-                  match ctrl_update_to_osc(&updmsg, &**cntrl) { 
-                    Ok(v) => match oscsocket.send_to(&v, &oscsendip[..]) {
-                      Ok(_) => (),
-                      Err(e) => 
-                        println!("error sending osc message: {:?}", e),
-                      },
-                    Err(e) => 
-                      println!("error building osc message: {:?}", e),
-                  };
-                  */
-
                   println!("websockets control update recieved: {:?}", updmsg);
                   ()
                 },
@@ -483,7 +426,6 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
               }
               }
             }
-            // let sci = ci.lock().unwrap();
             let mut scup = cup.lock().unwrap();
             let sci = match ci.lock() {
               Ok(sci) => sci,

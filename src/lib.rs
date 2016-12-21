@@ -27,6 +27,7 @@ mod controls;
 mod broadcaster;
 mod string_defaults; 
 pub mod control_updates;
+pub mod json;
 
 extern crate serde_json;
 use serde_json::Value;
@@ -141,7 +142,7 @@ impl ControlServer {
   {
     match serde_json::from_str(guistring) { 
       Ok(guival) => { 
-        match controls::deserialize_root(&guival) {
+        match json::deserialize_root(&guival) {
           Ok(controltree) => { 
             println!("new control layout recieved!");
 
@@ -225,7 +226,7 @@ pub fn startserver<'a>(guistring: &str,
 
     let guival: Value = try!(serde_json::from_str(guistring)); 
 
-    let blah = try!(controls::deserialize_root(&guival));
+    let blah = try!(json::deserialize_root(&guival));
 
     println!("title: {} rootcontroltype: {} ", 
       blah.title, blah.root_control.control_type());

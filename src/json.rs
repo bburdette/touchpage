@@ -3,10 +3,11 @@ extern crate serde;
 
 use serde_json::Value;
 use controls::{ Root, Label, Slider, Button, Control, Sizer};
+use control_updates as cu;
 
 use stringerror;
-use control_updates as cu;
 use std::error::Error;
+use std::collections::BTreeMap;
 
 pub fn deserialize_root(data: &Value) -> Result<Box<Root>, Box<Error> >
 {
@@ -87,3 +88,108 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<Control>, Box<E
     _ => Err(stringerror::string_box_err("objtype not supported!"))
   }
 }
+
+pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
+  let obj = try_opt!(data.as_object());
+  let contype = try_opt!(try_opt!(obj.get("controlType")).as_string());
+  let conid = convarrayi32(try_opt!(try_opt!(obj.get("controlId")).as_array()));
+  let mbst = obj.get("state").map(|wut| wut.as_string());
+   
+  match contype {
+    "slider" => {
+      let location = match obj.get("location").map(|l| l.as_f64())
+        { Some(Some(loc)) => Some(loc)
+        , _ => None };
+      let optst = match mbst 
+        { Some(Some("Press")) => Some( cu::SliderState::Pressed ) 
+        , Some(Some("Unpress")) => Some( cu::SliderState::Unpressed )
+        , _ => None
+        };
+      let lab = obj.get("label").and_then(|s| s.as_string()).map(|s| String::from(s));
+      Some( cu::UpdateMsg::Slider { control_id: conid
+                              , state: optst
+                              , location: location 
+                              , label: lab
+                              } )
+      },
+    "button" => {
+      let optst = match mbst 
+        { Some(Some("Press")) => Some( cu::ButtonState::Pressed ) 
+        , Some(Some("Unpress")) => Some( cu::ButtonState::Unpressed )
+        , _ => None
+        };
+      let lab = obj.get("label").and_then(|s| s.as_string()).map(|s| String::from(s));
+        
+      Some( cu::UpdateMsg::Button { control_id: conid
+                              , state: optst 
+                              , label: lab } )
+      },
+    _ => None
+    }
+}
+
+fn convi32array(inp: &Vec<i32>) -> Vec<Value> {
+  inp.into_iter().map(|x|{Value::I64(*x as i64)}).collect()
+}
+
+fn convarrayi32(inp: &Vec<Value>) -> Vec<i32> {
+  inp.into_iter().map(|x|{x.as_i64().unwrap() as i32}).collect()
+}
+
+pub fn encode_update_message(um: &cu::UpdateMsg) -> Value { 
+  match um { 
+    &cu::UpdateMsg::Button { control_id: ref cid 
+                       , state: ref opt_state
+                       , label: ref opt_label } => {
+      let mut btv = BTreeMap::new();
+      btv.insert(String::from("controlType"), Value::String(String::from("button")));
+      btv.insert(String::from("controlId"), Value::Array(convi32array(cid)));
+      if let &Some(ref st) = opt_state { 
+        btv.insert(String::from("state"), 
+          Value::String(String::from( 
+            (match st { &cu::ButtonState::Pressed => "Press", 
+                        &cu::ButtonState::Unpressed => "Unpress", }))));
+        };
+      if let &Some(ref lb) = opt_label { 
+        btv.insert(String::from("label"), 
+          Value::String(lb.clone()));
+        };
+      
+      Value::Object(btv)
+    }, 
+    &cu::UpdateMsg::Slider { control_id: ref cid
+                       , state: ref opt_state
+                       , label: ref opt_label 
+                       , location: ref opt_loc } => 
+    {
+      let mut btv = BTreeMap::new();
+      btv.insert(String::from("controlType"), 
+                 Value::String(String::from("slider")));
+      btv.insert(String::from("controlId"), 
+                 Value::Array(convi32array(cid)));
+      if let &Some(ref st) = opt_state { 
+        btv.insert(String::from("state"), 
+          Value::String(String::from( 
+            (match st { &cu::SliderState::Pressed => "Press",
+                        &cu::SliderState::Unpressed => "Unpress" }))));
+      };
+      if let &Some(loc) = opt_loc { 
+        btv.insert(String::from("location"), Value::F64(loc));
+      };
+      if let &Some(ref lb) = opt_label { 
+        btv.insert(String::from("label"), 
+          Value::String(lb.clone()));
+        };
+      
+      Value::Object(btv)
+    },
+    &cu::UpdateMsg::Label { control_id: ref cid, label: ref labtext } => {
+      let mut btv = BTreeMap::new();
+      btv.insert(String::from("controlType"), Value::String(String::from("label")));
+      btv.insert(String::from("controlId"), Value::Array(convi32array(cid)));
+      btv.insert(String::from("label"), Value::String(labtext.clone()));
+      Value::Object(btv)
+    }, 
+   } 
+}
+ 

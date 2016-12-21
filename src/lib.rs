@@ -101,8 +101,6 @@ impl ControlServer {
       Some(ctrl) => Some(String::from(ctrl.name())),
       _ => None,
     }
-
-    
   }
 
   pub fn make_update_msg(&self, name: &str) -> Option<control_updates::UpdateMsg> {
@@ -129,7 +127,7 @@ impl ControlServer {
     match ci.cm.get_mut(controls::get_um_id(&updmsg)) {
     Some(ctl) => {
       (*ctl).update(&updmsg);
-      let val = controls::encode_update_message(&updmsg); 
+      let val = json::encode_update_message(&updmsg); 
       match serde_json::ser::to_string(&val) { 
         Ok(s) => self.bc.broadcast(Message::text(s)), 
         Err(_) => ()
@@ -138,6 +136,7 @@ impl ControlServer {
     None => (),
     }
   }
+
   pub fn load_gui_string(&self, guistring: &str) -> Result<(), Box<std::error::Error> >
   {
     match serde_json::from_str(guistring) { 
@@ -176,9 +175,11 @@ impl ControlServer {
         Err(Box::new(Error::new(ErrorKind::Other, s))) },
     }
   }
-
 }
    
+pub fn sample_gui_config() -> &'static str {
+  string_defaults::SAMPLE_GUI_CONFIG
+  }
 
 //  iron-server-canceler: ???
 //  websocket-thread-canceler: ???
@@ -355,12 +356,10 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
     let updarray = controls::cm_to_update_array(&sci.cm);
   
     // build json message containing both guijson and the updarray.
-    // let updvals = updarray.into_iter().map(|x|{controls::encode_update_message(&x)}).collect();
-
     let mut updvals = Vec::new();
 
     for upd in updarray { 
-      let um = controls::encode_update_message(&upd);
+      let um = json::encode_update_message(&upd);
       updvals.push(um);
     }
    
@@ -408,7 +407,7 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
         let u8 = message.payload.to_owned();
         let str = try!(std::str::from_utf8(&*u8));
         let jsonval: Value = try!(serde_json::from_str(str));
-        let s_um = controls::decode_update_message(&jsonval);
+        let s_um = json::decode_update_message(&jsonval);
         match s_um { 
           Some(updmsg) => {
             {

@@ -52,19 +52,29 @@ fn write_string(text: &str, file_name: &str) -> Result<(), Box<std::error::Error
 }
 
 pub trait ControlUpdateProcessor: Send { 
-  fn on_update_received(&mut self, &control_updates::UpdateMsg) -> ();
+  fn on_update_received(&mut self, &control_updates::UpdateMsg, ci: &ControlInfo) -> ();
 }
 
 pub struct ControlInfo {
   cm: controls::ControlMap,
   cnm: controls::ControlNameMap,
   guijson: String,
-  cup: Box<ControlUpdateProcessor>,
+}
+
+impl ControlInfo {
+  pub fn get_osc_name(&self, id: &Vec<i32>) -> Option<String>
+  {
+    match self.cm.get(id) {
+      Some(ctrl) => Some(String::from(ctrl.oscname())),
+      _ => None,
+    }
+  }
 }
 
 pub struct ControlServer { 
   ci: Arc<Mutex<ControlInfo>>,
   bc: broadcaster::Broadcaster,
+//  cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
 }
 
 impl ControlServer { 
@@ -249,7 +259,7 @@ pub fn startserver<'a>(guistring: &str,
     let ci = ControlInfo { cm: mapp, 
                            cnm: cnm, 
                            guijson: String::new() + guistring,
-                           cup: cup, 
+                           // cup: cup, 
                            };
 
     let cmshare = Arc::new(Mutex::new(ci));
@@ -263,9 +273,12 @@ pub fn startserver<'a>(guistring: &str,
     let wsbc = bc.clone();
     // let wsoscsendip = oscsendip.clone();
 
+    
+    // let amcup = Arc::new(Mutex::new(cup));
+
     let cs_ret = ControlServer { ci: cmshare, 
                                  bc: bc,
-                                 // on_update_received: on_update_received,
+                            //     cup: amcup.clone(),
                                };
 
     /*
@@ -277,9 +290,13 @@ pub fn startserver<'a>(guistring: &str,
       }); 
     */
 
+
     // Spawn a thread for the websockets handler.
     thread::spawn(move || { 
-      match websockets_main(websockets_ip, wscmshare, wsbc) {
+      match websockets_main(websockets_ip, 
+                            wscmshare, 
+                            wsbc, 
+                            Arc::new(Mutex::new(cup))) {
         Ok(_) => (),
         Err(e) => println!("error in websockets_main: {:?}", e),
       }
@@ -307,7 +324,7 @@ pub fn startserver<'a>(guistring: &str,
 fn websockets_main( ipaddr: String, 
                     ci: Arc<Mutex<ControlInfo>>,
                     broadcaster: broadcaster::Broadcaster,
-//                    on_update_received: &ControlUpdateProcessor,
+                    cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
                     )
                   -> Result<(), Box<std::error::Error> >
 {
@@ -322,14 +339,14 @@ fn websockets_main( ipaddr: String,
 //    let osock = try!(oscsocket.try_clone());
  //   let osend = oscsendip.clone();
     let broadcaster = broadcaster.clone();
-//    let our = on_update_received.clone();   // a different one for each connection?
+    let cup = cup.clone();
 
     let conn = try!(connection);
     thread::spawn(move || {
       match websockets_client(conn,
                             sci,
                             broadcaster,
-                           // &our
+                            cup,
                             ) {
         Ok(_) => (), 
         Err(e) => {
@@ -347,7 +364,7 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
                     websocket::stream::WebSocketStream>,
                     ci: Arc<Mutex<ControlInfo>>,
                     mut broadcaster: broadcaster::Broadcaster, 
-   //                 on_update_received: &ControlUpdateProcessor,
+                    cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
                     ) -> Result<(), Box<std::error::Error> >
 {
   // Get the request
@@ -437,36 +454,44 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
         let s_um = controls::decode_update_message(&jsonval);
         match s_um { 
           Some(updmsg) => {
-            let mut sci  = ci.lock().unwrap();
             {
-            let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));
-            match mbcntrl {
-              Some(cntrl) => {
-                (*cntrl).update(&updmsg);
-                broadcaster.broadcast_others(&ip, Message::text(str));
-                
-                // TODO: callback ftn??  
-                /*
-                match ctrl_update_to_osc(&updmsg, &**cntrl) { 
-                  Ok(v) => match oscsocket.send_to(&v, &oscsendip[..]) {
-                    Ok(_) => (),
+              let mut sci  = ci.lock().unwrap();
+              {
+              let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));
+              match mbcntrl {
+                Some(cntrl) => {
+                  (*cntrl).update(&updmsg);
+                  broadcaster.broadcast_others(&ip, Message::text(str));
+                  
+                  // TODO: callback ftn??  
+                  /*
+                  match ctrl_update_to_osc(&updmsg, &**cntrl) { 
+                    Ok(v) => match oscsocket.send_to(&v, &oscsendip[..]) {
+                      Ok(_) => (),
+                      Err(e) => 
+                        println!("error sending osc message: {:?}", e),
+                      },
                     Err(e) => 
-                      println!("error sending osc message: {:?}", e),
-                    },
-                  Err(e) => 
-                    println!("error building osc message: {:?}", e),
-                };
-                */
+                      println!("error building osc message: {:?}", e),
+                  };
+                  */
 
-
-                println!("websockets control update recieved: {:?}", updmsg);
-                ()
-              },
-              None => println!("none"),
+                  println!("websockets control update recieved: {:?}", updmsg);
+                  ()
+                },
+                None => println!("none"),
+              }
+              }
             }
-            }
+            // let sci = ci.lock().unwrap();
+            let mut scup = cup.lock().unwrap();
+            let sci = match ci.lock() {
+              Ok(sci) => sci,
+              Err(poisoned) => poisoned.into_inner(),
+            };
 
-            sci.cup.on_update_received(&updmsg);
+            scup.on_update_received(&updmsg, &*sci);
+        
           },
           _ => println!("decode_update_message failed on websockets msg: {:?}", message),
         }

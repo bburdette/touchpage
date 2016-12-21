@@ -107,10 +107,10 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
         };
       let lab = obj.get("label").and_then(|s| s.as_string()).map(|s| String::from(s));
       Some( cu::UpdateMsg::Slider { control_id: conid
-                              , state: optst
-                              , location: location 
-                              , label: lab
-                              } )
+                                  , state: optst
+                                  , location: location 
+                                  , label: lab
+                                  } )
       },
     "button" => {
       let optst = match mbst 
@@ -121,8 +121,8 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
       let lab = obj.get("label").and_then(|s| s.as_string()).map(|s| String::from(s));
         
       Some( cu::UpdateMsg::Button { control_id: conid
-                              , state: optst 
-                              , label: lab } )
+                                  , state: optst 
+                                  , label: lab } )
       },
     _ => None
     }
@@ -139,8 +139,8 @@ fn convarrayi32(inp: &Vec<Value>) -> Vec<i32> {
 pub fn encode_update_message(um: &cu::UpdateMsg) -> Value { 
   match um { 
     &cu::UpdateMsg::Button { control_id: ref cid 
-                       , state: ref opt_state
-                       , label: ref opt_label } => {
+                           , state: ref opt_state
+                           , label: ref opt_label } => {
       let mut btv = BTreeMap::new();
       btv.insert(String::from("controlType"), Value::String(String::from("button")));
       btv.insert(String::from("controlId"), Value::Array(convi32array(cid)));
@@ -158,9 +158,9 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       Value::Object(btv)
     }, 
     &cu::UpdateMsg::Slider { control_id: ref cid
-                       , state: ref opt_state
-                       , label: ref opt_label 
-                       , location: ref opt_loc } => 
+                           , state: ref opt_state
+                           , label: ref opt_label 
+                           , location: ref opt_loc } => 
     {
       let mut btv = BTreeMap::new();
       btv.insert(String::from("controlType"), 
@@ -183,7 +183,8 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       
       Value::Object(btv)
     },
-    &cu::UpdateMsg::Label { control_id: ref cid, label: ref labtext } => {
+    &cu::UpdateMsg::Label { control_id: ref cid, 
+                            label: ref labtext } => {
       let mut btv = BTreeMap::new();
       btv.insert(String::from("controlType"), Value::String(String::from("label")));
       btv.insert(String::from("controlId"), Value::Array(convi32array(cid)));

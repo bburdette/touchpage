@@ -62,10 +62,10 @@ pub struct ControlInfo {
 }
 
 impl ControlInfo {
-  pub fn get_osc_name(&self, id: &Vec<i32>) -> Option<String>
+  pub fn get_name(&self, id: &Vec<i32>) -> Option<String>
   {
     match self.cm.get(id) {
-      Some(ctrl) => Some(String::from(ctrl.oscname())),
+      Some(ctrl) => Some(String::from(ctrl.name())),
       _ => None,
     }
   }
@@ -89,7 +89,7 @@ impl ControlServer {
     }
   }
 
-  pub fn get_osc_name(&self, id: &Vec<i32>) -> Option<String>
+  pub fn get_name(&self, id: &Vec<i32>) -> Option<String>
   {
     let ci = match self.ci.lock() {
       Ok(guard) => guard,
@@ -97,7 +97,7 @@ impl ControlServer {
     };
 
     match ci.cm.get(id) {
-      Some(ctrl) => Some(String::from(ctrl.oscname())),
+      Some(ctrl) => Some(String::from(ctrl.name())),
       _ => None,
     }
 

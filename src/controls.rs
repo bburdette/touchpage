@@ -52,7 +52,7 @@ pub trait Control : Debug + Send {
   fn empty_update(&self) -> Option<cu::UpdateMsg>;
   // build full update message of current state.
   fn to_update(&self) -> Option<cu::UpdateMsg>;
-  fn oscname(&self) -> &str;
+  fn name(&self) -> &str;
 }
 
 #[derive(Debug)]
@@ -113,7 +113,7 @@ impl Control for Slider {
                             , label: self.label.clone()
                             })
   }
-  fn oscname(&self) -> &str { &self.name[..] }
+  fn name(&self) -> &str { &self.name[..] }
 }
 
 #[derive(Debug)]
@@ -163,7 +163,7 @@ impl Control for Button {
                            , state: Some(ut)
                            , label: self.label.clone() })
   }
-  fn oscname(&self) -> &str { &self.name[..] }
+  fn name(&self) -> &str { &self.name[..] }
 }
 
 #[derive(Debug)]
@@ -197,7 +197,7 @@ impl Control for Label {
   fn to_update(&self) -> Option<cu::UpdateMsg> {
     Some(cu::UpdateMsg::Label { control_id: self.control_id.clone(), label: self.label.clone() })
   }
-  fn oscname(&self) -> &str { &self.name[..] }
+  fn name(&self) -> &str { &self.name[..] }
 }
 
 //#[derive(Debug, Clone)]
@@ -218,7 +218,7 @@ impl Control for Sizer {
   fn update(&mut self, _: &cu::UpdateMsg) {}
   fn empty_update(&self) -> Option<cu::UpdateMsg> { None }
   fn to_update(&self) -> Option<cu::UpdateMsg> { None }
-  fn oscname(&self) -> &str { "" }
+  fn name(&self) -> &str { "" }
 }
 
 fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<Control>, Box<Error> >
@@ -447,7 +447,7 @@ pub fn control_map_to_name_map(cmap: &ControlMap) -> ControlNameMap
   loop {
     match iter.next() {
       Some((key,val)) => { 
-        let s = String::from(&*val.oscname()); 
+        let s = String::from(&*val.name()); 
         cnm.insert(s, key.clone());
         ()
       }, 

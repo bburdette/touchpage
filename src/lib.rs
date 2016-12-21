@@ -266,10 +266,10 @@ pub fn startserver<'a>(guistring: &str,
 
     thread::spawn(move || { 
       // use this thread for the web server.
-      Iron::new(move | _: &mut Request| {
-          let content_type = "text/html".parse::<Mime>().unwrap();
-          Ok(Response::with((content_type, status::Ok, &*htmlstring)))
-      }).http(&http_ip[..]);
+      let _ = Iron::new(move | _: &mut Request| {
+                  let content_type = "text/html".parse::<Mime>().unwrap();
+                  Ok(Response::with((content_type, status::Ok, &*htmlstring)))
+              }).http(&http_ip[..]);
       // return when the web server dies, if it ever does. 
       });
       

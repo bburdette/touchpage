@@ -177,10 +177,6 @@ impl ControlServer {
   }
 }
    
-pub fn sample_gui_config() -> &'static str {
-  string_defaults::SAMPLE_GUI_CONFIG
-  }
-
 //  iron-server-canceler: ???
 //  websocket-thread-canceler: ???
 //  fn lookup_control(name) -> index

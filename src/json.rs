@@ -4,6 +4,7 @@ extern crate serde;
 use serde_json::Value;
 use controls::{ Root, Label, Slider, Button, Control, Sizer};
 use control_updates as cu;
+use string_defaults;
 
 use stringerror;
 use std::error::Error;
@@ -194,3 +195,7 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
    } 
 }
  
+pub fn sample_gui_config() -> &'static str {
+  string_defaults::SAMPLE_GUI_CONFIG
+  }
+

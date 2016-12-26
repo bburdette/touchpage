@@ -1,6 +1,5 @@
 # touchpage
 
-## this is NOT usable yet!  
 #### I'm splitting the oscpad repo into two parts, the OSC stuff and the webserver-UI part.  This will be the webserver-UI part, in library form, so that its easy to make standalone rust programs with oscpad style UIs.
 
 Configurable web controls with shared state.  [Overview/tutorial here](https://github.com/bburdette/oscpad/wiki/Get-started-with-oscpad)  

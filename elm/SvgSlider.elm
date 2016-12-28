@@ -179,7 +179,6 @@ update msg model =
         True -> 
           case (getLocation model v) of 
             Ok l -> 
-               -- Debug.log "not blah" (updsend model Nothing l)
                updsend model Nothing l
             _ -> (model, Cmd.none)
         False -> (model, Cmd.none)
@@ -190,12 +189,12 @@ update msg model =
                 Just Press -> True              
                 Just Unpress -> False
                 _ -> model.pressed),
-            location = (case um.location of 
+            location = case um.location of 
               Just loc -> loc
-              Nothing -> model.location),
-            label = (case um.label of 
+              Nothing -> model.location,
+            label = case um.label of 
               Just txt -> txt
-              Nothing -> model.label),
+              Nothing -> model.label,
             textSvg = case um.label of 
               Just txt -> SvgThings.calcTextSvg SvgThings.ff txt model.rect
               Nothing -> model.textSvg 

@@ -350,7 +350,7 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
     let sci = ci.lock().unwrap();
 
     let updarray = controls::cm_to_update_array(&sci.cm);
-  
+ 
     // build json message containing both guijson and the updarray.
     let mut updvals = Vec::new();
 

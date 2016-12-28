@@ -66,7 +66,7 @@ update msg model =
     JsonMsg s -> 
       case (JD.decodeString jsMessage s) of 
         Ok (JmSpec spec) -> 
-          init model.sendaddr model.mahrect spec 
+          init model.sendaddr model.mahrect spec
         Ok (JmUpdate jmact) -> 
           update jmact model
         Err e -> ({model | title = e}, Cmd.none)
@@ -152,16 +152,18 @@ init: String -> SvgThings.Rect -> Spec
   -> (Model, Cmd Msg)
 init sendaddr rect spec = 
   let (conmod, conevt) = SvgControl.init sendaddr rect [] spec.rootControl
+      (updmod, evts) = SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
+      -- combevts = Cmd.batch [conevt, evts]
     in
      (Model spec.title 
         rect 
         (SvgThings.toSRect rect) 
         spec 
-        conmod 
+        updmod 
         -- Dict.empty 
         sendaddr
         (Window.Size 0 0)
-    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)
+    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
       
 -- VIEW
 

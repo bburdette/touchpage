@@ -83,18 +83,6 @@ resize model rect =
     CmLabel mod -> tupMap2 CmLabel (Cmd.map CaLabel) (SvgLabel.resize mod (SvgThings.shrinkRect border rect)) 
     CmSizer mod -> tupMap2 CmSizer (Cmd.map CaSizer) (szresize mod rect) 
 
-{-
-type alias ControlTam = ((List Touch.Touch) -> Maybe Msg)
-    
-controlTouchActionMaker: Model -> ControlTam 
-controlTouchActionMaker ctrl = 
-  case ctrl of
-    CmButton _ -> (\t -> Just (CaButton (SvgButton.SvgTouch t)))
-    CmSlider _ -> (\t -> Just (CaSlider (SvgSlider.SvgTouch t)))
-    CmLabel _ -> (\t -> Nothing) 
-    CmSizer _ -> (\t -> Nothing)
--}
-  
 jsSpec : JD.Decoder Spec
 jsSpec = 
   ("type" := JD.string) `JD.andThen` jsCs
@@ -137,7 +125,7 @@ toCtrlMsg id msg =
     Just x -> CaSizer (SzCMsg x (toCtrlMsg (myTail id) msg))
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
+update msg model = 
   case (msg,model) of 
     (CaButton ms, CmButton m) -> 
       let (a,b) = (SvgButton.update ms m) in
@@ -152,6 +140,15 @@ update msg model =
       let (a,b) = (szupdate ms m) in
         (CmSizer a, Cmd.map CaSizer b)
     _ -> (model, Cmd.none)    -- should probably produce an error.  to the user??
+
+update_list : List Msg -> Model -> (Model, Cmd Msg)
+update_list msgs model = 
+  List.foldl 
+    (\msg (mod,c) -> 
+      let (modnew, cmd) = update msg mod in
+        (modnew, Cmd.batch [c,cmd]))
+    (model, Cmd.none) 
+    msgs
 
 init : String -> SvgThings.Rect -> SvgThings.ControlId -> Spec
   -> (Model, Cmd Msg)
@@ -169,13 +166,6 @@ init sendaddr rect cid spec =
     CsSizer s -> 
       let (a,b) = (szinit sendaddr rect cid s) in
         (CmSizer a, Cmd.map CaSizer b)
-
-{-
-type Msg = CaButton SvgButton.Msg   
-         | CaSlider SvgSlider.Msg
-         | CaLabel SvgLabel.Msg
-         | CaSizer SzMsg
--}
 
 view : Model -> Svg Msg
 view model = 

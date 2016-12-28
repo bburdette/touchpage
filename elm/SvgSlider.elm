@@ -1,10 +1,8 @@
 module SvgSlider exposing (..) 
 
--- import Platform exposing (Cmd, none) 
 import Html exposing (Html)
 import Json.Decode as JD exposing ((:=))
 import Json.Encode as JE 
--- import Task
 import Svg exposing (Svg, svg, rect, g, text, text', Attribute)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick, onMouseUp, onMouseMove, onMouseDown, onMouseOut)
@@ -117,13 +115,6 @@ encodeUpdateMessage um =
                   Just txt -> List.append outlist3 [ ("label", JE.string txt)]
                   Nothing -> outlist3
     in JE.object outlist4
-
-{-  JE.object [ ("controlType", JE.string "slider") 
-            , ("controlId", SvgThings.encodeControlId um.controlId) 
-            , ("updateType", encodeUpdateType um.updateType) 
-            , ("location", (JE.float um.location))
-            ]
-  -}
 
 encodeUpdateType: UpdateType -> JD.Value
 encodeUpdateType ut = 

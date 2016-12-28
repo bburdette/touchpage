@@ -10501,11 +10501,6 @@ var _bburdette$oscpad$SvgLabel$SvgUpdate = function (a) {
 	return {ctor: 'SvgUpdate', _0: a};
 };
 
-var _bburdette$oscpad$SvgControl_ops = _bburdette$oscpad$SvgControl_ops || {};
-_bburdette$oscpad$SvgControl_ops['=>'] = F2(
-	function (v0, v1) {
-		return {ctor: '_Tuple2', _0: v0, _1: v1};
-	});
 var _bburdette$oscpad$SvgControl$mkRlist = F4(
 	function (orientation, rect, count, mbproportions) {
 		var _p0 = orientation;

@@ -11,9 +11,7 @@ import Svg exposing (Svg)
 import Svg.Attributes as SA 
 import SvgThings
 import VirtualDom as VD
--- import Signal
 import Html
--- import Touch
 
 ----------------------------------------------------------
 -- Two things (objects?) in this file; control container 
@@ -301,8 +299,6 @@ szinit sendaddr rect cid szspec =
       
 
 -- VIEW
-
-(=>) = (,)
 
 szview : SzModel -> Svg SzMsg
 szview model =

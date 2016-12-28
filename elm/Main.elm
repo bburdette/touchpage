@@ -42,13 +42,3 @@ init wsUrl =
         (SvgThings.Rect 0 0 500 300)    
         (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
 
-
--- (SvgControlPage.Spec "mehtitle" (SvgControl.CsButton (SvgButton.Spec "blah" Nothing Nothing)) Nothing)
---    , subscriptions = \_ -> Sub.none
---    , inits = [ (Signal.map SvgControlPage.WinDims Window.dimensions)
---              ]
---    , inputs = [ (Signal.map SvgControlPage.JsonMsg listen.signal)
---               , (Signal.map SvgControlPage.WinDims Window.dimensions)
---               , (Signal.map SvgControlPage.Touche SvgTouch.touches)
---               ]
- 

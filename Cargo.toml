@@ -1,7 +1,7 @@
 [package]
 
 name = "touchpage"
-version = "0.2.2"
+version = "0.1.0"
 authors = ["Ben Burdette <bburdette@gmail.com>"]
 
 description = "OSC 'control panel' server with shared-state web controls"

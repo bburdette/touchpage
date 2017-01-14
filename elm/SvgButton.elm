@@ -17,12 +17,14 @@ import Dict
 type alias Spec = 
   { name: String
   , label: Maybe String
+  , latch: Maybe Bool
   }
 
 jsSpec : JD.Decoder Spec
-jsSpec = JD.object2 Spec
+jsSpec = JD.object3 Spec
   ("name" := JD.string)
   (JD.maybe ("label" := JD.string)) 
+  (JD.maybe ("latch" := JD.bool)) 
 
 -- MODEL
 
@@ -33,6 +35,7 @@ type alias Model =
   , rect: SvgThings.Rect
   , srect: SvgThings.SRect
   , pressed: Bool
+  , latch: Bool
   , sendaddr : String 
   , textSvg: List (Svg ())
   , touchonly: Bool
@@ -44,6 +47,9 @@ init sendaddr rect cid spec =
   let ts = case spec.label of 
         Just lbtext -> SvgThings.calcTextSvg SvgThings.ff lbtext rect 
         Nothing -> []
+      latch = Debug.log "latch: " (case spec.latch of 
+        Just v -> Debug.log "latch v: " v
+        Nothing -> False)
   in
   ( Model (spec.name) 
           (Maybe.withDefault "" (spec.label))
@@ -53,7 +59,8 @@ init sendaddr rect cid spec =
                            (toString rect.y)
                            (toString rect.w)
                            (toString rect.h))
-          False 
+          False
+          latch
           sendaddr
           ts
           False
@@ -128,11 +135,19 @@ jsUpdateType ut =
 update : Msg -> Model -> (Model, Cmd Msg) 
 update msg model =
   case msg of
-    SvgPress -> pressup model Press
+    SvgPress -> 
+      if model.latch then
+        -- invert current state.
+        pressup model (if model.pressed then Unpress else Press)
+      else
+        pressup model Press
     SvgUnpress ->
-      case model.pressed of
-        True ->  pressup model Unpress
-        False -> (model, Cmd.none)
+      if model.latch then 
+        (model, Cmd.none)
+      else
+        case model.pressed of
+          True ->  pressup model Unpress
+          False -> (model, Cmd.none)
     NoOp -> (model, Cmd.none)
     Reply s -> ({model | name = s}, Cmd.none)
     SvgUpdate um -> 

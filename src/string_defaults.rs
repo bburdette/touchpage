@@ -9533,26 +9533,58 @@ var _bburdette$oscpad$SvgButton$pressedColor = function (pressed) {
 		return '#60B5CC';
 	}
 };
-var _bburdette$oscpad$SvgButton$Spec = F2(
-	function (a, b) {
-		return {name: a, label: b};
+var _bburdette$oscpad$SvgButton$Spec = F3(
+	function (a, b, c) {
+		return {name: a, label: b, latch: c};
 	});
-var _bburdette$oscpad$SvgButton$jsSpec = A3(
-	_elm_lang$core$Json_Decode$object2,
+var _bburdette$oscpad$SvgButton$jsSpec = A4(
+	_elm_lang$core$Json_Decode$object3,
 	_bburdette$oscpad$SvgButton$Spec,
 	A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string),
 	_elm_lang$core$Json_Decode$maybe(
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'label', _elm_lang$core$Json_Decode$string)));
-var _bburdette$oscpad$SvgButton$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {name: a, label: b, cid: c, rect: d, srect: e, pressed: f, sendaddr: g, textSvg: h, touchonly: i};
-	});
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'label', _elm_lang$core$Json_Decode$string)),
+	_elm_lang$core$Json_Decode$maybe(
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'latch', _elm_lang$core$Json_Decode$bool)));
+var _bburdette$oscpad$SvgButton$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return {name: a, label: b, cid: c, rect: d, srect: e, pressed: f, latch: g, touchnothing: h, sendaddr: i, textSvg: j, touchonly: k};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var _bburdette$oscpad$SvgButton$init = F4(
 	function (sendaddr, rect, cid, spec) {
+		var latch = A2(
+			_elm_lang$core$Debug$log,
+			'latch: ',
+			function () {
+				var _p4 = spec.latch;
+				if (_p4.ctor === 'Just') {
+					return A2(_elm_lang$core$Debug$log, 'latch v: ', _p4._0);
+				} else {
+					return false;
+				}
+			}());
 		var ts = function () {
-			var _p4 = spec.label;
-			if (_p4.ctor === 'Just') {
-				return A3(_bburdette$oscpad$SvgThings$calcTextSvg, _bburdette$oscpad$SvgThings$ff, _p4._0, rect);
+			var _p5 = spec.label;
+			if (_p5.ctor === 'Just') {
+				return A3(_bburdette$oscpad$SvgThings$calcTextSvg, _bburdette$oscpad$SvgThings$ff, _p5._0, rect);
 			} else {
 				return _elm_lang$core$Native_List.fromArray(
 					[]);
@@ -9560,22 +9592,14 @@ var _bburdette$oscpad$SvgButton$init = F4(
 		}();
 		return {
 			ctor: '_Tuple2',
-			_0: A9(
-				_bburdette$oscpad$SvgButton$Model,
-				spec.name,
-				A2(_elm_lang$core$Maybe$withDefault, '', spec.label),
-				cid,
-				rect,
+			_0: _bburdette$oscpad$SvgButton$Model(spec.name)(
+				A2(_elm_lang$core$Maybe$withDefault, '', spec.label))(cid)(rect)(
 				A4(
 					_bburdette$oscpad$SvgThings$SRect,
 					_elm_lang$core$Basics$toString(rect.x),
 					_elm_lang$core$Basics$toString(rect.y),
 					_elm_lang$core$Basics$toString(rect.w),
-					_elm_lang$core$Basics$toString(rect.h)),
-				false,
-				sendaddr,
-				ts,
-				false),
+					_elm_lang$core$Basics$toString(rect.h)))(false)(latch)(true)(sendaddr)(ts)(false),
 			_1: _elm_lang$core$Platform_Cmd$none
 		};
 	});
@@ -9670,7 +9694,7 @@ var _bburdette$oscpad$SvgButton$view = function (model) {
 					[])),
 				A2(
 				_elm_lang$virtual_dom$VirtualDom$map,
-				function (_p5) {
+				function (_p6) {
 					return _bburdette$oscpad$SvgButton$NoOp;
 				},
 				A2(
@@ -9683,8 +9707,8 @@ var _bburdette$oscpad$SvgButton$view = function (model) {
 var _bburdette$oscpad$SvgButton$Unpress = {ctor: 'Unpress'};
 var _bburdette$oscpad$SvgButton$Press = {ctor: 'Press'};
 var _bburdette$oscpad$SvgButton$jsUpdateType = function (ut) {
-	var _p6 = ut;
-	switch (_p6) {
+	var _p7 = ut;
+	switch (_p7) {
 		case 'Press':
 			return _elm_lang$core$Json_Decode$succeed(_bburdette$oscpad$SvgButton$Press);
 		case 'Unpress':
@@ -9727,16 +9751,23 @@ var _bburdette$oscpad$SvgButton$pressup = F2(
 	});
 var _bburdette$oscpad$SvgButton$update = F2(
 	function (msg, model) {
-		var _p7 = msg;
-		switch (_p7.ctor) {
+		var _p8 = msg;
+		switch (_p8.ctor) {
 			case 'SvgPress':
-				return A2(_bburdette$oscpad$SvgButton$pressup, model, _bburdette$oscpad$SvgButton$Press);
+				return model.latch ? A2(
+					_bburdette$oscpad$SvgButton$pressup,
+					model,
+					model.pressed ? _bburdette$oscpad$SvgButton$Unpress : _bburdette$oscpad$SvgButton$Press) : A2(_bburdette$oscpad$SvgButton$pressup, model, _bburdette$oscpad$SvgButton$Press);
 			case 'SvgUnpress':
-				var _p8 = model.pressed;
-				if (_p8 === true) {
-					return A2(_bburdette$oscpad$SvgButton$pressup, model, _bburdette$oscpad$SvgButton$Unpress);
-				} else {
+				if (model.latch) {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				} else {
+					var _p9 = model.pressed;
+					if (_p9 === true) {
+						return A2(_bburdette$oscpad$SvgButton$pressup, model, _bburdette$oscpad$SvgButton$Unpress);
+					} else {
+						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					}
 				}
 			case 'NoOp':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
@@ -9745,20 +9776,20 @@ var _bburdette$oscpad$SvgButton$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{name: _p7._0}),
+						{name: _p8._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'SvgUpdate':
-				var _p12 = _p7._0;
+				var _p13 = _p8._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
 							pressed: function () {
-								var _p9 = _p12.updateType;
-								if (_p9.ctor === 'Just') {
-									if (_p9._0.ctor === 'Press') {
+								var _p10 = _p13.updateType;
+								if (_p10.ctor === 'Just') {
+									if (_p10._0.ctor === 'Press') {
 										return true;
 									} else {
 										return false;
@@ -9768,17 +9799,17 @@ var _bburdette$oscpad$SvgButton$update = F2(
 								}
 							}(),
 							label: function () {
-								var _p10 = _p12.label;
-								if (_p10.ctor === 'Just') {
-									return _p10._0;
+								var _p11 = _p13.label;
+								if (_p11.ctor === 'Just') {
+									return _p11._0;
 								} else {
 									return model.label;
 								}
 							}(),
 							textSvg: function () {
-								var _p11 = _p12.label;
-								if (_p11.ctor === 'Just') {
-									return A3(_bburdette$oscpad$SvgThings$calcTextSvg, _bburdette$oscpad$SvgThings$ff, _p11._0, model.rect);
+								var _p12 = _p13.label;
+								if (_p12.ctor === 'Just') {
+									return A3(_bburdette$oscpad$SvgThings$calcTextSvg, _bburdette$oscpad$SvgThings$ff, _p12._0, model.rect);
 								} else {
 									return model.textSvg;
 								}
@@ -9787,11 +9818,50 @@ var _bburdette$oscpad$SvgButton$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				var _p13 = _bburdette$oscpad$SvgTouch$extractFirstTouchSE(_p7._0);
-				if (_p13.ctor === 'Nothing') {
-					return _elm_lang$core$Native_Utils.eq(model.pressed, true) ? A2(_bburdette$oscpad$SvgButton$pressup, model, _bburdette$oscpad$SvgButton$Unpress) : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				var _p14 = _bburdette$oscpad$SvgTouch$extractFirstTouchSE(_p8._0);
+				if (_p14.ctor === 'Nothing') {
+					return model.latch ? {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{touchnothing: true}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					} : (_elm_lang$core$Native_Utils.eq(model.pressed, true) ? A2(
+						_bburdette$oscpad$SvgButton$pressup,
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{touchnothing: true}),
+						_bburdette$oscpad$SvgButton$Unpress) : {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{touchnothing: true}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					});
 				} else {
-					return _elm_lang$core$Native_Utils.eq(model.pressed, false) ? A2(_bburdette$oscpad$SvgButton$pressup, model, _bburdette$oscpad$SvgButton$Press) : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					return model.latch ? (model.touchnothing ? A2(
+						_bburdette$oscpad$SvgButton$pressup,
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{touchnothing: false}),
+						model.pressed ? _bburdette$oscpad$SvgButton$Unpress : _bburdette$oscpad$SvgButton$Press) : {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{touchnothing: false}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					}) : (_elm_lang$core$Native_Utils.eq(model.pressed, false) ? A2(
+						_bburdette$oscpad$SvgButton$pressup,
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{touchnothing: false}),
+						_bburdette$oscpad$SvgButton$Press) : {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{touchnothing: false}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					});
 				}
 		}
 	});

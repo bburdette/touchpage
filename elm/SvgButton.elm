@@ -36,6 +36,7 @@ type alias Model =
   , srect: SvgThings.SRect
   , pressed: Bool
   , latch: Bool
+  , touchnothing: Bool    -- was last touch a Nothing?  then eligible for a new touch event.
   , sendaddr : String 
   , textSvg: List (Svg ())
   , touchonly: Bool
@@ -61,6 +62,7 @@ init sendaddr rect cid spec =
                            (toString rect.h))
           False
           latch
+          True
           sendaddr
           ts
           False
@@ -168,15 +170,27 @@ update msg model =
     SvgTouch stm -> 
       case ST.extractFirstTouchSE stm of
         Nothing -> 
-          if model.pressed == True then 
-            pressup model Unpress
+          if model.latch then
+            ({model | touchnothing = True }, Cmd.none)
           else
-            (model , Cmd.none )
+            if model.pressed == True then 
+              pressup {model | touchnothing = True } Unpress
+            else
+              ({model | touchnothing = True }, Cmd.none)
+              
         Just _ -> 
-          if model.pressed == False then 
-            pressup model Press
+          if model.latch then
+            if model.touchnothing then 
+              pressup {model | touchnothing = False }
+                      (if model.pressed then Unpress else Press)
+            else
+              ({model | touchnothing = False }, Cmd.none)
           else
-            (model , Cmd.none )
+            if model.pressed == False then 
+              pressup {model | touchnothing = False } Press
+            else
+              ({model | touchnothing = False }, Cmd.none)
+
 
 pressup: Model -> UpdateType -> (Model, Cmd Msg)
 pressup model ut = 

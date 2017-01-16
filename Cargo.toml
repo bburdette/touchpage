@@ -1,15 +1,12 @@
 [package]
-
 name = "touchpage"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ben Burdette <bburdette@gmail.com>"]
-
 description = "control panel server with shared-state web controls"
 homepage = "https://github.com/bburdette/touchpage"
 repository = "https://github.com/bburdette/touchpage.git"
 readme = "README.md"
 keywords = []
-
 license = "MIT"
 include = [ "src/**/*", 
             "elm/**/*", 
@@ -22,14 +19,10 @@ include = [ "src/**/*",
             "ns.sh"]
 
 [dependencies]
-
 websocket = "0.15.0"
 serde_json = "0.7.0"
 serde = "0.5.3"
 iron = "0.2.1"
 time = "0.1.34" 
 tinyosc = "0.0.3"
-
-
-
 

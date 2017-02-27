@@ -1,7 +1,7 @@
 module SvgSlider exposing (..)
 
 import Html exposing (Html)
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD 
 import Json.Encode as JE
 import Svg exposing (Svg, svg, rect, g, text, text_, Attribute)
 import Svg.Attributes exposing (..)
@@ -28,10 +28,10 @@ type alias Spec =
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.object3 Spec
-        ("name" := JD.string)
-        (JD.maybe ("label" := JD.string))
-        (("orientation" := JD.string) |> JD.andThen SvgThings.jsOrientation)
+    JD.map3 Spec
+        (JD.field "name" JD.string)
+        (JD.maybe (JD.field "label" JD.string))
+        ((JD.field "orientation" JD.string) |> JD.andThen SvgThings.jsOrientation)
 
 
 
@@ -114,12 +114,12 @@ type Msg
 
 getX : JD.Decoder Int
 getX =
-    "clientX" := JD.int
+    JD.field "clientX" JD.int
 
 
 getY : JD.Decoder Int
 getY =
-    "clientY" := JD.int
+    JD.field "clientY" JD.int
 
 
 type UpdateType
@@ -182,11 +182,11 @@ encodeUpdateType ut =
 
 jsUpdateMessage : JD.Decoder UpdateMessage
 jsUpdateMessage =
-    JD.object4 UpdateMessage
-        ("controlId" := SvgThings.decodeControlId)
-        (JD.maybe (("state" := JD.string) |> JD.andThen jsUpdateType))
-        (JD.maybe ("location" := JD.float))
-        (JD.maybe ("label" := JD.string))
+    JD.map4 UpdateMessage
+        (JD.field "controlId" SvgThings.decodeControlId)
+        (JD.maybe ((JD.field "state" JD.string) |> JD.andThen jsUpdateType))
+        (JD.maybe (JD.field "location" JD.float))
+        (JD.maybe (JD.field "label" JD.string))
 
 
 jsUpdateType : String -> JD.Decoder UpdateType

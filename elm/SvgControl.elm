@@ -3,7 +3,7 @@ module SvgControl exposing (..)
 import SvgButton
 import SvgSlider
 import SvgLabel
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD 
 import Task
 import Dict exposing (..)
 import List exposing (..)
@@ -127,7 +127,7 @@ resize model rect =
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    ("type" := JD.string) |> JD.andThen jsCs
+    (JD.field "type" JD.string) |> JD.andThen jsCs
 
 
 jsCs : String -> JD.Decoder Spec
@@ -151,7 +151,7 @@ jsCs t =
 
 jsUpdateMessage : JD.Decoder Msg
 jsUpdateMessage =
-    ("controlType" := JD.string) |> JD.andThen jsUmType
+    (JD.field "controlType" JD.string) |> JD.andThen jsUmType
 
 
 jsUmType : String -> JD.Decoder Msg
@@ -330,24 +330,26 @@ processProps lst =
 
 jsSzSpec : JD.Decoder SzSpec
 jsSzSpec =
-    JD.object3 SzSpec
-        (("orientation" := JD.string) |> JD.andThen SvgThings.jsOrientation)
-        ((JD.maybe ("proportions" := JD.list JD.float))
+    JD.map3 SzSpec
+        ((JD.field "orientation" JD.string) |> JD.andThen SvgThings.jsOrientation)
+        ((JD.maybe (JD.field "proportions" (JD.list JD.float)))
             |> JD.andThen (\x -> JD.succeed (Maybe.map processProps x))
         )
-        ("controls" := (JD.list (lazy (\_ -> jsSpec))))
+        (JD.field "controls" (JD.list jsSpec))
+
+--        (JD.field "controls" (JD.list (lazy (\_ -> jsSpec))))
 
 
 
 -- Hack because recursion is sort of broked I guess
 -- have to use this above instead of plain jsSpec.
 
-
+{-
 lazy : (() -> JD.Decoder a) -> JD.Decoder a
 lazy thunk =
     JD.customDecoder JD.value
         (\js -> JD.decodeValue (thunk ()) js)
-
+-}
 
 type alias SzModel =
     { cid : SvgThings.ControlId
@@ -382,7 +384,11 @@ firstJust f xs =
                     Just v
 
                 Nothing ->
-                    Maybe.andThen (tail xs) (firstJust f)
+                    case (tail xs) of 
+                        Just lst -> firstJust f lst
+                        Nothing -> Nothing
+
+--                    Maybe.andThen (firstJust f) (tail xs) 
 
 
 

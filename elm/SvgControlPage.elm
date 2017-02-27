@@ -9,7 +9,7 @@ import SvgThings
 import Task
 import List exposing (..)
 import Dict exposing (..)
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD
 import Svg
 import Svg.Attributes as SA
 import Svg.Events as SE
@@ -29,10 +29,10 @@ type alias Spec =
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.object3 Spec
-        ("title" := JD.string)
-        ("rootControl" := SvgControl.jsSpec)
-        (JD.maybe ("state" := JD.list SvgControl.jsUpdateMessage))
+    JD.map3 Spec
+        (JD.field "title" JD.string)
+        (JD.field "rootControl" SvgControl.jsSpec)
+        (JD.maybe (JD.field "state" (JD.list SvgControl.jsUpdateMessage)))
 
 
 type alias Model =
@@ -194,9 +194,10 @@ init sendaddr rect spec =
             -- Dict.empty
             sendaddr
             (Window.Size 0 0)
-        , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size
+        , Task.perform (\x -> Resize x) Window.size
         )
 
+--        , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size
 
 
 -- add conevt evts to this??

@@ -7,7 +7,7 @@ import Html exposing (Html)
 -- import Html.Events exposing (onClick)
 -- import Http
 
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD exposing (field) 
 import Json.Encode as JE
 import Task
 import Svg exposing (Svg, svg, rect, g, text, text_, Attribute)
@@ -38,9 +38,9 @@ type alias Spec =
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.object2 Spec
-        ("name" := JD.string)
-        ("label" := JD.string)
+    JD.map2 Spec
+        (field "name" JD.string)
+        (field "label" JD.string)
 
 
 
@@ -102,9 +102,9 @@ type alias UpdateMessage =
 
 jsUpdateMessage : JD.Decoder UpdateMessage
 jsUpdateMessage =
-    JD.object2 UpdateMessage
-        ("controlId" := SvgThings.decodeControlId)
-        ("label" := JD.string)
+    JD.map2 UpdateMessage
+        (field "controlId" SvgThings.decodeControlId)
+        (field "label" JD.string)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

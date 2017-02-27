@@ -21,7 +21,8 @@ import Window
 
 import SvgTextSize
 import Html
-import Html.App as App
+-- import Html.App as App
+
 
 
 ---------------------------------------
@@ -38,7 +39,7 @@ type Msg
 
 
 main =
-    App.programWithFlags
+    Html.programWithFlags
         { init = init
         , update = SvgControlPage.update
         , view = SvgControlPage.view

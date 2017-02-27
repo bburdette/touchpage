@@ -21,7 +21,7 @@ module SvgThings exposing (..)
 -}
 
 import List exposing (..)
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD 
 import Json.Encode as JE
 import Template exposing (template, render)
 import Template.Infix exposing ((<%), (%>))
@@ -125,7 +125,7 @@ hrects rct count =
     let
         w : Int
         w =
-            round (toFloat rct.w / count)
+            round (toFloat rct.w / (toFloat count))
 
         idxs =
             List.range 0 (count - 1)
@@ -145,14 +145,14 @@ mekhr br w i =
 hrectsp : Rect -> Int -> List Float -> List Rect
 hrectsp rct count props =
     let
-        props =
+        pprops =
             processProps count props
 
         fw =
             toFloat rct.w
 
         widths =
-            map (\p -> round (p * fw)) props
+            map (\p -> round (p * fw)) pprops
 
         xes =
             somme rct.x widths
@@ -172,14 +172,14 @@ mekhrp prect ( x, w ) =
 vrectsp : Rect -> Int -> List Float -> List Rect
 vrectsp rct count props =
     let
-        props =
+        pprops =
             processProps count props
 
         fh =
             toFloat rct.h
 
         heights =
-            map (\p -> round (p * fh)) props
+            map (\p -> round (p * fh)) pprops
 
         yes =
             somme rct.y heights
@@ -228,7 +228,7 @@ vrects rct count =
     let
         h : Int
         h =
-            round (toFloat rct.h / count)
+            round (toFloat rct.h / (toFloat count))
 
         idxs =
             List.range 0 (count - 1)
@@ -254,13 +254,13 @@ processProps controlcount lst =
                 0
     in
         let
-            lst =
+            lst2 =
                 append (take controlcount lst) (repeat r 0.0)
 
             s =
-                sum lst
+                sum lst2
         in
-            List.map (\x -> x / s) lst
+            List.map (\x -> x / s) lst2
 
 
 

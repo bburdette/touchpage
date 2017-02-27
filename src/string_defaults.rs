@@ -8681,7 +8681,7 @@ var _bburdette$oscpad$SvgThings$calcText = F5(
 								_0: _elm_lang$svg$Svg_Attributes$transform(xf),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$svg$Svg_Attributes$style('cursor: default; -webkit-user-select: none;  -moz-user-select: none;  -ms-user-select: none; user-select: none;'),
+									_0: _elm_lang$svg$Svg_Attributes$style('cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;'),
 									_1: {ctor: '[]'}
 								}
 							}

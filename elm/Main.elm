@@ -30,32 +30,32 @@ import Html
 
 wsUrl : String
 wsUrl =
-    "ws://localhost:1234"
+  "ws://localhost:1234"
 
 
 type Msg
-    = Receive String
-    | Send
+  = Receive String
+  | Send
 
 
 main =
-    Html.programWithFlags
-        { init = init
-        , update = SvgControlPage.update
-        , view = SvgControlPage.view
-        , subscriptions =
-            (\model ->
-                Sub.batch
-                    [ WebSocket.listen model.sendaddr SvgControlPage.JsonMsg
-                    , Window.resizes SvgControlPage.Resize
-                    ]
-            )
-        }
+  Html.programWithFlags
+    { init = init
+    , update = SvgControlPage.update
+    , view = SvgControlPage.view
+    , subscriptions =
+      (\model ->
+        Sub.batch
+          [ WebSocket.listen model.sendaddr SvgControlPage.JsonMsg
+          , Window.resizes SvgControlPage.Resize
+          ]
+      )
+    }
 
 
 init : String -> ( SvgControlPage.Model, Cmd SvgControlPage.Msg )
 init wsUrl =
-    SvgControlPage.init
-        wsUrl
-        (SvgThings.Rect 0 0 500 300)
-        (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
+  SvgControlPage.init
+    wsUrl
+    (SvgThings.Rect 0 0 500 300)
+    (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)

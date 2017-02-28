@@ -22,11 +22,11 @@ module SvgThings exposing (..)
 -}
 
 import List exposing (..)
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD 
 import Json.Encode as JE
 import Template exposing (template, render)
 import Template.Infix exposing ((<%), (%>))
-import Svg exposing (Svg, svg, rect, g, text, text', Attribute)
+import Svg exposing (Svg, svg, rect, g, text, text_, Attribute)
 import Svg.Attributes exposing (..)
 import SvgTextSize
 
@@ -92,8 +92,8 @@ shrinkRect border rect =
 hrects: Rect -> Int -> List Rect
 hrects rct count = 
   let w: Int
-      w = round (toFloat rct.w / count)
-      idxs = [0..(count-1)]
+      w = round (toFloat rct.w / toFloat count)
+      idxs = List.range 0 (count-1)
    in
      map (mekhr rct w) idxs
 
@@ -103,9 +103,9 @@ mekhr br w i = Rect (br.x + (w * i)) br.y w br.h
 -- make a number of horizontally proportionally sized rects.
 hrectsp: Rect -> Int -> List Float -> List Rect
 hrectsp rct count props = 
-  let props = processProps count props
+  let pprops = processProps count props
       fw = toFloat rct.w
-      widths = map (\p -> round (p * fw)) props 
+      widths = map (\p -> round (p * fw)) pprops 
       xes = somme rct.x widths
    in
      map (mekhrp rct) (map2 (,) xes widths)
@@ -117,9 +117,9 @@ mekhrp prect (x,w) =
 -- make a number of vertically evenly spaced rects.
 vrectsp: Rect -> Int -> List Float -> List Rect
 vrectsp rct count props = 
-  let props = processProps count props
+  let pprops = processProps count props
       fh = toFloat rct.h
-      heights = map (\p -> round (p * fh)) props 
+      heights = map (\p -> round (p * fh)) pprops 
       yes = somme rct.y heights 
    in
      map (mekvrp rct) (map2 (,) yes heights)
@@ -146,8 +146,8 @@ somme f lst =
 vrects: Rect -> Int -> List Rect
 vrects rct count = 
   let h: Int
-      h = round (toFloat rct.h / count)
-      idxs = [0..(count-1)]
+      h = round (toFloat rct.h / toFloat count)
+      idxs = List.range 0 (count-1)
    in
      map (mekvr rct h) idxs
 
@@ -160,9 +160,10 @@ processProps: Int -> List Float -> List Float
 processProps controlcount lst = 
   let l = length lst
       r = if controlcount > l then controlcount - l else 0 in 
-  let lst = (take controlcount lst) `append` (repeat r 0.0)
-      s = sum lst in
-  List.map (\x -> x / s) lst
+  let nwlst = append (take controlcount lst) (repeat r 0.0)
+      s = sum nwlst 
+   in
+  List.map (\x -> x / s) nwlst
 
 -- text scaling!
 
@@ -184,7 +185,7 @@ calcText fontFam lbtext labelMeasuredWidth fontScaling rect =
       tmpl = template "matrix(" <% .scale %> ", 0, 0, " <% .scale %> ", "<% .xt %>", "<% .yt %>")"
       xf = render tmpl { scale = toString scale, xt = toString xt, yt = toString yt  }
   in 
-    [ text' [ fill "black"  
+    [ text_ [ fill "black"  
             -- , textAnchor "middle" 
             -- , x model.middlex 
             -- , y fonty

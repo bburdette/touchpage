@@ -2,7 +2,7 @@ module SvgTouch exposing (..)
 
 
 import Time
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD
 import String
 import List
 import Dict
@@ -31,10 +31,10 @@ type alias Touch =
 
 parseTouch: JD.Decoder Touch
 parseTouch = 
-  JD.object3 Touch
-    ("clientX" := JD.float)
-    ("clientY" := JD.float)
-    ("identifier" := JD.int)
+  JD.map3 Touch
+    (JD.field "clientX" JD.float)
+    (JD.field "clientY" JD.float)
+    (JD.field "identifier" JD.int)
 
 parseTouchCount: JD.Decoder Int 
 parseTouchCount =
@@ -68,7 +68,7 @@ extractTouches evt =
     Ok touchcount -> 
       let touchresults = List.map 
             (\idx -> JD.decodeValue (JD.at [ "touches", (toString idx) ] parseTouch) evt)
-            [0..(touchcount - 1)]
+            (List.range 0 (touchcount - 1))
           touches = List.foldr (\rst tl -> 
             case rst of 
               Ok touch -> touch :: tl
@@ -91,7 +91,7 @@ extractTouchDict evt =
     Ok touchcount -> 
       let touchresults = List.map 
             (\idx -> JD.decodeValue (JD.at [ "touches", (toString idx) ] parseTouch) evt)
-            [0..(touchcount - 1)]
+            (List.range 0 (touchcount - 1))
           touches = List.foldr (\rst tl -> 
             case rst of 
               Ok touch -> touch :: tl

@@ -4,10 +4,10 @@ import Html exposing (Html)
 -- import Html.Attributes exposing (style)
 -- import Html.Events exposing (onClick)
 -- import Http
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD
 import Json.Encode as JE
 import Task
-import Svg exposing (Svg, svg, rect, g, text, text', Attribute)
+import Svg exposing (Svg, svg, rect, g, text, Attribute)
 import Svg.Attributes exposing (..)
 import VirtualDom as VD
 -- import NoDragEvents exposing (onClick, onMouseUp, onMouseDown, onMouseOut)
@@ -26,9 +26,9 @@ type alias Spec =
   }
 
 jsSpec : JD.Decoder Spec
-jsSpec = JD.object2 Spec 
-  ("name" := JD.string)
-  ("label" := JD.string)
+jsSpec = JD.map2 Spec 
+  (JD.field "name" JD.string)
+  (JD.field "label" JD.string)
 
 -- MODEL
 
@@ -70,9 +70,9 @@ type alias UpdateMessage =
   }
 
 jsUpdateMessage : JD.Decoder UpdateMessage
-jsUpdateMessage = JD.object2 UpdateMessage 
-  ("controlId" := SvgThings.decodeControlId) 
-  ("label" := JD.string)
+jsUpdateMessage = JD.map2 UpdateMessage 
+  (JD.field "controlId" SvgThings.decodeControlId) 
+  (JD.field "label" JD.string)
   
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =

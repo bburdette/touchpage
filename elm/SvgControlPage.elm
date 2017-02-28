@@ -8,7 +8,7 @@ import SvgThings
 import Task
 import List exposing (..)
 import Dict exposing (..)
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD
 import Svg 
 import Svg.Attributes as SA 
 import Svg.Events as SE
@@ -23,10 +23,10 @@ type alias Spec =
   }
 
 jsSpec : JD.Decoder Spec
-jsSpec = JD.object3 Spec 
-  ("title" := JD.string)
-  ("rootControl" := SvgControl.jsSpec) 
-  (JD.maybe ("state" := JD.list SvgControl.jsUpdateMessage))
+jsSpec = JD.map3 Spec 
+  (JD.field "title" JD.string)
+  (JD.field "rootControl" SvgControl.jsSpec) 
+  (JD.maybe (JD.field "state" (JD.list SvgControl.jsUpdateMessage)))
 
 type alias Model =
   { title: String  
@@ -54,8 +54,8 @@ type JsMessage
 
 jsMessage: JD.Decoder JsMessage
 jsMessage = JD.oneOf
-  [ jsSpec `JD.andThen` (\x -> JD.succeed (JmSpec x))
-  , SvgControl.jsUpdateMessage `JD.andThen` 
+  [ jsSpec |> JD.andThen (\x -> JD.succeed (JmSpec x))
+  , SvgControl.jsUpdateMessage |> JD.andThen 
       (\x -> JD.succeed (JmUpdate (CMsg x)))
   ] 
 
@@ -72,9 +72,9 @@ update msg model =
         Err e -> ({model | title = e}, Cmd.none)
     CMsg act -> 
       let wha = SvgControl.update act model.control 
-          newmod = { model | control = fst wha }
+          newmod = { model | control = Tuple.first wha }
         in
-          (newmod, Cmd.map CMsg (snd wha))
+          (newmod, Cmd.map CMsg (Tuple.second wha))
     Resize newSize ->
       let nr = (SvgThings.Rect 0 0 (newSize.width - 1) ( newSize.height - 4))
           (ctrl, cmds) = SvgControl.resize model.control nr 
@@ -154,8 +154,11 @@ init sendaddr rect spec =
         -- Dict.empty 
         sendaddr
         (Window.Size 0 0)
-    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
-      
+    , Task.perform (\x -> Resize x) Window.size
+    )
+--    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
+    
+  
 -- VIEW
 
 

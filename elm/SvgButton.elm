@@ -1,10 +1,10 @@
 module SvgButton exposing (..)
 
 import Html exposing (Html)
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD
 import Json.Encode as JE
 import Task
-import Svg exposing (Svg, svg, rect, g, text, text', Attribute)
+import Svg exposing (Svg, svg, rect, g, text, Attribute)
 import Svg.Attributes exposing (..)
 import Html.Events exposing (onClick, onMouseUp, onMouseDown, onMouseOut)
 import SvgThings
@@ -20,9 +20,9 @@ type alias Spec =
   }
 
 jsSpec : JD.Decoder Spec
-jsSpec = JD.object2 Spec
-  ("name" := JD.string)
-  (JD.maybe ("label" := JD.string)) 
+jsSpec = JD.map2 Spec
+  (JD.field "name" JD.string)
+  (JD.maybe (JD.field "label" JD.string)) 
 
 -- MODEL
 
@@ -112,10 +112,10 @@ encodeUpdateType ut =
 
 
 jsUpdateMessage : JD.Decoder UpdateMessage
-jsUpdateMessage = JD.object3 UpdateMessage 
-  ("controlId" := SvgThings.decodeControlId) 
-  (JD.maybe (("state" := JD.string) `JD.andThen` jsUpdateType))
-  (JD.maybe ("label" := JD.string)) 
+jsUpdateMessage = JD.map3 UpdateMessage 
+  (JD.field "controlId" SvgThings.decodeControlId) 
+  (JD.maybe ((JD.field "state" JD.string) |> JD.andThen jsUpdateType))
+  (JD.maybe (JD.field "label" JD.string)) 
   
 jsUpdateType : String -> JD.Decoder UpdateType 
 jsUpdateType ut = 

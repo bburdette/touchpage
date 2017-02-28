@@ -1,9 +1,9 @@
 module SvgSlider exposing (..) 
 
 import Html exposing (Html)
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD
 import Json.Encode as JE 
-import Svg exposing (Svg, svg, rect, g, text, text', Attribute)
+import Svg exposing (Svg, svg, rect, g, text, Attribute)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick, onMouseUp, onMouseMove, onMouseDown, onMouseOut)
 -- import NoDragEvents exposing (onClick, onMouseUp, onMouseMove, onMouseDown, onMouseOut)
@@ -22,10 +22,10 @@ type alias Spec =
   }
 
 jsSpec : JD.Decoder Spec
-jsSpec = JD.object3 Spec 
-  ("name" := JD.string)
-  (JD.maybe ("label" := JD.string)) 
-  (("orientation" := JD.string) `JD.andThen` SvgThings.jsOrientation)
+jsSpec = JD.map3 Spec 
+  (JD.field "name" JD.string)
+  (JD.maybe (JD.field "label" JD.string)) 
+  ((JD.field "orientation" JD.string) |> JD.andThen SvgThings.jsOrientation)
 
 -- MODEL
 
@@ -85,10 +85,10 @@ type Msg
     | SvgUpdate UpdateMessage
 
 getX : JD.Decoder Int
-getX = "clientX" := JD.int 
+getX = JD.field "clientX" JD.int 
 
 getY : JD.Decoder Int
-getY = "clientY" := JD.int 
+getY = JD.field "clientY" JD.int 
 
 type UpdateType 
   = Press
@@ -123,11 +123,11 @@ encodeUpdateType ut =
     Unpress -> JE.string "Unpress"
 
 jsUpdateMessage : JD.Decoder UpdateMessage
-jsUpdateMessage = JD.object4 UpdateMessage 
-  ("controlId" := SvgThings.decodeControlId) 
-  (JD.maybe (("state" := JD.string) `JD.andThen` jsUpdateType))
-  (JD.maybe ("location" := JD.float))
-  (JD.maybe ("label" := JD.string)) 
+jsUpdateMessage = JD.map4 UpdateMessage 
+  (JD.field "controlId" SvgThings.decodeControlId) 
+  (JD.maybe ((JD.field "state" JD.string) |> JD.andThen jsUpdateType))
+  (JD.maybe (JD.field "location" JD.float))
+  (JD.maybe (JD.field "label" JD.string)) 
   
 jsUpdateType : String -> JD.Decoder UpdateType 
 jsUpdateType ut = 

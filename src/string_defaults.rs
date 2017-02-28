@@ -11259,7 +11259,11 @@ var _bburdette$oscpad$SvgControl$jsSzSpec = A4(
 	A2(
 		_elm_lang$core$Json_Decode$field,
 		'controls',
-		_elm_lang$core$Json_Decode$list(_bburdette$oscpad$SvgControl$jsSpec)));
+		_elm_lang$core$Json_Decode$list(
+			_elm_lang$core$Json_Decode$lazy(
+				function (_p11) {
+					return _bburdette$oscpad$SvgControl$jsSpec;
+				}))));
 var _bburdette$oscpad$SvgControl$jsSpec = A2(
 	_elm_lang$core$Json_Decode$andThen,
 	_bburdette$oscpad$SvgControl$jsCs,
@@ -11294,14 +11298,14 @@ var _bburdette$oscpad$SvgControl$SzCMsg = F2(
 	});
 var _bburdette$oscpad$SvgControl$toCtrlMsg = F2(
 	function (id, msg) {
-		var _p11 = _elm_lang$core$List$head(id);
-		if (_p11.ctor === 'Nothing') {
+		var _p12 = _elm_lang$core$List$head(id);
+		if (_p12.ctor === 'Nothing') {
 			return msg;
 		} else {
 			return _bburdette$oscpad$SvgControl$CaSizer(
 				A2(
 					_bburdette$oscpad$SvgControl$SzCMsg,
-					_p11._0,
+					_p12._0,
 					A2(
 						_bburdette$oscpad$SvgControl$toCtrlMsg,
 						_bburdette$oscpad$SvgControl$myTail(id),
@@ -11309,8 +11313,8 @@ var _bburdette$oscpad$SvgControl$toCtrlMsg = F2(
 		}
 	});
 var _bburdette$oscpad$SvgControl$jsUmType = function (wat) {
-	var _p12 = wat;
-	switch (_p12) {
+	var _p13 = wat;
+	switch (_p13) {
 		case 'button':
 			return A2(
 				_elm_lang$core$Json_Decode$andThen,
@@ -11358,15 +11362,15 @@ var _bburdette$oscpad$SvgControl$jsUpdateMessage = A2(
 	A2(_elm_lang$core$Json_Decode$field, 'controlType', _elm_lang$core$Json_Decode$string));
 var _bburdette$oscpad$SvgControl$szupdate = F2(
 	function (msg, model) {
-		var _p13 = msg;
-		var _p15 = _p13._0;
-		var bb = A2(_elm_lang$core$Dict$get, _p15, model.controls);
-		var _p14 = bb;
-		if (_p14.ctor === 'Just') {
-			var wha = A2(_bburdette$oscpad$SvgControl$update, _p13._1, _p14._0);
+		var _p14 = msg;
+		var _p16 = _p14._0;
+		var bb = A2(_elm_lang$core$Dict$get, _p16, model.controls);
+		var _p15 = bb;
+		if (_p15.ctor === 'Just') {
+			var wha = A2(_bburdette$oscpad$SvgControl$update, _p14._1, _p15._0);
 			var updcontrols = A3(
 				_elm_lang$core$Dict$insert,
-				_p15,
+				_p16,
 				_elm_lang$core$Tuple$first(wha),
 				model.controls);
 			var newmod = _elm_lang$core$Native_Utils.update(
@@ -11377,7 +11381,7 @@ var _bburdette$oscpad$SvgControl$szupdate = F2(
 				_0: newmod,
 				_1: A2(
 					_elm_lang$core$Platform_Cmd$map,
-					_bburdette$oscpad$SvgControl$SzCMsg(_p15),
+					_bburdette$oscpad$SvgControl$SzCMsg(_p16),
 					_elm_lang$core$Tuple$second(wha))
 			};
 		} else {
@@ -11386,16 +11390,16 @@ var _bburdette$oscpad$SvgControl$szupdate = F2(
 	});
 var _bburdette$oscpad$SvgControl$update = F2(
 	function (msg, model) {
-		var _p16 = {ctor: '_Tuple2', _0: msg, _1: model};
+		var _p17 = {ctor: '_Tuple2', _0: msg, _1: model};
 		_v17_4:
 		do {
-			if (_p16.ctor === '_Tuple2') {
-				switch (_p16._0.ctor) {
+			if (_p17.ctor === '_Tuple2') {
+				switch (_p17._0.ctor) {
 					case 'CaButton':
-						if (_p16._1.ctor === 'CmButton') {
-							var _p17 = A2(_bburdette$oscpad$SvgButton$update, _p16._0._0, _p16._1._0);
-							var a = _p17._0;
-							var b = _p17._1;
+						if (_p17._1.ctor === 'CmButton') {
+							var _p18 = A2(_bburdette$oscpad$SvgButton$update, _p17._0._0, _p17._1._0);
+							var a = _p18._0;
+							var b = _p18._1;
 							return {
 								ctor: '_Tuple2',
 								_0: _bburdette$oscpad$SvgControl$CmButton(a),
@@ -11405,10 +11409,10 @@ var _bburdette$oscpad$SvgControl$update = F2(
 							break _v17_4;
 						}
 					case 'CaSlider':
-						if (_p16._1.ctor === 'CmSlider') {
-							var _p18 = A2(_bburdette$oscpad$SvgSlider$update, _p16._0._0, _p16._1._0);
-							var a = _p18._0;
-							var b = _p18._1;
+						if (_p17._1.ctor === 'CmSlider') {
+							var _p19 = A2(_bburdette$oscpad$SvgSlider$update, _p17._0._0, _p17._1._0);
+							var a = _p19._0;
+							var b = _p19._1;
 							return {
 								ctor: '_Tuple2',
 								_0: _bburdette$oscpad$SvgControl$CmSlider(a),
@@ -11418,10 +11422,10 @@ var _bburdette$oscpad$SvgControl$update = F2(
 							break _v17_4;
 						}
 					case 'CaLabel':
-						if (_p16._1.ctor === 'CmLabel') {
-							var _p19 = A2(_bburdette$oscpad$SvgLabel$update, _p16._0._0, _p16._1._0);
-							var a = _p19._0;
-							var b = _p19._1;
+						if (_p17._1.ctor === 'CmLabel') {
+							var _p20 = A2(_bburdette$oscpad$SvgLabel$update, _p17._0._0, _p17._1._0);
+							var a = _p20._0;
+							var b = _p20._1;
 							return {
 								ctor: '_Tuple2',
 								_0: _bburdette$oscpad$SvgControl$CmLabel(a),
@@ -11431,10 +11435,10 @@ var _bburdette$oscpad$SvgControl$update = F2(
 							break _v17_4;
 						}
 					default:
-						if (_p16._1.ctor === 'CmSizer') {
-							var _p20 = A2(_bburdette$oscpad$SvgControl$szupdate, _p16._0._0, _p16._1._0);
-							var a = _p20._0;
-							var b = _p20._1;
+						if (_p17._1.ctor === 'CmSizer') {
+							var _p21 = A2(_bburdette$oscpad$SvgControl$szupdate, _p17._0._0, _p17._1._0);
+							var a = _p21._0;
+							var b = _p21._1;
 							return {
 								ctor: '_Tuple2',
 								_0: _bburdette$oscpad$SvgControl$CmSizer(a),
@@ -11455,18 +11459,18 @@ var _bburdette$oscpad$SvgControl$update_list = F2(
 		return A3(
 			_elm_lang$core$List$foldl,
 			F2(
-				function (msg, _p21) {
-					var _p22 = _p21;
-					var _p23 = A2(_bburdette$oscpad$SvgControl$update, msg, _p22._0);
-					var modnew = _p23._0;
-					var cmd = _p23._1;
+				function (msg, _p22) {
+					var _p23 = _p22;
+					var _p24 = A2(_bburdette$oscpad$SvgControl$update, msg, _p23._0);
+					var modnew = _p24._0;
+					var cmd = _p24._1;
 					return {
 						ctor: '_Tuple2',
 						_0: modnew,
 						_1: _elm_lang$core$Platform_Cmd$batch(
 							{
 								ctor: '::',
-								_0: _p22._1,
+								_0: _p23._1,
 								_1: {
 									ctor: '::',
 									_0: cmd,
@@ -11489,34 +11493,34 @@ var _bburdette$oscpad$SvgControl$szresize = F2(
 			model.proportions);
 		var ctlsNeffs = A2(
 			_elm_lang$core$List$map,
-			function (_p24) {
-				var _p25 = _p24;
+			function (_p25) {
+				var _p26 = _p25;
 				return {
 					ctor: '_Tuple2',
-					_0: _p25._0._0,
-					_1: A2(_bburdette$oscpad$SvgControl$resize, _p25._0._1, _p25._1)
+					_0: _p26._0._0,
+					_1: A2(_bburdette$oscpad$SvgControl$resize, _p26._0._1, _p26._1)
 				};
 			},
 			A2(_bburdette$oscpad$SvgControl$zip, clist, rlist));
 		var controls = A2(
 			_elm_lang$core$List$map,
-			function (_p26) {
-				var _p27 = _p26;
-				return {ctor: '_Tuple2', _0: _p27._0, _1: _p27._1._0};
+			function (_p27) {
+				var _p28 = _p27;
+				return {ctor: '_Tuple2', _0: _p28._0, _1: _p28._1._0};
 			},
 			ctlsNeffs);
 		var cdict = _elm_lang$core$Dict$fromList(controls);
 		var effs = _elm_lang$core$Platform_Cmd$batch(
 			A2(
 				_elm_lang$core$List$map,
-				function (_p28) {
-					var _p29 = _p28;
+				function (_p29) {
+					var _p30 = _p29;
 					return A2(
 						_elm_lang$core$Platform_Cmd$map,
 						function (ef) {
-							return A2(_bburdette$oscpad$SvgControl$SzCMsg, _p29._0, ef);
+							return A2(_bburdette$oscpad$SvgControl$SzCMsg, _p30._0, ef);
 						},
-						_p29._1._1);
+						_p30._1._1);
 				},
 				ctlsNeffs));
 		return {
@@ -11529,8 +11533,8 @@ var _bburdette$oscpad$SvgControl$szresize = F2(
 	});
 var _bburdette$oscpad$SvgControl$resize = F2(
 	function (model, rect) {
-		var _p30 = model;
-		switch (_p30.ctor) {
+		var _p31 = model;
+		switch (_p31.ctor) {
 			case 'CmButton':
 				return A3(
 					_bburdette$oscpad$SvgControl$tupMap2,
@@ -11538,7 +11542,7 @@ var _bburdette$oscpad$SvgControl$resize = F2(
 					_elm_lang$core$Platform_Cmd$map(_bburdette$oscpad$SvgControl$CaButton),
 					A2(
 						_bburdette$oscpad$SvgButton$resize,
-						_p30._0,
+						_p31._0,
 						A2(_bburdette$oscpad$SvgThings$shrinkRect, _bburdette$oscpad$SvgControl$border, rect)));
 			case 'CmSlider':
 				return A3(
@@ -11547,7 +11551,7 @@ var _bburdette$oscpad$SvgControl$resize = F2(
 					_elm_lang$core$Platform_Cmd$map(_bburdette$oscpad$SvgControl$CaSlider),
 					A2(
 						_bburdette$oscpad$SvgSlider$resize,
-						_p30._0,
+						_p31._0,
 						A2(_bburdette$oscpad$SvgThings$shrinkRect, _bburdette$oscpad$SvgControl$border, rect)));
 			case 'CmLabel':
 				return A3(
@@ -11556,14 +11560,14 @@ var _bburdette$oscpad$SvgControl$resize = F2(
 					_elm_lang$core$Platform_Cmd$map(_bburdette$oscpad$SvgControl$CaLabel),
 					A2(
 						_bburdette$oscpad$SvgLabel$resize,
-						_p30._0,
+						_p31._0,
 						A2(_bburdette$oscpad$SvgThings$shrinkRect, _bburdette$oscpad$SvgControl$border, rect)));
 			default:
 				return A3(
 					_bburdette$oscpad$SvgControl$tupMap2,
 					_bburdette$oscpad$SvgControl$CmSizer,
 					_elm_lang$core$Platform_Cmd$map(_bburdette$oscpad$SvgControl$CaSizer),
-					A2(_bburdette$oscpad$SvgControl$szresize, _p30._0, rect));
+					A2(_bburdette$oscpad$SvgControl$szresize, _p31._0, rect));
 		}
 	});
 var _bburdette$oscpad$SvgControl$szinit = F4(
@@ -11580,21 +11584,21 @@ var _bburdette$oscpad$SvgControl$szinit = F4(
 			szspec.proportions);
 		var blist = A2(
 			_elm_lang$core$List$map,
-			function (_p31) {
-				var _p32 = _p31;
+			function (_p32) {
+				var _p33 = _p32;
 				return A4(
 					_bburdette$oscpad$SvgControl$init,
 					sendaddr,
-					_p32._1,
+					_p33._1,
 					A2(
 						_elm_lang$core$Basics_ops['++'],
 						cid,
 						{
 							ctor: '::',
-							_0: _p32._2,
+							_0: _p33._2,
 							_1: {ctor: '[]'}
 						}),
-					_p32._0);
+					_p33._0);
 			},
 			A4(
 				_elm_lang$core$List$map3,
@@ -11612,12 +11616,12 @@ var _bburdette$oscpad$SvgControl$szinit = F4(
 		var fx = _elm_lang$core$Platform_Cmd$batch(
 			A2(
 				_elm_lang$core$List$map,
-				function (_p33) {
-					var _p34 = _p33;
+				function (_p34) {
+					var _p35 = _p34;
 					return A2(
 						_elm_lang$core$Platform_Cmd$map,
-						_bburdette$oscpad$SvgControl$SzCMsg(_p34._0),
-						_p34._1);
+						_bburdette$oscpad$SvgControl$SzCMsg(_p35._0),
+						_p35._1);
 				},
 				A2(
 					_bburdette$oscpad$SvgControl$zip,
@@ -11637,53 +11641,53 @@ var _bburdette$oscpad$SvgControl$szinit = F4(
 	});
 var _bburdette$oscpad$SvgControl$init = F4(
 	function (sendaddr, rect, cid, spec) {
-		var _p35 = spec;
-		switch (_p35.ctor) {
+		var _p36 = spec;
+		switch (_p36.ctor) {
 			case 'CsButton':
-				var _p36 = A4(
+				var _p37 = A4(
 					_bburdette$oscpad$SvgButton$init,
 					sendaddr,
 					A2(_bburdette$oscpad$SvgThings$shrinkRect, _bburdette$oscpad$SvgControl$border, rect),
 					cid,
-					_p35._0);
-				var a = _p36._0;
-				var b = _p36._1;
+					_p36._0);
+				var a = _p37._0;
+				var b = _p37._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _bburdette$oscpad$SvgControl$CmButton(a),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _bburdette$oscpad$SvgControl$CaButton, b)
 				};
 			case 'CsSlider':
-				var _p37 = A4(
+				var _p38 = A4(
 					_bburdette$oscpad$SvgSlider$init,
 					sendaddr,
 					A2(_bburdette$oscpad$SvgThings$shrinkRect, _bburdette$oscpad$SvgControl$border, rect),
 					cid,
-					_p35._0);
-				var a = _p37._0;
-				var b = _p37._1;
+					_p36._0);
+				var a = _p38._0;
+				var b = _p38._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _bburdette$oscpad$SvgControl$CmSlider(a),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _bburdette$oscpad$SvgControl$CaSlider, b)
 				};
 			case 'CsLabel':
-				var _p38 = A3(
+				var _p39 = A3(
 					_bburdette$oscpad$SvgLabel$init,
 					A2(_bburdette$oscpad$SvgThings$shrinkRect, _bburdette$oscpad$SvgControl$border, rect),
 					cid,
-					_p35._0);
-				var a = _p38._0;
-				var b = _p38._1;
+					_p36._0);
+				var a = _p39._0;
+				var b = _p39._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _bburdette$oscpad$SvgControl$CmLabel(a),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _bburdette$oscpad$SvgControl$CaLabel, b)
 				};
 			default:
-				var _p39 = A4(_bburdette$oscpad$SvgControl$szinit, sendaddr, rect, cid, _p35._0);
-				var a = _p39._0;
-				var b = _p39._1;
+				var _p40 = A4(_bburdette$oscpad$SvgControl$szinit, sendaddr, rect, cid, _p36._0);
+				var a = _p40._0;
+				var b = _p40._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _bburdette$oscpad$SvgControl$CmSizer(a),
@@ -11691,36 +11695,36 @@ var _bburdette$oscpad$SvgControl$init = F4(
 				};
 		}
 	});
-var _bburdette$oscpad$SvgControl$viewSvgControls = function (_p40) {
-	var _p41 = _p40;
+var _bburdette$oscpad$SvgControl$viewSvgControls = function (_p41) {
+	var _p42 = _p41;
 	return A2(
 		_elm_lang$virtual_dom$VirtualDom$map,
-		_bburdette$oscpad$SvgControl$SzCMsg(_p41._0),
-		_bburdette$oscpad$SvgControl$view(_p41._1));
+		_bburdette$oscpad$SvgControl$SzCMsg(_p42._0),
+		_bburdette$oscpad$SvgControl$view(_p42._1));
 };
 var _bburdette$oscpad$SvgControl$view = function (model) {
-	var _p42 = model;
-	switch (_p42.ctor) {
+	var _p43 = model;
+	switch (_p43.ctor) {
 		case 'CmButton':
 			return A2(
 				_elm_lang$virtual_dom$VirtualDom$map,
 				_bburdette$oscpad$SvgControl$CaButton,
-				_bburdette$oscpad$SvgButton$view(_p42._0));
+				_bburdette$oscpad$SvgButton$view(_p43._0));
 		case 'CmSlider':
 			return A2(
 				_elm_lang$virtual_dom$VirtualDom$map,
 				_bburdette$oscpad$SvgControl$CaSlider,
-				_bburdette$oscpad$SvgSlider$view(_p42._0));
+				_bburdette$oscpad$SvgSlider$view(_p43._0));
 		case 'CmLabel':
 			return A2(
 				_elm_lang$virtual_dom$VirtualDom$map,
 				_bburdette$oscpad$SvgControl$CaLabel,
-				_bburdette$oscpad$SvgLabel$view(_p42._0));
+				_bburdette$oscpad$SvgLabel$view(_p43._0));
 		default:
 			return A2(
 				_elm_lang$virtual_dom$VirtualDom$map,
 				_bburdette$oscpad$SvgControl$CaSizer,
-				_bburdette$oscpad$SvgControl$szview(_p42._0));
+				_bburdette$oscpad$SvgControl$szview(_p43._0));
 	}
 };
 var _bburdette$oscpad$SvgControl$szview = function (model) {

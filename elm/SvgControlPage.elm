@@ -88,7 +88,6 @@ update msg model =
 
         Err e ->
           ( { model | title = e }, Cmd.none )
-
     CMsg act ->
       let
         wha =
@@ -117,8 +116,7 @@ update msg model =
         )
 
     NoOp ->
-      ( model, Cmd.none )
-
+      ( model, Cmd.none ) 
 
 
 {-

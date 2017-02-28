@@ -335,21 +335,8 @@ jsSzSpec =
     ((JD.maybe (JD.field "proportions" (JD.list JD.float)))
       |> JD.andThen (\x -> JD.succeed (Maybe.map processProps x))
     )
-    (JD.field "controls" (JD.list jsSpec))
+    (JD.field "controls" (JD.list (JD.lazy (\_ -> jsSpec))))
 
---    (JD.field "controls" (JD.list (lazy (\_ -> jsSpec))))
-
-
-
--- Hack because recursion is sort of broked I guess
--- have to use this above instead of plain jsSpec.
-
-{-
-lazy : (() -> JD.Decoder a) -> JD.Decoder a
-lazy thunk =
-  JD.customDecoder JD.value
-    (\js -> JD.decodeValue (thunk ()) js)
--}
 
 type alias SzModel =
   { cid : SvgThings.ControlId

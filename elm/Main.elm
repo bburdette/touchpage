@@ -4,26 +4,13 @@ import SvgButton
 import SvgSlider
 import SvgControlPage
 import SvgControl
-import Task
-import Task exposing (Task)
-
-
--- import Keyboard
-
 import Char
 import String
 import WebSocket
 import SvgThings
 import Window
-
-
--- import SvgTouch
-
 import SvgTextSize
 import Html
--- import Html.App as App
-
-
 
 ---------------------------------------
 

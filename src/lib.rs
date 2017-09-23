@@ -29,6 +29,8 @@ mod string_defaults;
 pub mod control_updates;
 pub mod json;
 
+use control_updates as cu;
+
 extern crate serde_json;
 use serde_json::Value;
 
@@ -53,7 +55,7 @@ fn write_string(text: &str, file_name: &str) -> Result<(), Box<std::error::Error
 }
 
 pub trait ControlUpdateProcessor: Send { 
-  fn on_update_received(&mut self, &control_updates::UpdateMsg, ci: &ControlInfo) -> ();
+  fn on_update_received(&mut self, &cu::UpdateMsg, ci: &ControlInfo) -> ();
 }
 
 pub struct ControlInfo {
@@ -103,7 +105,7 @@ impl ControlServer {
     }
   }
 
-  pub fn make_update_msg(&self, name: &str) -> Option<control_updates::UpdateMsg> {
+  pub fn make_update_msg(&self, name: &str) -> Option<cu::UpdateMsg> {
     let guard = match self.ci.lock() {
       Ok(guard) => guard,
       Err(poisoned) => poisoned.into_inner(),
@@ -118,7 +120,7 @@ impl ControlServer {
       _ => None,
     }
   }  
-  pub fn update(&self, updmsg: &control_updates::UpdateMsg) {
+  pub fn update(&self, updmsg: &cu::UpdateMsg) {
     let mut ci = match self.ci.lock() {
       Ok(guard) => guard,
       Err(poisoned) => poisoned.into_inner(),
@@ -136,6 +138,28 @@ impl ControlServer {
     None => (),
     }
   }
+
+  pub fn update_label(&self, name: &str, label: &str) {
+    match self.get_cid_by_name(name) {
+    Some(cid) => 
+      self.update(&cu::UpdateMsg::Label { control_id: cid, label: String::from(label) }),
+    None => ()
+    }}
+  pub fn update_button(&self, name: &str, state: Option<cu::ButtonState>, label: Option<String>) {
+    match self.get_cid_by_name(name) {
+    Some(cid) => 
+      self.update(&cu::UpdateMsg::Button { control_id: cid, state: state, label: label }), 
+    None => ()
+    }}
+  pub fn update_slider(&self, name: &str, state: Option<cu::SliderState>, location: Option<f64>, label: Option<String>) {
+    match self.get_cid_by_name(name) {
+    Some(cid) => 
+      self.update(&cu::UpdateMsg::Slider { control_id: cid, 
+                                                        state: state, 
+                                                        location: location, 
+                                                        label: label }), 
+    None => ()
+    }}
 
   pub fn load_gui_string(&self, guistring: &str) -> Result<(), Box<std::error::Error> >
   {
@@ -176,22 +200,6 @@ impl ControlServer {
     }
   }
 }
-   
-//  iron-server-canceler: ???
-//  websocket-thread-canceler: ???
-//  fn lookup_control(name) -> index
-//  fn modify_control(index, ftn) -> result   <-- will this work with types??  have to cast.
-//  load_guistring
-
-
-//  how about ftns like the ones for faust, for building the gui tree?
-//  addbutton
-//  addslider
-//  addlabel
-//  startsizer
-//  endsizer
-
-
 
 pub fn startserver<'a>(guistring: &str, 
     cup: Box<ControlUpdateProcessor>,

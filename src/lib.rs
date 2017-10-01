@@ -422,8 +422,6 @@ fn websockets_client(connection: websocket::server::Connection<websocket::stream
                 Some(cntrl) => {
                   (*cntrl).update(&updmsg);
                   broadcaster.broadcast_others(&ip, Message::text(str));
-                  
-                  println!("websockets control update recieved: {:?}", updmsg);
                   ()
                 },
                 None => println!("none"),

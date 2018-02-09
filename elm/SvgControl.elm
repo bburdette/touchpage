@@ -3,7 +3,7 @@ module SvgControl exposing (..)
 import SvgButton
 import SvgSlider
 import SvgLabel
-import Json.Decode as JD exposing ((:=))
+import Json.Decode as JD
 import Task
 import Dict exposing (..)
 import List exposing (..)
@@ -71,7 +71,7 @@ controlName mod =
     CmSizer szmod -> Nothing
 
 tupMap2: (a -> c) -> (b -> d) -> (a,b) -> (c,d)
-tupMap2 fa fb ab = (fa (fst ab), fb (snd ab))
+tupMap2 fa fb ab = (fa (Tuple.first ab), fb (Tuple.second ab))
 
 resize: Model -> SvgThings.Rect -> (Model, Cmd Msg)
 resize model rect = 
@@ -83,29 +83,29 @@ resize model rect =
 
 jsSpec : JD.Decoder Spec
 jsSpec = 
-  ("type" := JD.string) `JD.andThen` jsCs
+  (JD.field "type" JD.string) |> JD.andThen jsCs
 
 jsCs : String -> JD.Decoder Spec
 jsCs t = 
   case t of 
-    "button" -> SvgButton.jsSpec `JD.andThen` (\a -> JD.succeed (CsButton a))
-    "slider" -> SvgSlider.jsSpec `JD.andThen` (\a -> JD.succeed (CsSlider a))
-    "label" -> SvgLabel.jsSpec `JD.andThen` (\a -> JD.succeed (CsLabel a))
-    "sizer" -> jsSzSpec `JD.andThen` (\a -> JD.succeed (CsSizer a))
+    "button" -> SvgButton.jsSpec |> JD.andThen (\a -> JD.succeed (CsButton a))
+    "slider" -> SvgSlider.jsSpec |> JD.andThen (\a -> JD.succeed (CsSlider a))
+    "label" -> SvgLabel.jsSpec |> JD.andThen (\a -> JD.succeed (CsLabel a))
+    "sizer" -> jsSzSpec |> JD.andThen (\a -> JD.succeed (CsSizer a))
     _ -> JD.fail ("unkown type: " ++ t)
 
 jsUpdateMessage: JD.Decoder Msg
 jsUpdateMessage = 
-  ("controlType" := JD.string) `JD.andThen` jsUmType
+  (JD.field "controlType" JD.string) |> JD.andThen jsUmType
 
 jsUmType: String -> JD.Decoder Msg
 jsUmType wat = 
   case wat of 
-    "button" -> SvgButton.jsUpdateMessage `JD.andThen` 
+    "button" -> SvgButton.jsUpdateMessage |> JD.andThen 
                   (\x -> JD.succeed (toCtrlMsg x.controlId (CaButton (SvgButton.SvgUpdate x))))
-    "slider" -> SvgSlider.jsUpdateMessage `JD.andThen` 
+    "slider" -> SvgSlider.jsUpdateMessage |> JD.andThen 
                   (\x -> JD.succeed (toCtrlMsg x.controlId (CaSlider (SvgSlider.SvgUpdate x))))
-    "label" -> SvgLabel.jsUpdateMessage `JD.andThen` 
+    "label" -> SvgLabel.jsUpdateMessage |> JD.andThen 
                   (\x -> JD.succeed (toCtrlMsg x.controlId (CaLabel (SvgLabel.SvgUpdate x))))
     _ -> JD.fail ("unknown update type" ++ wat)
 
@@ -190,18 +190,11 @@ processProps lst =
   List.map (\x -> x / s) lst
 
 jsSzSpec : JD.Decoder SzSpec
-jsSzSpec = JD.object3 SzSpec
-  (("orientation" := JD.string) `JD.andThen` SvgThings.jsOrientation)
-  ((JD.maybe ("proportions" := JD.list JD.float)) `JD.andThen` 
+jsSzSpec = JD.map3 SzSpec
+  ((JD.field "orientation" JD.string) |> JD.andThen SvgThings.jsOrientation)
+  ((JD.maybe (JD.field "proportions" (JD.list JD.float))) |> JD.andThen 
     (\x -> JD.succeed (Maybe.map processProps x)))
-  ("controls" := (JD.list (lazy (\_ -> jsSpec))))
-
--- Hack because recursion is sort of broked I guess
--- have to use this above instead of plain jsSpec.
-lazy : (() -> JD.Decoder a) -> JD.Decoder a
-lazy thunk =
-  JD.customDecoder JD.value
-      (\js -> JD.decodeValue (thunk ()) js)
+  (JD.field "controls" (JD.list (JD.lazy (\_ -> jsSpec))))
 
 type alias SzModel =
   { 
@@ -229,7 +222,7 @@ firstJust f xs =
     Just x -> 
       case f x of 
         Just v -> Just v
-        Nothing -> Maybe.andThen (tail xs) (firstJust f) 
+        Nothing -> Maybe.andThen (firstJust f) (tail xs) 
 
 
 -- UPDATE
@@ -247,10 +240,10 @@ szupdate msg model =
       case bb of 
         Just bm -> 
           let wha = update act bm 
-              updcontrols = insert id (fst wha) model.controls
+              updcontrols = insert id (Tuple.first wha) model.controls
               newmod = { model | controls = updcontrols }
             in
-              (newmod, Cmd.map (SzCMsg id) (snd wha))
+              (newmod, Cmd.map (SzCMsg id) (Tuple.second wha))
         Nothing -> (model, Cmd.none) 
  
 szresize : SzModel -> SvgThings.Rect -> (SzModel, Cmd SzMsg)
@@ -289,11 +282,11 @@ szinit sendaddr rect cid szspec =
       blist = List.map 
                 (\(spec, rect, idx) -> init sendaddr rect (cid ++ [idx]) spec) 
                 (map3 (,,) szspec.controls rlist idxs)
-      idxs = [0..(length szspec.controls)]  
-      controlz = zip idxs (List.map fst blist) 
+      idxs = List.range 0 (length szspec.controls)
+      controlz = zip idxs (List.map Tuple.first blist) 
       fx = Cmd.batch 
              (List.map (\(i,a) -> Cmd.map (SzCMsg i) a)
-                  (zip idxs (List.map snd blist)))
+                  (zip idxs (List.map Tuple.second blist)))
     in
      (SzModel cid rect (Dict.fromList controlz) szspec.orientation szspec.proportions, fx)
       

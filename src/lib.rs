@@ -210,7 +210,6 @@ pub fn startserver<'a>(guistring: &str,
     };
     
     let htmlstring = htmltemplate.replace("<websockets-port>", &websockets_port);
-
     // println!("{}", htmlstring);
 
     let guival: Value = try!(serde_json::from_str(guistring)); 
@@ -282,8 +281,7 @@ fn websockets_main( ipaddr: String,
 
 	for connection in server {
 		// Spawn a new thread for each connection.
-
-println!("new websockets connection!");
+    println!("new websockets connection!");
     let conn = try!(connection);
     let sci = ci.clone();
     let broadcaster = broadcaster.clone();

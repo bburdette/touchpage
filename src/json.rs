@@ -84,7 +84,7 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<Control>, FErro
       
       Ok(Box::new(Sizer { control_id: id.clone(), controls: controlv }))
     },
-    _ => Err(err_msg("objtype not supported!"))
+    _ => Err(err_msg(format!("objtype '{}' not supported!", objtype)))
   }
 }
 

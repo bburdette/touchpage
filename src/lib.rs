@@ -7,7 +7,6 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Read;
 use std::io::Write;
-use std::io::{Error,ErrorKind};
 use std::string::*;
 
 use websocket::{Server, Message, Sender, Receiver};
@@ -21,8 +20,6 @@ use iron::status;
 use iron::mime::Mime;
 
 #[macro_use]
-mod tryopt;
-mod stringerror;
 mod controls;
 mod broadcaster;
 mod string_defaults; 
@@ -34,24 +31,24 @@ use control_updates as cu;
 extern crate serde_json;
 use serde_json::Value;
 
+extern crate failure;
+use failure::Error as FError;
 
-fn load_string(file_name: &str) -> Result<String, Box<std::error::Error> >
+fn load_string(file_name: &str) -> Result<String, FError >
 {
   let path = &Path::new(&file_name);
-  let mut inf = try!(File::open(path));
+  let mut inf = File::open(path)?;
   let mut result = String::new();
-  try!(inf.read_to_string(&mut result));
+  inf.read_to_string(&mut result)?;
   Ok(result)
 }
 
-fn write_string(text: &str, file_name: &str) -> Result<(), Box<std::error::Error> >
+fn write_string(text: &str, file_name: &str) -> Result<(), FError >
 {
   let path = &Path::new(&file_name);
-  let mut inf = try!(File::create(path));
-  match inf.write(text.as_bytes()) { 
-    Ok(_) => Ok(()),
-    Err(e) => Err(Box::new(e)),
-    }
+  let mut inf = File::create(path)?;
+  inf.write(text.as_bytes())?;
+  Ok(())
 }
 
 pub trait ControlUpdateProcessor: Send { 
@@ -161,43 +158,30 @@ impl ControlServer {
     None => ()
     }}
 
-  pub fn load_gui_string(&self, guistring: &str) -> Result<(), Box<std::error::Error> >
+  pub fn load_gui_string(&self, guistring: &str) -> Result<(), FError >
   {
-    match serde_json::from_str(guistring) { 
-      Ok(guival) => { 
-        match json::deserialize_root(&guival) {
-          Ok(controltree) => { 
-            println!("new control layout recieved!");
+    let guival = serde_json::from_str(guistring)?;
 
-            println!("title: {} count: {} ", 
-              controltree.title, controltree.root_control.control_type());
-            println!("controls: {:?}", controltree.root_control);
+    let controltree = json::deserialize_root(&guival)?;
+    println!("new control layout recieved!");
 
-            let mut guard = match self.ci.lock() {
-                Ok(guard) => guard,
-                Err(poisoned) => poisoned.into_inner(),
-            };
+    println!("title: {} count: {} ", 
+      controltree.title, controltree.root_control.control_type());
+    println!("controls: {:?}", controltree.root_control);
 
-            (*guard).cm = controls::make_control_map(&*controltree.root_control);
-            (*guard).cnm = controls::control_map_to_name_map(&(*guard).cm);
-            (*guard).guijson = guistring.to_string();
-             
-            // send the updated gui string to all clients.
-            self.bc.broadcast(Message::text(guistring.to_string()));
-            
-            Ok(())
-          },
-          Err(e) => { 
-            println!("error reading guiconfig from json: {:?}", e);
-            let s = format!("error reading guiconfig json: {:?}", e);
-            Err(Box::new(Error::new(ErrorKind::Other, s))) },
-        }
-      },
-      Err(e) => {
-        // println!("error reading guiconfig json: {:?}", e);
-        let s = format!("error reading guiconfig json: {:?}", e);
-        Err(Box::new(Error::new(ErrorKind::Other, s))) },
-    }
+    let mut guard = match self.ci.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+
+    (*guard).cm = controls::make_control_map(&*controltree.root_control);
+    (*guard).cnm = controls::control_map_to_name_map(&(*guard).cm);
+    (*guard).guijson = guistring.to_string();
+     
+    // send the updated gui string to all clients.
+    self.bc.broadcast(Message::text(guistring.to_string()));
+    
+    Ok(())
   }
 }
 

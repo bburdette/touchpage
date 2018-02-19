@@ -148,8 +148,8 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       if let &Some(ref st) = opt_state { 
         btv.insert(String::from("state"), 
           Value::String(String::from( 
-            (match st { &cu::ButtonState::Pressed => "Press", 
-                        &cu::ButtonState::Unpressed => "Unpress", }))));
+            match st { &cu::ButtonState::Pressed => "Press", 
+                       &cu::ButtonState::Unpressed => "Unpress", })));
         };
       if let &Some(ref lb) = opt_label { 
         btv.insert(String::from("label"), 
@@ -171,8 +171,8 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       if let &Some(ref st) = opt_state { 
         btv.insert(String::from("state"), 
           Value::String(String::from( 
-            (match st { &cu::SliderState::Pressed => "Press",
-                        &cu::SliderState::Unpressed => "Unpress" }))));
+            match st { &cu::SliderState::Pressed => "Press",
+                       &cu::SliderState::Unpressed => "Unpress" })));
       };
       if let &Some(loc) = opt_loc { 
         btv.insert(String::from("location"), Value::F64(loc));

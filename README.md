@@ -8,7 +8,7 @@ The idea is to have a simple way to configure a set of touch enabled buttons, sl
 
 ### Some notes on elm compiling.
 
-The elm build requires ambr, part of the amber cargo package.  Install that with cargo install amber.
+The elm code is already compiled into js, so there's no need to compile just to use it.  But if you do want to change the elm code, the elm build requires ambr, part of the amber cargo package.  Install that with 'cargo install amber'.
 
 From the project directory, use ./build-elm.sh to build the elm and merge the js into stringDefaults.rs.  Then do cargo build to get the rust server.  Run the rust server with ./runit.sh.  So to sum up:
 

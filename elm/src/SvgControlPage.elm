@@ -13,6 +13,7 @@ import Svg.Events as SE
 import SvgControl
 import SvgThings
 import Task
+import Util exposing (RectSize)
 import VirtualDom as VD
 
 
@@ -42,7 +43,7 @@ type alias Model =
     , spec : Spec
     , control : SvgControl.Model
     , sendaddr : String
-    , windowSize : Window.Size
+    , windowSize : RectSize
     }
 
 
@@ -57,7 +58,7 @@ type alias ID =
 type Msg
     = JsonMsg String
     | CMsg SvgControl.Msg
-    | Resize Window.Size
+    | Resize RectSize
     | NoOp
 
 
@@ -88,7 +89,7 @@ update msg model =
                     update jmact model
 
                 Err e ->
-                    ( { model | title = e }, Cmd.none )
+                    ( { model | title = JD.errorToString e }, Cmd.none )
 
         CMsg act ->
             let
@@ -103,7 +104,7 @@ update msg model =
         Resize newSize ->
             let
                 nr =
-                    SvgThings.Rect 0 0 (newSize.width - 1) (newSize.height - 4)
+                    SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
 
                 ( ctrl, cmds ) =
                     SvgControl.resize model.control nr
@@ -194,8 +195,9 @@ init sendaddr rect spec =
         updmod
         -- Dict.empty
         sendaddr
-        (Window.Size 0 0)
-    , Task.perform (\x -> Resize x) Window.size
+        (RectSize 0 0)
+      -- , Task.perform (\x -> Resize x) Window.size
+    , Cmd.none
     )
 
 

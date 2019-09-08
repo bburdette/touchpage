@@ -67,10 +67,10 @@ init sendaddr rect cid spec =
         (Maybe.withDefault "" spec.label)
         cid
         rect
-        (SvgThings.SRect (toString rect.x)
-            (toString rect.y)
-            (toString rect.w)
-            (toString rect.h)
+        (SvgThings.SRect (String.fromInt rect.x)
+            (String.fromInt rect.y)
+            (String.fromInt rect.w)
+            (String.fromInt rect.h)
         )
         False
         sendaddr
@@ -259,7 +259,7 @@ pressup model ut =
                 )
     in
     ( { model | pressed = ut == Press }
-    , WebSocket.send model.sendaddr um
+    , Cmd.none {- TODO implement.   , WebSocket.send model.sendaddr um -}
     )
 
 
@@ -272,10 +272,10 @@ resize model rect =
     ( { model
         | rect = rect
         , srect =
-            SvgThings.SRect (toString rect.x)
-                (toString rect.y)
-                (toString rect.w)
-                (toString rect.h)
+            SvgThings.SRect (String.fromInt rect.x)
+                (String.fromInt rect.y)
+                (String.fromInt rect.w)
+                (String.fromInt rect.h)
         , textSvg = ts
       }
     , Cmd.none
@@ -286,9 +286,20 @@ resize model rect =
 -- VIEW
 
 
-buttonEvt : String -> (JD.Value -> Msg) -> VD.Property Msg
+buttonEvt : String -> (JD.Value -> Msg) -> VD.Attribute Msg
 buttonEvt evtname mkmsg =
-    VD.onWithOptions evtname (VD.Options True True) (JD.map (\v -> mkmsg v) JD.value)
+    VD.on evtname <|
+        VD.Custom
+            (JD.map
+                (\v ->
+                    { stopPropagation = True, preventDefault = True, message = mkmsg v }
+                )
+                JD.value
+            )
+
+
+
+-- VD.onWithOptions evtname (VD.Options True True) (JD.map (\v -> mkmsg v) JD.value)
 
 
 onTouchStart =
@@ -311,7 +322,7 @@ onTouchMove =
     buttonEvt "touchmove" (\e -> SvgTouch (ST.SvgTouchMove e))
 
 
-buildEvtHandlerList : Bool -> List (VD.Property Msg)
+buildEvtHandlerList : Bool -> List (VD.Attribute Msg)
 buildEvtHandlerList touchonly =
     let
         te =

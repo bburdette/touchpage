@@ -1,8 +1,10 @@
-module Main exposing (Msg(..), init, main, wsUrl)
+module Main exposing (Msg(..), init, main)
 
 -- import Keyboard
 -- import SvgTouch
 
+import Browser
+import Browser.Events as BE
 import Char
 import Html
 import String
@@ -13,16 +15,16 @@ import SvgSlider
 import SvgTextSize
 import SvgThings
 import Task exposing (Task)
+import Util exposing (RectSize)
 
 
 
 -- import WebSocket
 ---------------------------------------
-
-
-wsUrl : String
-wsUrl =
-    "ws://localhost:1234"
+{- wsUrl : String
+   wsUrl =
+       "ws://localhost:1234"
+-}
 
 
 type Msg
@@ -30,18 +32,45 @@ type Msg
     | Send
 
 
+type alias Flags =
+    String
+
+
+
+-- { width : Int
+-- , height : Int
+-- }
+
+
+main : Program Flags SvgControlPage.Model SvgControlPage.Msg
 main =
-    Html.programWithFlags
+    Browser.document
         { init = init
+        , subscriptions = \_ -> BE.onResize (\a b -> SvgControlPage.Resize <| RectSize (toFloat a) (toFloat b))
         , update = SvgControlPage.update
-        , view = SvgControlPage.view
-        , subscriptions =
+        , view =
             \model ->
-                Sub.batch
-                    [ WebSocket.listen model.sendaddr SvgControlPage.JsonMsg
-                    , Window.resizes SvgControlPage.Resize
-                    ]
+                Browser.Document "svg control"
+                    [ SvgControlPage.view model ]
         }
+
+
+
+{- Html.programWithFlags
+   { init = init
+   , update = SvgControlPage.update
+   , view = SvgControlPage.view
+   , subscriptions =
+       \model ->
+           Sub.batch
+               [ Window.resizes SvgControlPage.Resize
+
+               -- WebSocket.listen model.sendaddr SvgControlPage.JsonMsg
+               ]
+   }
+
+
+-}
 
 
 init : String -> ( SvgControlPage.Model, Cmd SvgControlPage.Msg )

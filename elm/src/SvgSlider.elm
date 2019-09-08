@@ -10,10 +10,26 @@ import List
 import String
 import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
-import Svg.Events exposing (onClick, onMouseDown, onMouseMove, onMouseOut, onMouseUp)
+import Svg.Events exposing (onClick, onMouseDown, onMouseOut, onMouseUp)
 import SvgThings exposing (Orientation(..))
 import SvgTouch as ST
+import Toop
 import VirtualDom as VD
+
+
+
+{- buttonEvt : String -> (JD.Value -> Msg) -> VD.Attribute Msg
+   buttonEvt evtname mkmsg =
+       VD.on evtname <|
+           VD.Custom
+               (JD.map
+                   (\v ->
+                       { stopPropagation = True, preventDefault = True, message = mkmsg v }
+                   )
+                   JD.value
+               )
+
+-}
 
 
 type alias Spec =
@@ -70,10 +86,10 @@ init sendaddr rect cid spec =
         (Maybe.withDefault "" spec.label)
         cid
         rect
-        (SvgThings.SRect (toString rect.x)
-            (toString rect.y)
-            (toString rect.w)
-            (toString rect.h)
+        (SvgThings.SRect (String.fromInt rect.x)
+            (String.fromInt rect.y)
+            (String.fromInt rect.w)
+            (String.fromInt rect.h)
         )
         spec.orientation
         False
@@ -216,7 +232,7 @@ getLocation model v =
                         )
 
                 Err e ->
-                    Err e
+                    Err (JD.errorToString e)
 
         SvgThings.Vertical ->
             case JD.decodeValue getY v of
@@ -227,7 +243,7 @@ getLocation model v =
                         )
 
                 Err e ->
-                    Err e
+                    Err (JD.errorToString e)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -373,7 +389,8 @@ updsend model mbut loc =
                     )
         in
         ( { model | location = bLoc, pressed = prest }
-        , WebSocket.send model.sendaddr um
+        , Cmd.none
+          -- , WebSocket.send model.sendaddr um  TODO implement
         )
 
 
@@ -386,10 +403,10 @@ resize model rect =
     ( { model
         | rect = rect
         , srect =
-            SvgThings.SRect (toString rect.x)
-                (toString rect.y)
-                (toString rect.w)
-                (toString rect.h)
+            SvgThings.SRect (String.fromInt rect.x)
+                (String.fromInt rect.y)
+                (String.fromInt rect.w)
+                (String.fromInt rect.h)
         , textSvg = ts
       }
     , Cmd.none
@@ -402,9 +419,17 @@ resize model rect =
 -- etc. See virtualdom docs.
 
 
-sliderEvt : String -> (JD.Value -> Msg) -> VD.Property Msg
+sliderEvt : String -> (JD.Value -> Msg) -> VD.Attribute Msg
 sliderEvt evtname mkmsg =
-    VD.onWithOptions evtname (VD.Options True True) (JD.map (\v -> mkmsg v) JD.value)
+    -- VD.onWithOptions evtname (VD.Options True True) (JD.map (\v -> mkmsg v) JD.value)
+    VD.on evtname <|
+        VD.Custom
+            (JD.map
+                (\v ->
+                    { stopPropagation = True, preventDefault = True, message = mkmsg v }
+                )
+                JD.value
+            )
 
 
 onMouseDown =
@@ -443,7 +468,7 @@ onTouchMove =
     sliderEvt "touchmove" (\e -> SvgTouch (ST.SvgTouchMove e))
 
 
-buildEvtHandlerList : Bool -> List (VD.Property Msg)
+buildEvtHandlerList : Bool -> List (VD.Attribute Msg)
 buildEvtHandlerList touchonly =
     let
         te =
@@ -471,21 +496,19 @@ buildEvtHandlerList touchonly =
 view : Model -> Svg Msg
 view model =
     let
-        ( sx, sy, sw, sh ) =
+        (Toop.T4 sx sy sw sh) =
             case model.orientation of
                 SvgThings.Vertical ->
-                    ( model.srect.x
-                    , toString (round (model.location * toFloat model.rect.h) + model.rect.y)
-                    , model.srect.w
-                    , "3"
-                    )
+                    Toop.T4 model.srect.x
+                        (String.fromInt (round (model.location * toFloat model.rect.h) + model.rect.y))
+                        model.srect.w
+                        "3"
 
                 SvgThings.Horizontal ->
-                    ( toString (round (model.location * toFloat model.rect.w) + model.rect.x)
-                    , model.srect.y
-                    , "3"
-                    , model.srect.h
-                    )
+                    Toop.T4 (String.fromInt (round (model.location * toFloat model.rect.w) + model.rect.x))
+                        model.srect.y
+                        "3"
+                        model.srect.h
 
         evtlist =
             buildEvtHandlerList model.touchonly

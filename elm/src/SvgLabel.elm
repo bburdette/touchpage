@@ -66,10 +66,10 @@ init rect cid spec =
         spec.label
         cid
         rect
-        (SvgThings.SRect (toString rect.x)
-            (toString rect.y)
-            (toString rect.w)
-            (toString rect.h)
+        (SvgThings.SRect (String.fromInt rect.x)
+            (String.fromInt rect.y)
+            (String.fromInt rect.w)
+            (String.fromInt rect.h)
         )
         (List.map (\meh -> VD.map (\_ -> NoOp) meh) ts)
     , Cmd.none
@@ -134,10 +134,10 @@ resize model rect =
     ( { model
         | rect = rect
         , srect =
-            SvgThings.SRect (toString rect.x)
-                (toString rect.y)
-                (toString rect.w)
-                (toString rect.h)
+            SvgThings.SRect (String.fromInt rect.x)
+                (String.fromInt rect.y)
+                (String.fromInt rect.w)
+                (String.fromInt rect.h)
         , textSvg = List.map (\meh -> VD.map (\_ -> NoOp) meh) ts
       }
     , Cmd.none
@@ -146,10 +146,7 @@ resize model rect =
 
 
 -- VIEW
-
-
-(=>) =
-    (,)
+-- (=>) = (,)
 
 
 view : Model -> Svg Msg

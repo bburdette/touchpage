@@ -1,4 +1,3 @@
-
 // --------------------------------------------------------
 // control update messages.
 // --------------------------------------------------------
@@ -19,31 +18,33 @@
 
 */
 
-#[derive(Debug,Clone)]
-pub enum ButtonState { 
+#[derive(Debug, Clone)]
+pub enum ButtonState {
   Pressed,
-  Unpressed
-  }
-
-#[derive(Debug,Clone)]
-pub enum SliderState { 
-  Pressed,
-  Unpressed
-  }
-
-#[derive(Debug,Clone)]
-pub enum UpdateMsg { 
-  Button  { control_id: Vec<i32>
-          , state: Option<ButtonState>
-          , label: Option<String>
-          },
-  Slider  { control_id: Vec<i32>
-          , state: Option<SliderState>
-          , location: Option<f64>
-          , label: Option<String>
-          },
-  Label   { control_id: Vec<i32>
-          , label: String 
-          },
+  Unpressed,
 }
 
+#[derive(Debug, Clone)]
+pub enum SliderState {
+  Pressed,
+  Unpressed,
+}
+
+#[derive(Debug, Clone)]
+pub enum UpdateMsg {
+  Button {
+    control_id: Vec<i32>,
+    state: Option<ButtonState>,
+    label: Option<String>,
+  },
+  Slider {
+    control_id: Vec<i32>,
+    state: Option<SliderState>,
+    location: Option<f64>,
+    label: Option<String>,
+  },
+  Label {
+    control_id: Vec<i32>,
+    label: String,
+  },
+}

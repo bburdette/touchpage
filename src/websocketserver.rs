@@ -4,7 +4,86 @@ use std::thread;
 use websocket::sync::Server;
 use websocket::OwnedMessage;
 
-fn main() {
+pub fn startserver<'a>(
+  guistring: &str,
+  cup: Box<ControlUpdateProcessor>,
+  ip: &str,
+  websockets_port: &str,
+) -> Result<ControlServer, Box<std::error::Error>> {
+  let guival: Value = try!(serde_json::from_str(guistring));
+
+  let blah = try!(json::deserialize_root(&guival));
+
+  println!(
+    "title: {} rootcontroltype: {} ",
+    blah.title,
+    blah.root_control.control_type()
+  );
+  println!("controls: {:?}", blah.root_control);
+
+  // from control tree, make a map of ids->controls.
+  let mapp = controls::make_control_map(&*blah.root_control);
+  let cnm = controls::control_map_to_name_map(&mapp);
+
+  let ci = ControlInfo {
+    cm: mapp,
+    cnm: cnm,
+    guijson: String::new() + guistring,
+  };
+
+  let cmshare = Arc::new(Mutex::new(ci));
+  let wscmshare = cmshare.clone();
+  // for sending, bind to this.  if we bind to localhost, we can't
+  // send messages to other machines.
+  let bc = broadcaster::Broadcaster::new();
+  let wsbc = bc.clone();
+
+  let cs_ret = ControlServer {
+    ci: cmshare,
+    bc: bc,
+  };
+
+  // Spawn a thread for the websockets handler.
+  thread::spawn(move || {
+    match websockets_main(websockets_ip, wscmshare, wsbc, Arc::new(Mutex::new(cup))) {
+      Ok(_) => (),
+      Err(e) => println!("error in websockets_main: {:?}", e),
+    }
+  });
+
+  Ok(cs_ret)
+}
+
+fn websockets_main(
+  ipaddr: String,
+  ci: Arc<Mutex<ControlInfo>>,
+  broadcaster: broadcaster::Broadcaster,
+  cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
+) -> Result<(), Box<std::error::Error>> {
+  let server = try!(Server::bind(&ipaddr[..]));
+
+  for connection in server {
+    // Spawn a new thread for each connection.
+    println!("new websockets connection!");
+    let conn = try!(connection);
+    let sci = ci.clone();
+    let broadcaster = broadcaster.clone();
+    let cup = cup.clone();
+    thread::spawn(
+      move || match websockets_client(conn, sci, broadcaster, cup) {
+        Ok(_) => (),
+        Err(e) => {
+          println!("error in websockets thread: {:?}", e);
+          ()
+        }
+      },
+    );
+  }
+
+  Ok(())
+}
+
+fn websockets_main() {
   let server = Server::bind("127.0.0.1:8500").unwrap();
 
   for request in server.filter_map(Result::ok) {

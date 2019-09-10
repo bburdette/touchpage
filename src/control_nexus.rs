@@ -28,9 +28,9 @@ impl ControlUpdateProcessor for PrintUpdateMsg {
 
 // Info about all the controls.
 pub struct ControlInfo {
-  cm: controls::ControlMap,
-  cnm: controls::ControlNameMap,
-  guijson: String,
+  pub cm: controls::ControlMap,
+  pub cnm: controls::ControlNameMap,
+  pub guijson: String,
 }
 
 impl ControlInfo {
@@ -44,8 +44,8 @@ impl ControlInfo {
 
 // The control nexus contains all the controls and the broadcaster.
 pub struct ControlNexus {
-  ci: Arc<Mutex<ControlInfo>>,
-  bc: broadcaster::Broadcaster,
+  pub ci: Arc<Mutex<ControlInfo>>,
+  pub bc: broadcaster::Broadcaster,
 }
 
 impl ControlNexus {

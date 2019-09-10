@@ -3,14 +3,19 @@ extern crate websocket;
 use std::thread;
 use websocket::sync::Server;
 use websocket::OwnedMessage;
+use json;
+use controls;
+use std::sync::{Arc, Mutex};
+use broadcaster;
+use control_nexus::{ControlUpdateProcessor, ControlNexus, ControlInfo};
 
 pub fn startserver<'a>(
   guistring: &str,
   cup: Box<ControlUpdateProcessor>,
   ip: &str,
   websockets_port: &str,
-) -> Result<ControlServer, Box<std::error::Error>> {
-  let guival: Value = try!(serde_json::from_str(guistring));
+) -> Result<ControlNexus, Box<std::error::Error>> {
+  let guival = serde_json::from_str(guistring)?;
 
   let blah = try!(json::deserialize_root(&guival));
 
@@ -38,10 +43,14 @@ pub fn startserver<'a>(
   let bc = broadcaster::Broadcaster::new();
   let wsbc = bc.clone();
 
-  let cs_ret = ControlServer {
+  let cs_ret = ControlNexus {
     ci: cmshare,
     bc: bc,
   };
+
+  let mut websockets_ip = String::from(ip);
+  websockets_ip.push_str(":");
+  websockets_ip.push_str(&websockets_port);
 
   // Spawn a thread for the websockets handler.
   thread::spawn(move || {
@@ -54,37 +63,14 @@ pub fn startserver<'a>(
   Ok(cs_ret)
 }
 
+
 fn websockets_main(
   ipaddr: String,
   ci: Arc<Mutex<ControlInfo>>,
   broadcaster: broadcaster::Broadcaster,
   cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
 ) -> Result<(), Box<std::error::Error>> {
-  let server = try!(Server::bind(&ipaddr[..]));
-
-  for connection in server {
-    // Spawn a new thread for each connection.
-    println!("new websockets connection!");
-    let conn = try!(connection);
-    let sci = ci.clone();
-    let broadcaster = broadcaster.clone();
-    let cup = cup.clone();
-    thread::spawn(
-      move || match websockets_client(conn, sci, broadcaster, cup) {
-        Ok(_) => (),
-        Err(e) => {
-          println!("error in websockets thread: {:?}", e);
-          ()
-        }
-      },
-    );
-  }
-
-  Ok(())
-}
-
-fn websockets_main() {
-  let server = Server::bind("127.0.0.1:8500").unwrap();
+  let server = Server::bind(&ipaddr[..])?;
 
   for request in server.filter_map(Result::ok) {
     // Spawn a new thread for each connection.
@@ -133,7 +119,9 @@ fn websockets_main() {
         }
       }
     });
-  }
+  };
+
+  Ok(())
 }
 
 /*
@@ -228,3 +216,37 @@ fn websockets_main() {
       }
     }
   }*/
+
+
+/*fn websockets_main(
+  ipaddr: String,
+  ci: Arc<Mutex<ControlInfo>>,
+  broadcaster: broadcaster::Broadcaster,
+  cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
+) -> Result<(), Box<std::error::Error>> {
+  let server = try!(Server::bind(&ipaddr[..]));
+
+  for connection in server {
+    // Spawn a new thread for each connection.
+    println!("new websockets connection!");
+    let conn = try!(connection);
+    let sci = ci.clone();
+    let broadcaster = broadcaster.clone();
+    let cup = cup.clone();
+    thread::spawn(
+      move || match websockets_client(conn, sci, broadcaster, cup) {
+        Ok(_) => (),
+        Err(e) => {
+          println!("error in websockets thread: {:?}", e);
+          ()
+        }
+      },
+    );
+  }
+
+  Ok(())
+}
+
+*/
+
+

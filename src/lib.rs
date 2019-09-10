@@ -1,23 +1,40 @@
 extern crate websocket;
 
+use std::net::TcpListener;
 use std::string::*;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
+use websocket as ws;
 use websocket::header::WebSocketProtocol;
 use websocket::message::Type;
-use websocket::{Message, Receiver, Sender, Server};
 
-extern crate iron;
+use websocket::async::TcpListener as Atl;
+use websocket::message::Message;
+use websocket::sender;
+use websocket::stream::Stream as WebSocketStream;
+use websocket::stream::Stream;
+use websocket::ws::Sender;
+
+
+use websocket::sync::Server;
+// use websocket::async::Server;
+
+#[macro_use]
+extern crate log;
+
+// extern crate iron;
 
 #[macro_use]
 mod controls;
 mod broadcaster;
 pub mod control_updates;
 pub mod json;
-mod server;
+// mod server;
 mod string_defaults;
 mod util;
+
+extern crate actix_web;
 
 use control_updates as cu;
 use util::{load_string, write_string};
@@ -233,6 +250,7 @@ pub fn start_websocket_server<'a>(
 // need to lock the control structs and stuff, refresh them, then send out the
 // updates.
 
+fn stringify(x: u32) -> String { format!("error code: {:?}", x) }
 // TODO: refactor to return a (rx/sx) pair for sending, recieving messages.
 // library users start the websockets_main and get that pair of things.
 // then, can send the various control structs and receive the messages.
@@ -242,12 +260,14 @@ fn websockets_main(
   broadcaster: broadcaster::Broadcaster,
   cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
 ) -> Result<(), Box<std::error::Error>> {
-  let server = try!(Server::bind(&ipaddr[..]));
+  let server = Server::bind(&ipaddr[..])?;
+  // let server : WsServer<websocket::server::NoTlsAcceptor, std::net::TcpListener>= try!(WsServer::bind(&ipaddr[..]));
 
   for connection in server {
     // Spawn a new thread for each connection.
     println!("new websockets connection!");
-    let conn = try!(connection);
+    let half = connection.map_err(|x| format!("error {:?}", x)) ;
+    let conn = half?.accept().map_err(|s| format!("wat: {:?}",s))?;
     let sci = ci.clone();
     let broadcaster = broadcaster.clone();
     let cup = cup.clone();
@@ -266,10 +286,7 @@ fn websockets_main(
 }
 
 fn websockets_client(
-  connection: websocket::server::Connection<
-    websocket::stream::WebSocketStream,
-    websocket::stream::WebSocketStream,
-  >,
+  connection: websocket::sync::Client<std::net::TcpStream>,
   ci: Arc<Mutex<ControlInfo>>,
   mut broadcaster: broadcaster::Broadcaster,
   cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
@@ -342,7 +359,7 @@ fn websockets_client(
         let message = Message::close();
         // let mut sender = try!(sendmeh.lock());
         let mut sender = sendmeh.lock().unwrap();
-        try!(sender.send_message(&message));
+        try!(sender.send_message(&mut *sender, &message));
         println!("Client {} disconnected", ip);
         return Ok(());
       }
@@ -350,7 +367,7 @@ fn websockets_client(
         println!("Message::Ping(data)");
         let message = Message::pong(message.payload);
         let mut sender = sendmeh.lock().unwrap();
-        try!(sender.send_message(&message));
+        try!(sender.send_message(*sender, &message));
       }
       Type::Text => {
         let u8 = message.payload.to_owned();

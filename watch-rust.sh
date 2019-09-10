@@ -1,11 +1,14 @@
 ##!/bin/bash
 
 build () {
-  # clear
+  clear
   cargo build
   }
 
 # 'reflex' program is required for this.
-reflex -r '\.rs' cargo build
+reflex -r 'src/' -s -- sh -c 'clear && cargo build'
+
+
+
 
 

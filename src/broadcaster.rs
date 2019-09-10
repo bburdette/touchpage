@@ -1,10 +1,12 @@
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
+use websocket::message::Message;
 use websocket::sender;
-use websocket::stream::WebSocketStream;
-use websocket::{Message, Sender};
+use websocket::stream::Stream as WebSocketStream;
+use websocket::stream::Stream;
+use websocket::ws::Sender;
 
-pub type SendBlah = Arc<Mutex<sender::Sender<WebSocketStream>>>;
+pub type SendBlah = Arc<Mutex<sender::Sender>>;
 
 #[derive(Clone)]
 pub struct Broadcaster {
@@ -37,7 +39,7 @@ impl Broadcaster {
 
     for tv in tvs.iter_mut() {
       let mut tvsend = tv.lock().unwrap();
-      match tvsend.send_message(&msg) {
+      match *tvsend.send_message(*tvsend, &msg) {
         Err(e) => {
           println!("error from send_message: {:?}", e);
         }
@@ -45,29 +47,23 @@ impl Broadcaster {
       }
     }
   }
-
+/*
   pub fn broadcast_others(&self, sa: &SocketAddr, msg: Message) {
     let mut tvs = self.tvs.lock().unwrap();
 
     for tv in tvs.iter_mut() {
       let mut tvsend = tv.lock().unwrap();
-      match tvsend.get_mut().peer_addr() {
-        Ok(sa_send) => {
-          // println!("checking eq: {:?}, {:?}", sa, sa_send);
-          if !mysockeq(sa, &sa_send) {
-            // println!("sending to: {:?}", sa_send);
-            match tvsend.send_message(&msg) {
-              Err(e) => {
-                println!("error from send_message: {:?}", e);
-              }
-              _ => {}
-            }
+      sa_send = *tvsend.peer_addr();
+      // println!("checking eq: {:?}, {:?}", sa, sa_send);
+      if !mysockeq(sa, &sa_send) {
+        // println!("sending to: {:?}", sa_send);
+        match *tvsend.send_message(mut &*tvsend, &msg) {
+          Err(e) => {
+            println!("error from send_message: {:?}", e);
           }
-        }
-        Err(e) => {
-          println!("error from get_mut: {:?}", e);
+          _ => {}
         }
       }
     }
   }
-}
+*/}

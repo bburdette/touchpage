@@ -40,66 +40,17 @@ pub mod json;
 // mod server;
 mod string_defaults;
 mod util;
-mod control_server;
+pub mod control_nexus;
+pub mod sockserver;
 
-use control_server::*;
 
-pub fn start_websocket_server<'a>(
-  guistring: &str,
-  cup: Box<ControlUpdateProcessor>,
-  ip: &str,
-  websockets_port: &str,
-) -> Result<ControlServer, Box<std::error::Error>> {
-  let mut websockets_ip = String::from(ip);
-  websockets_ip.push_str(":");
-  websockets_ip.push_str(&websockets_port);
 
-  let guival: Value = try!(serde_json::from_str(guistring));
 
-  let blah = try!(json::deserialize_root(&guival));
-
-  println!(
-    "title: {} rootcontroltype: {} ",
-    blah.title,
-    blah.root_control.control_type()
-  );
-  println!("controls: {:?}", blah.root_control);
-
-  // from control tree, make a map of ids->controls.
-  let mapp = controls::make_control_map(&*blah.root_control);
-  let cnm = controls::control_map_to_name_map(&mapp);
-
-  let ci = ControlInfo {
-    cm: mapp,
-    cnm: cnm,
-    guijson: String::new() + guistring,
-  };
-
-  let cmshare = Arc::new(Mutex::new(ci));
-  let wscmshare = cmshare.clone();
-  // for sending, bind to this.  if we bind to localhost, we can't
-  // send messages to other machines.
-  let bc = broadcaster::Broadcaster::new();
-  let wsbc = bc.clone();
-
-  let cs_ret = ControlServer {
-    ci: cmshare,
-    bc: bc,
-  };
-
-  // Spawn a thread for the websockets handler.
-  thread::spawn(move || {
-    match websockets_main(websockets_ip, wscmshare, wsbc, Arc::new(Mutex::new(cup))) {
-      Ok(_) => (),
-      Err(e) => println!("error in websockets_main: {:?}", e),
-    }
-  });
-
-  Ok(cs_ret)
-}
 
 // need to lock the control structs and stuff, refresh them, then send out the
 // updates.
+
+/*
 
 fn stringify(x: u32) -> String { format!("error code: {:?}", x) }
 // TODO: refactor to return a (rx/sx) pair for sending, recieving messages.
@@ -195,10 +146,10 @@ fn websockets_client(
     try!(client.send_message(&message));
   }
 
+
   let (sender, mut receiver) = client.split();
-
+  // register the sender with broadcaster.
   let sendmeh = Arc::new(Mutex::new(sender));
-
   broadcaster.register(sendmeh.clone());
 
   for msg in receiver.incoming_messages() {
@@ -263,3 +214,4 @@ fn websockets_client(
 
   Ok(())
 }
+*/

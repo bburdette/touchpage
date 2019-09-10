@@ -8,10 +8,25 @@ use json;
 use websocket::message::Message;
 use std::sync::{Arc, Mutex};
 
+// Implement a ControlUpdateProcessor if you want the controls to actually do something
+// on the server.
 pub trait ControlUpdateProcessor: Send {
   fn on_update_received(&mut self, &cu::UpdateMsg, ci: &ControlInfo) -> ();
 }
 
+
+// A basic ControlUpdateProcessor that just prints out the update messages.
+pub struct PrintUpdateMsg {
+}
+
+impl touchpage::ControlUpdateProcessor for PrintUpdateMsg { 
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, ci: &touchpage::ControlInfo) -> ()
+  {
+    println!("update callback called! {:?}", update);
+  }
+}
+
+// Info about all the controls.
 pub struct ControlInfo {
   cm: controls::ControlMap,
   cnm: controls::ControlNameMap,
@@ -27,12 +42,13 @@ impl ControlInfo {
   }
 }
 
-pub struct ControlServer {
+// The control nexus contains all the controls and the broadcaster.
+pub struct ControlNexus {
   ci: Arc<Mutex<ControlInfo>>,
   bc: broadcaster::Broadcaster,
 }
 
-impl ControlServer {
+impl ControlNexus {
   fn get_cid_by_name(&self, name: &str) -> Option<Vec<i32>> {
     let guard = match self.ci.lock() {
       Ok(guard) => guard,

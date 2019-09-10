@@ -1,96 +1,150 @@
 extern crate websocket;
 
 use std::thread;
-use websocket::OwnedMessage;
 use websocket::sync::Server;
+use websocket::OwnedMessage;
 
-fn main() {
-	let server = Server::bind("127.0.0.1:8500").unwrap();
 
-	for request in server.filter_map(Result::ok) {
-		// Spawn a new thread for each connection.
-		thread::spawn(move || {
-			if !request.protocols().contains(&"rust-websocket".to_string()) {
-				request.reject().unwrap();
-				return;
-			}
+// you must implement a ControlUpdateProcessor to process messages from the controls.
+pub fn start_websocket_server<'a>(
+  guistring: &str,
+  cup: Box<ControlUpdateProcessor>,
+  ip: &str,
+  websockets_port: &str,
+) -> Result<ControlServer, Box<std::error::Error>> {
+  let mut websockets_ip = String::from(ip);
+  websockets_ip.push_str(":");
+  websockets_ip.push_str(&websockets_port);
 
-			let mut client = request.use_protocol("rust-websocket").accept().unwrap();
+  let guival: Value = try!(serde_json::from_str(guistring));
 
-			let ip = client.peer_addr().unwrap();
+  let blah = try!(json::deserialize_root(&guival));
 
-			println!("Connection from {}", ip);
+  println!(
+    "title: {} rootcontroltype: {} ",
+    blah.title,
+    blah.root_control.control_type()
+  );
+  println!("controls: {:?}", blah.root_control);
+
+  // from control tree, make a map of ids->controls.
+  let mapp = controls::make_control_map(&*blah.root_control);
+  let cnm = controls::control_map_to_name_map(&mapp);
+
+  let ci = ControlInfo {
+    cm: mapp,
+    cnm: cnm,
+    guijson: String::new() + guistring,
+  };
+
+  let cmshare = Arc::new(Mutex::new(ci));
+  let wscmshare = cmshare.clone();
+  // for sending, bind to this.  if we bind to localhost, we can't
+  // send messages to other machines.
+  let bc = broadcaster::Broadcaster::new();
+  let wsbc = bc.clone();
+
+  let cs_ret = ControlServer {
+    ci: cmshare,
+    bc: bc,
+  };
+
+  // Spawn a thread for the websockets handler.
+  thread::spawn(move || {
+    match websockets_main(websockets_ip, wscmshare, wsbc, Arc::new(Mutex::new(cup))) {
+      Ok(_) => (),
+      Err(e) => println!("error in websockets_main: {:?}", e),
+    }
+  });
+
+  Ok(cs_ret)
+}
+
+fn main(guistring: &str, cup: Box<ControlUpdateProcessor>, ip: &str, websockets_port: &str) {
+  let server = Server::bind("127.0.0.1:8500").unwrap();
+
+  for request in server.filter_map(Result::ok) {
+    // Spawn a new thread for each connection.
+    thread::spawn(move || {
+      if !request.protocols().contains(&"rust-websocket".to_string()) {
+        request.reject().unwrap();
+        return;
+      }
+
+      let mut client = request.use_protocol("rust-websocket").accept().unwrap();
+
+      let ip = client.peer_addr().unwrap();
+
+      println!("Connection from {}", ip);
 
       // TODO send up controls.
 
-/*      let (sender, mut receiver) = client.split();
-      // register the sender with broadcaster.
-      let sendmeh = Arc::new(Mutex::new(sender));
-      broadcaster.register(sendmeh.clone());
-*/
+      /*      let (sender, mut receiver) = client.split();
+            // register the sender with broadcaster.
+            let sendmeh = Arc::new(Mutex::new(sender));
+            broadcaster.register(sendmeh.clone());
+      */
 
-			let message = OwnedMessage::Text("Hello".to_string());
-			client.send_message(&message).unwrap();
+      let message = OwnedMessage::Text("Hello".to_string());
+      client.send_message(&message).unwrap();
 
-			let (mut receiver, mut sender) = client.split().unwrap();
+      let (mut receiver, mut sender) = client.split().unwrap();
 
-			for message in receiver.incoming_messages() {
+      for message in receiver.incoming_messages() {
+        // TODO message handler here.
+        let message = message.unwrap();
 
-  			// TODO message handler here.
-				let message = message.unwrap();
-
-				match message {
-					OwnedMessage::Close(_) => {
-						let message = OwnedMessage::Close(None);
-						sender.send_message(&message).unwrap();
-						println!("Client {} disconnected", ip);
-						return;
-					}
-					OwnedMessage::Ping(ping) => {
-						let message = OwnedMessage::Pong(ping);
-						sender.send_message(&message).unwrap();
-					}
-					_ => sender.send_message(&message).unwrap(),
-				}
-			}
-		});
-	}
+        match message {
+          OwnedMessage::Close(_) => {
+            let message = OwnedMessage::Close(None);
+            sender.send_message(&message).unwrap();
+            println!("Client {} disconnected", ip);
+            return;
+          }
+          OwnedMessage::Ping(ping) => {
+            let message = OwnedMessage::Pong(ping);
+            sender.send_message(&message).unwrap();
+          }
+          _ => sender.send_message(&message).unwrap(),
+        }
+      }
+    });
+  }
 }
 
 /*
-  // send up the json of the current controls.
-  {
-    let sci = ci.lock().unwrap();
+ // send up the json of the current controls.
+ {
+   let sci = ci.lock().unwrap();
 
-    let updarray = controls::cm_to_update_array(&sci.cm);
+   let updarray = controls::cm_to_update_array(&sci.cm);
 
-    // build json message containing both guijson and the updarray.
-    let mut updvals = Vec::new();
+   // build json message containing both guijson and the updarray.
+   let mut updvals = Vec::new();
 
-    for upd in updarray {
-      let um = json::encode_update_message(&upd);
-      updvals.push(um);
-    }
+   for upd in updarray {
+     let um = json::encode_update_message(&upd);
+     updvals.push(um);
+   }
 
-    let mut guival: Value = try!(serde_json::from_str(&sci.guijson[..]));
+   let mut guival: Value = try!(serde_json::from_str(&sci.guijson[..]));
 
-    match guival.as_object_mut() {
-      Some(obj) => {
-        obj.insert("state".to_string(), Value::Array(updvals));
-        ()
-      }
-      None => (),
-    }
+   match guival.as_object_mut() {
+     Some(obj) => {
+       obj.insert("state".to_string(), Value::Array(updvals));
+       ()
+     }
+     None => (),
+   }
 
-    let guistring = try!(serde_json::ser::to_string(&guival));
-    let message = Message::text(guistring);
-    try!(client.send_message(&message));
- }*/
-
+   let guistring = try!(serde_json::ser::to_string(&guival));
+   let message = Message::text(guistring);
+   try!(client.send_message(&message));
+}*/
 
 /*
    Message handler
-   
+
 {
     let message: Message = try!(msg);
     // println!("message: {:?}", message);

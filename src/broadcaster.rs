@@ -39,7 +39,7 @@ impl Broadcaster {
 
     for tv in tvs.iter_mut() {
       let mut tvsend = tv.lock().unwrap();
-      match *tvsend.send_message(*tvsend, &msg) {
+      match *tvsend.send_message( &msg) {
         Err(e) => {
           println!("error from send_message: {:?}", e);
         }

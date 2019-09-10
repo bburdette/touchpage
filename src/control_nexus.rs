@@ -19,8 +19,8 @@ pub trait ControlUpdateProcessor: Send {
 pub struct PrintUpdateMsg {
 }
 
-impl touchpage::ControlUpdateProcessor for PrintUpdateMsg { 
-  fn on_update_received(&mut self, update: &cu::UpdateMsg, ci: &touchpage::ControlInfo) -> ()
+impl ControlUpdateProcessor for PrintUpdateMsg { 
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, ci: &ControlInfo) -> ()
   {
     println!("update callback called! {:?}", update);
   }

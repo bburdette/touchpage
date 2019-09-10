@@ -1,12 +1,15 @@
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 use websocket::message::Message;
-use websocket::sender;
-use websocket::stream::Stream as WebSocketStream;
-use websocket::stream::Stream;
-use websocket::ws::Sender;
+// use websocket::sender;
+// use websocket::stream::Stream as WebSocketStream;
+// use websocket::stream::Stream;
+// use websocket::ws::Sender;
+use websocket::sync::Server;
+use websocket::sender::Sender;
 
-pub type SendBlah = Arc<Mutex<sender::Sender>>;
+
+pub type SendBlah = Arc<Mutex<websocket::sender::Writer<std::net::TcpStream>>>;
 
 #[derive(Clone)]
 pub struct Broadcaster {
@@ -39,7 +42,7 @@ impl Broadcaster {
 
     for tv in tvs.iter_mut() {
       let mut tvsend = tv.lock().unwrap();
-      match *tvsend.send_message( &msg) {
+      match tvsend.send_message( &msg) {
         Err(e) => {
           println!("error from send_message: {:?}", e);
         }
@@ -47,23 +50,28 @@ impl Broadcaster {
       }
     }
   }
-/*
+
+  // broadcast to all except for ones with the same socket address.
   pub fn broadcast_others(&self, sa: &SocketAddr, msg: Message) {
     let mut tvs = self.tvs.lock().unwrap();
-
     for tv in tvs.iter_mut() {
       let mut tvsend = tv.lock().unwrap();
-      sa_send = *tvsend.peer_addr();
-      // println!("checking eq: {:?}, {:?}", sa, sa_send);
-      if !mysockeq(sa, &sa_send) {
-        // println!("sending to: {:?}", sa_send);
-        match *tvsend.send_message(mut &*tvsend, &msg) {
-          Err(e) => {
-            println!("error from send_message: {:?}", e);
+      let sa_send = tvsend.stream.peer_addr();
+      match sa_send {
+        Ok(ss) => {
+          // println!("checking eq: {:?}, {:?}", sa, sa_send);
+          if !mysockeq(sa, &ss) {
+            // println!("sending to: {:?}", sa_send);
+            match tvsend.send_message( &msg) {
+              Err(e) => {
+                println!("error from send_message: {:?}", e);
+              }
+              _ => {}
+            }
           }
-          _ => {}
         }
+        _ => {}
       }
     }
   }
-*/}
+}

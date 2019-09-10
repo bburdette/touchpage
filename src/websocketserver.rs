@@ -1,96 +1,95 @@
 extern crate websocket;
 
 use std::thread;
-use websocket::OwnedMessage;
 use websocket::sync::Server;
+use websocket::OwnedMessage;
 
 fn main() {
-	let server = Server::bind("127.0.0.1:8500").unwrap();
+  let server = Server::bind("127.0.0.1:8500").unwrap();
 
-	for request in server.filter_map(Result::ok) {
-		// Spawn a new thread for each connection.
-		thread::spawn(move || {
-			if !request.protocols().contains(&"rust-websocket".to_string()) {
-				request.reject().unwrap();
-				return;
-			}
+  for request in server.filter_map(Result::ok) {
+    // Spawn a new thread for each connection.
+    thread::spawn(move || {
+      if !request.protocols().contains(&"rust-websocket".to_string()) {
+        request.reject().unwrap();
+        return;
+      }
 
-			let mut client = request.use_protocol("rust-websocket").accept().unwrap();
+      let mut client = request.use_protocol("rust-websocket").accept().unwrap();
 
-			let ip = client.peer_addr().unwrap();
+      let ip = client.peer_addr().unwrap();
 
-			println!("Connection from {}", ip);
+      println!("Connection from {}", ip);
 
       // TODO send up controls.
 
-/*      let (sender, mut receiver) = client.split();
-      // register the sender with broadcaster.
-      let sendmeh = Arc::new(Mutex::new(sender));
-      broadcaster.register(sendmeh.clone());
-*/
+      /*      let (sender, mut receiver) = client.split();
+            // register the sender with broadcaster.
+            let sendmeh = Arc::new(Mutex::new(sender));
+            broadcaster.register(sendmeh.clone());
+      */
 
-			let message = OwnedMessage::Text("Hello".to_string());
-			client.send_message(&message).unwrap();
+      let message = OwnedMessage::Text("Hello".to_string());
+      client.send_message(&message).unwrap();
 
-			let (mut receiver, mut sender) = client.split().unwrap();
+      //(websocket::receiver::Reader<std::net::TcpStream>, websocket::sender::Writer<std::net::TcpStream> )
+      let (mut receiver, mut sender) = client.split().unwrap();
 
-			for message in receiver.incoming_messages() {
+      for message in receiver.incoming_messages() {
+        // TODO message handler here.
+        let message = message.unwrap();
 
-  			// TODO message handler here.
-				let message = message.unwrap();
-
-				match message {
-					OwnedMessage::Close(_) => {
-						let message = OwnedMessage::Close(None);
-						sender.send_message(&message).unwrap();
-						println!("Client {} disconnected", ip);
-						return;
-					}
-					OwnedMessage::Ping(ping) => {
-						let message = OwnedMessage::Pong(ping);
-						sender.send_message(&message).unwrap();
-					}
-					_ => sender.send_message(&message).unwrap(),
-				}
-			}
-		});
-	}
+        match message {
+          OwnedMessage::Close(_) => {
+            let message = OwnedMessage::Close(None);
+            sender.send_message(&message).unwrap();
+            println!("Client {} disconnected", ip);
+            return;
+          }
+          OwnedMessage::Ping(ping) => {
+            let message = OwnedMessage::Pong(ping);
+            sender.send_message(&message).unwrap();
+          }
+          _ => sender.send_message(&message).unwrap(),
+        }
+      }
+    });
+  }
 }
 
 /*
-  // send up the json of the current controls.
-  {
-    let sci = ci.lock().unwrap();
+ // send up the json of the current controls.
+ {
+   let sci = ci.lock().unwrap();
 
-    let updarray = controls::cm_to_update_array(&sci.cm);
+   let updarray = controls::cm_to_update_array(&sci.cm);
 
-    // build json message containing both guijson and the updarray.
-    let mut updvals = Vec::new();
+   // build json message containing both guijson and the updarray.
+   let mut updvals = Vec::new();
 
-    for upd in updarray {
-      let um = json::encode_update_message(&upd);
-      updvals.push(um);
-    }
+   for upd in updarray {
+     let um = json::encode_update_message(&upd);
+     updvals.push(um);
+   }
 
-    let mut guival: Value = try!(serde_json::from_str(&sci.guijson[..]));
+   let mut guival: Value = try!(serde_json::from_str(&sci.guijson[..]));
 
-    match guival.as_object_mut() {
-      Some(obj) => {
-        obj.insert("state".to_string(), Value::Array(updvals));
-        ()
-      }
-      None => (),
-    }
+   match guival.as_object_mut() {
+     Some(obj) => {
+       obj.insert("state".to_string(), Value::Array(updvals));
+       ()
+     }
+     None => (),
+   }
 
-    let guistring = try!(serde_json::ser::to_string(&guival));
-    let message = Message::text(guistring);
-    try!(client.send_message(&message));
- }*/
-
+   let guistring = try!(serde_json::ser::to_string(&guival));
+   let message = Message::text(guistring);
+   try!(client.send_message(&message));
+}*/
 
 /*
    Message handler
-   
+
 {
     let message: Message = try!(msg);
     // println!("message: {:?}", message);

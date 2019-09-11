@@ -36,12 +36,12 @@ extern crate toml;
 #[macro_use]
 mod controls;
 mod broadcaster;
-pub mod control_updates;
 pub mod json;
 // mod server;
-mod string_defaults;
+pub mod string_defaults;
 mod util;
 pub mod control_nexus;
+pub mod control_updates;
 pub mod websocketserver;
 pub mod webserver;
 

@@ -1,19 +1,20 @@
 extern crate websocket;
 
+use broadcaster;
+use control_nexus::{ControlInfo, ControlNexus, ControlUpdateProcessor};
+use controls;
+use json;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use websocket::sync::Server;
 use websocket::OwnedMessage;
-use json;
-use controls;
-use std::sync::{Arc, Mutex};
-use broadcaster;
-use control_nexus::{ControlUpdateProcessor, ControlNexus, ControlInfo};
 
 pub fn startserver<'a>(
   guistring: &str,
   cup: Box<ControlUpdateProcessor>,
   ip: &str,
   websockets_port: &str,
+  block: bool,
 ) -> Result<ControlNexus, Box<std::error::Error>> {
   let guival = serde_json::from_str(guistring)?;
 
@@ -52,17 +53,23 @@ pub fn startserver<'a>(
   websockets_ip.push_str(":");
   websockets_ip.push_str(&websockets_port);
 
-  // Spawn a thread for the websockets handler.
-  thread::spawn(move || {
+  if block {
     match websockets_main(websockets_ip, wscmshare, wsbc, Arc::new(Mutex::new(cup))) {
       Ok(_) => (),
       Err(e) => println!("error in websockets_main: {:?}", e),
     }
-  });
+  } else {
+    // Spawn a thread for the websockets handler.
+    thread::spawn(move || {
+      match websockets_main(websockets_ip, wscmshare, wsbc, Arc::new(Mutex::new(cup))) {
+        Ok(_) => (),
+        Err(e) => println!("error in websockets_main: {:?}", e),
+      }
+    });
+  }
 
   Ok(cs_ret)
 }
-
 
 fn websockets_main(
   ipaddr: String,
@@ -119,7 +126,7 @@ fn websockets_main(
         }
       }
     });
-  };
+  }
 
   Ok(())
 }
@@ -217,7 +224,6 @@ fn websockets_main(
     }
   }*/
 
-
 /*fn websockets_main(
   ipaddr: String,
   ci: Arc<Mutex<ControlInfo>>,
@@ -248,5 +254,3 @@ fn websockets_main(
 }
 
 */
-
-

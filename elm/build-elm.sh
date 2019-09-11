@@ -30,14 +30,14 @@ fi
 echo "starting elm make... wait for 'build complete'!"
 
 # do the build!
-time elm make src/Main.elm --output ../server/static/main.js $1 2> >(tee build-elm-out.txt)
+time elm make src/Main.elm --output ../static/main.js $1 2> >(tee build-elm-out.txt)
 
 grep -q "elm: not enough bytes" build-elm-out.txt
 if [ $? -eq 0 ] 
 then
   echo "deleting elm-stuff and retrying compile!"
   rm -rf elm-stuff
-  time elm make src/Main.elm --output ../server/static/main.js $1 2> >(tee build-elm-out.txt)
+  time elm make src/Main.elm --output ../static/main.js $1 2> >(tee build-elm-out.txt)
 fi 
 
 # print this because elm doesn't print a message when the link

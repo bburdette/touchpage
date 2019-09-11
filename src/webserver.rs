@@ -57,7 +57,6 @@ use actix_web::Binary;
 pub fn startwebserver<'a>(
   ip: &str,
   http_port: &str,
-  websockets_port: &str,
   htmltemplatefile: Option<&str>,
 ) {
   env_logger::init();

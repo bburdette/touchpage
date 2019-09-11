@@ -31,6 +31,7 @@ extern crate failure;
 use failure::Error as FError;
 
 extern crate actix_web;
+extern crate toml;
 
 #[macro_use]
 mod controls;
@@ -42,7 +43,7 @@ mod string_defaults;
 mod util;
 pub mod control_nexus;
 pub mod websocketserver;
-// pub mod webserver;
+pub mod webserver;
 
 
 

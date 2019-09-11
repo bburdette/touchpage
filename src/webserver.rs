@@ -1,7 +1,8 @@
 use std::thread;
 use string_defaults;
 use util::load_string;
-
+use toml;
+use std::path::{Path, PathBuf};
 /*use iron::mime::Mime;
 use iron::prelude::*;
 use iron::status;
@@ -59,7 +60,6 @@ pub fn startwebserver<'a>(
   websockets_port: &str,
   htmltemplatefile: Option<&str>,
 ) {
-  let config = load_config();
   env_logger::init();
 
   info!("server init!");
@@ -70,48 +70,83 @@ pub fn startwebserver<'a>(
     let s = server::new(move || {
       
         App::new()
-            .resource("/public", |r| r.method(Method::POST).f(public))
-            .resource("/model", |r| r.method(Method::POST).f(model))
             .resource(r"/static/{tail:.*}", |r| r.method(Method::GET).f(files))
-            .resource("/favicon.ico", |r| r.method(Method::GET).f(favicon))
-            .resource("/sitemap.txt", |r| r.method(Method::GET).f(sitemap))
             .resource(r"/{tail:.*}", |r| r.method(Method::GET).f(mainpage))
 
     });
  
-    match optbuilder {
-      Some(builder) => s.bind_ssl(format!("{}:{}", config.ip, config.port), builder),
-      None => s.bind(format!("{}:{}", config.ip, config.port)),
-    }
-  }.expect(format!("Can not bind to port {}", config.port).as_str())
+    s.bind(format!("{}:{}", ip, http_port))
+    
+  }.expect(format!("Can not bind to port {}", http_port).as_str())
     .start();
-
-  // do some http redirecting?
-  let _ = match (config.redirectport, config.redirectdomain) {
-    (Some(port), Some(domain)) => {
-      Some(
-        server::new(move || {
-          App::with_state(domain.clone())
-            .resource("{all:.*}", |r| {
-              r.f(|r| {
-                info!("redirect!{}", r.path());
-                // info!("fmt:{}", format!("{}{}&{}", r.state(), r.path(), r.query_string()));
-                HttpResponse::Found()
-                  .header(http::header::LOCATION, format!("{}{}?{}", r.state(), r.path(), r.query_string()))
-                  .finish()
-              })
-            })
-            .middleware(Logger::default())
-            .middleware(Logger::new("REDIRECTOR: %a %{User-Agent}i"))
-
-        }).bind(format!("{}:{}", config.ip, port))
-          .expect(format!("Can not bind to port {}", port).as_str())
-          .start(),
-      )
-    }
-    _ => None,
-  };
 
   sys.run();
 }
+
+/*#[derive(Deserialize, Debug)]
+struct Config {
+  ip: String,
+  port: u16,
+  uid: Option<String>,
+  pwd: Option<String>,
+  tlskey: Option<String>,
+  tlscerts: Option<String>,
+  redirectport: Option<u16>,
+  redirectdomain: Option<String>,
+}
+
+fn defcon() -> Config {
+  Config {
+    ip: "127.0.0.1".to_string(),
+    port: 8000,
+    uid: None,
+    pwd: None,
+    tlskey: None,
+    tlscerts: None,
+    redirectport: None,
+    redirectdomain: None,
+  }
+}
+
+
+fn load_config() -> Config {
+  match load_string("config.toml") {
+    Err(e) => {
+      error!("error loading config.toml: {:?}", e);
+      defcon()
+    }
+    Ok(config_str) => {
+      match toml::from_str(config_str.as_str()) {
+        Ok(c) => c,
+        Err(e) => {
+          error!("error loading config.toml: {:?}", e);
+          defcon()
+        }
+      }
+    }
+  }
+}
+
+*//// simple index handler
+fn mainpage(req: &HttpRequest) -> Result<HttpResponse> {
+    info!("remote ip: {:?}, request:{:?}", req.connection_info().remote(), req);
+
+    match load_string("static/index.html") { 
+      Ok(s) => {
+        // response
+        Ok(HttpResponse::build(StatusCode::OK)
+            .content_type("text/html; charset=utf-8")
+            .body(s))
+      }
+      Err(e) => Err(e.into())
+    }
+}
+
+fn files(req: &HttpRequest) -> Result<NamedFile> {
+  let path: PathBuf = req.match_info().query("tail")?;
+  info!("files: {:?}", path); 
+  let stpath = Path::new("static/").join(path);
+  Ok(NamedFile::open(stpath)?)
+}
+
 

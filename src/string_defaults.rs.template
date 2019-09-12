@@ -53,4 +53,4 @@ pub const SAMPLE_GUI_CONFIG: &'static str = r##"{
 }"##;
 
 
-pub const MAIN_HTML: &'static str = r##"index.html"##;
+pub const MAIN_HTML: &'static str = r##"{{index.html}}"##;

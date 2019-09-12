@@ -40,6 +40,11 @@ then
   time elm make src/Main.elm --output ../static/main.js $1 2> >(tee build-elm-out.txt)
 fi 
 
+
+# optionally update the rust string_default.rs
+./make-string-defaults.sh
+
+
 # print this because elm doesn't print a message when the link
 # step is finally done.
 echo build complete! 

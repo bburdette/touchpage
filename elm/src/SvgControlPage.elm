@@ -17,10 +17,6 @@ import Util exposing (RectSize)
 import VirtualDom as VD
 
 
-
--- json spec
-
-
 type alias Spec =
     { title : String
     , rootControl : SvgControl.Spec
@@ -49,10 +45,6 @@ type alias Model =
 
 type alias ID =
     Int
-
-
-
--- UPDATE
 
 
 type Msg

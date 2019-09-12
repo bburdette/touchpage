@@ -9,7 +9,7 @@
   body { font-family: calibri, helvetica, arial, sans-serif; }
   </style>  
     <body>
-    <script>elm-main.js</script>
+    <script>{{elm-main}}</script>
     <script>
       var wsurl = window.location.host;
       wsurl = wsurl.split(":")[0];

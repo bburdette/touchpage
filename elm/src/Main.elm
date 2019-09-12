@@ -33,13 +33,11 @@ type Msg
 
 
 type alias Flags =
-    String
-
-
-
--- { width : Int
--- , height : Int
--- }
+    { location : String
+    , wsport : Int
+    , width : Int
+    , height : Int
+    }
 
 
 main : Program Flags SvgControlPage.Model SvgControlPage.Msg
@@ -73,8 +71,12 @@ main =
 -}
 
 
-init : String -> ( SvgControlPage.Model, Cmd SvgControlPage.Msg )
-init wsUrl =
+init : Flags -> ( SvgControlPage.Model, Cmd SvgControlPage.Msg )
+init flags =
+    let
+        wsUrl =
+            flags.location
+    in
     SvgControlPage.init
         wsUrl
         (SvgThings.Rect 0 0 500 300)

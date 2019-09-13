@@ -75,7 +75,14 @@ init : Flags -> ( SvgControlPage.Model, Cmd SvgControlPage.Msg )
 init flags =
     let
         wsUrl =
-            flags.location
+            String.split ":" flags.location
+                |> List.tail
+                |> Maybe.andThen List.head
+                |> Maybe.map (\loc -> "ws:" ++ loc ++ ":" ++ String.fromInt flags.wsport)
+                |> Maybe.withDefault ""
+
+        _ =
+            Debug.log "wsurl" <| wsUrl
     in
     SvgControlPage.init
         wsUrl

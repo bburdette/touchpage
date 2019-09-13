@@ -12,6 +12,7 @@ import SvgThings
 import Task
 import Util exposing (RectSize)
 import VirtualDom as VD
+import WebSocket
 
 
 type alias Spec =

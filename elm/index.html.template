@@ -8,6 +8,8 @@
 <div id="elm"></div>
 <script>{{elm-main}}</script>
 <script>
+  var mySockets = {};
+
 	var socket = new WebSocket("ws://127.0.0.1:2794", "rust-websocket");
 	socket.onmessage = function (event) {
 		var received = document.getElementById("received");
@@ -23,7 +25,12 @@
 		input.value = "";
 	}
   function sendSocketCommand(wat) {
-    console.log( "ssc: " +  wat);
+    console.log( "ssc: " +  JSON.stringify(wat, null, 4));
+    if (wat.cmd == "connect") 
+    {
+      console.log("connecting!");
+      mySockets[wat.name] = new WebSocket(wat.address, wat.protocol);
+    }
   }
 
 </script>

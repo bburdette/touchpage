@@ -58,7 +58,12 @@ main =
                     ( mod, cmd ) =
                         init flags
                 in
-                ( mod, Cmd.map ScpMsg cmd )
+                ( mod
+                , Cmd.batch
+                    [ Cmd.map ScpMsg cmd
+                    , wssend <| WebSocket.Connect { name = "touchpage", address = mod.sendaddr, protocol = "rust_websocket" }
+                    ]
+                )
         , subscriptions =
             \_ ->
                 Sub.batch
@@ -80,7 +85,11 @@ main =
                         in
                         ( umod, Cmd.map ScpMsg cmd )
 
-                    WsMsg _ ->
+                    WsMsg x ->
+                        let
+                            _ =
+                                Debug.log "wsmsg: " x
+                        in
                         ( mod, Cmd.none )
         , view =
             \model ->

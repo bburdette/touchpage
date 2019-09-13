@@ -1,11 +1,5 @@
 module SvgLabel exposing (Model, Msg(..), Spec, UpdateMessage, init, jsSpec, jsUpdateMessage, resize, update, view)
 
--- import Html.Attributes exposing (style)
--- import Html.Events exposing (onClick)
--- import Http
--- import NoDragEvents exposing (onClick, onMouseUp, onMouseDown, onMouseOut)
--- import SvgTouch
-
 import Html exposing (Html)
 import Html.Events exposing (onClick, onMouseDown, onMouseOut, onMouseUp)
 import Json.Decode as JD
@@ -21,10 +15,6 @@ import Time exposing (..)
 import VirtualDom as VD
 
 
-
--- import Template.Infix exposing ((<%), (%>))
-
-
 type alias Spec =
     { name : String
     , label : String
@@ -38,10 +28,6 @@ jsSpec =
         (JD.field "label" JD.string)
 
 
-
--- MODEL
-
-
 type alias Model =
     { name : String
     , label : String
@@ -50,6 +36,28 @@ type alias Model =
     , srect : SvgThings.SRect
     , textSvg : List (Svg Msg)
     }
+
+
+type Msg
+    = SvgUpdate UpdateMessage
+    | NoOp
+
+
+
+--    | SvgTouch (List Touch.Touch)
+
+
+type alias UpdateMessage =
+    { controlId : SvgThings.ControlId
+    , label : String
+    }
+
+
+jsUpdateMessage : JD.Decoder UpdateMessage
+jsUpdateMessage =
+    JD.map2 UpdateMessage
+        (JD.field "controlId" SvgThings.decodeControlId)
+        (JD.field "label" JD.string)
 
 
 init :
@@ -74,32 +82,6 @@ init rect cid spec =
         (List.map (\meh -> VD.map (\_ -> NoOp) meh) ts)
     , Cmd.none
     )
-
-
-
--- UPDATE
-
-
-type Msg
-    = SvgUpdate UpdateMessage
-    | NoOp
-
-
-
---    | SvgTouch (List Touch.Touch)
-
-
-type alias UpdateMessage =
-    { controlId : SvgThings.ControlId
-    , label : String
-    }
-
-
-jsUpdateMessage : JD.Decoder UpdateMessage
-jsUpdateMessage =
-    JD.map2 UpdateMessage
-        (JD.field "controlId" SvgThings.decodeControlId)
-        (JD.field "label" JD.string)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -142,11 +124,6 @@ resize model rect =
       }
     , Cmd.none
     )
-
-
-
--- VIEW
--- (=>) = (,)
 
 
 view : Model -> Svg Msg

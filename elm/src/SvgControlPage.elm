@@ -1,8 +1,5 @@
 module SvgControlPage exposing (ID, JsMessage(..), Model, Msg(..), Spec, init, jsMessage, jsSpec, update, view, viewSvgControl)
 
--- import Effects exposing (Effects, Never)
--- import Platform exposing (Cmd, none)
-
 import Dict exposing (..)
 import Html
 import Json.Decode as JD
@@ -189,13 +186,9 @@ init sendaddr rect spec =
         sendaddr
         (RectSize 0 0)
       -- , Task.perform (\x -> Resize x) Window.size
+      --    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
     , Cmd.none
     )
-
-
-
---    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
--- VIEW
 
 
 view : Model -> Html.Html Msg

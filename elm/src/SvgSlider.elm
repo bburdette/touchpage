@@ -46,10 +46,6 @@ jsSpec =
         (JD.field "orientation" JD.string |> JD.andThen SvgThings.jsOrientation)
 
 
-
--- MODEL
-
-
 type alias Model =
     { name : String
     , label : String
@@ -62,6 +58,29 @@ type alias Model =
     , sendaddr : String
     , textSvg : List (Svg ())
     , touchonly : Bool
+    }
+
+
+type Msg
+    = SvgPress JE.Value
+    | SvgUnpress JE.Value
+    | NoOp
+    | Reply String
+    | SvgMoved JE.Value
+    | SvgTouch ST.Msg
+    | SvgUpdate UpdateMessage
+
+
+type UpdateType
+    = Press
+    | Unpress
+
+
+type alias UpdateMessage =
+    { controlId : SvgThings.ControlId
+    , updateType : Maybe UpdateType
+    , location : Maybe Float
+    , label : Maybe String
     }
 
 
@@ -110,20 +129,6 @@ pressedColor pressed =
             "#60B5CC"
 
 
-
--- UPDATE
-
-
-type Msg
-    = SvgPress JE.Value
-    | SvgUnpress JE.Value
-    | NoOp
-    | Reply String
-    | SvgMoved JE.Value
-    | SvgTouch ST.Msg
-    | SvgUpdate UpdateMessage
-
-
 getX : JD.Decoder Int
 getX =
     JD.field "clientX" JD.int
@@ -132,19 +137,6 @@ getX =
 getY : JD.Decoder Int
 getY =
     JD.field "clientY" JD.int
-
-
-type UpdateType
-    = Press
-    | Unpress
-
-
-type alias UpdateMessage =
-    { controlId : SvgThings.ControlId
-    , updateType : Maybe UpdateType
-    , location : Maybe Float
-    , label : Maybe String
-    }
 
 
 encodeUpdateMessage : UpdateMessage -> JD.Value

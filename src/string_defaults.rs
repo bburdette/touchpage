@@ -53,18 +53,15 @@ pub const SAMPLE_GUI_CONFIG: &'static str = r##"{
 }"##;
 
 
-pub const MAIN_HTML: &'static str = r##"<!DOCTYPE html>
+pub const MAIN_HTML: &'static str = r##"<!DOCTYPE HTML>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Oscpad</title>
-  </head>
-  <style>html,head,body { padding:0; margin:0; }
-  body { font-family: calibri, helvetica, arial, sans-serif; }
-  </style>  
-    <body>
-    <script>(function(scope){
+<head>
+  <meta charset="UTF-8">
+  <title>Main</title>
+</head>
+<body>
+<div id="elm"></div>
+<script>(function(scope){
 'use strict';
 
 function F(arity, fun, wrapper) {
@@ -6606,12 +6603,43 @@ var author$project$SvgSlider$Spec = F3(
 		return {label: label, name: name, orientation: orientation};
 	});
 var author$project$SvgThings$Vertical = {$: 'Vertical'};
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
 var author$project$Main$init = function (flags) {
-	var wsUrl = flags.location;
+	var wsUrl = A2(
+		elm$core$Maybe$withDefault,
+		'',
+		A2(
+			elm$core$Maybe$map,
+			function (loc) {
+				return 'ws:' + (loc + (':' + elm$core$String$fromInt(flags.wsport)));
+			},
+			A2(
+				elm$core$Maybe$andThen,
+				elm$core$List$head,
+				elm$core$List$tail(
+					A2(elm$core$String$split, ':', flags.location)))));
 	return A3(
 		author$project$SvgControlPage$init,
 		wsUrl,
-		A4(author$project$SvgThings$Rect, 0, 0, 500, 300),
+		A4(author$project$SvgThings$Rect, 0, 0, flags.width, flags.height),
 		A3(
 			author$project$SvgControlPage$Spec,
 			wsUrl,
@@ -7008,16 +7036,6 @@ var author$project$SvgSlider$jsSpec = A4(
 		elm$json$Json$Decode$andThen,
 		author$project$SvgThings$jsOrientation,
 		A2(elm$json$Json$Decode$field, 'orientation', elm$json$Json$Decode$string)));
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
 var elm$json$Json$Decode$lazy = function (thunk) {
 	return A2(
 		elm$json$Json$Decode$andThen,
@@ -8176,14 +8194,20 @@ _Platform_export({'Main':{'init':author$project$Main$main(
 				A2(elm$json$Json$Decode$field, 'width', elm$json$Json$Decode$int));
 		},
 		A2(elm$json$Json$Decode$field, 'wsport', elm$json$Json$Decode$int)))(0)}});}(this));</script>
-    <script>
-      var wsurl = window.location.host;
-      wsurl = wsurl.split(":")[0];
-      wsurl = "ws://" + wsurl + ":<websockets-port>";
-      console.debug("wsurl: " + wsurl);
-      Elm.Main.fullscreen(wsurl);
-    </script>
-  </body>
+<script>
+var app = Elm.Main.init( 
+    { flags: { location : document.location.origin || "", 
+               wsport : {{websockets-port}},
+               width : window.innerWidth, 
+               height : window.innerHeight
+             }, 
+      node: document.getElementById("elm") 
+    });
+if (document.getElementById("elm"))
+{
+  document.getElementById("elm").innerText = 'This is a headless program, meaning there is nothing to show here.\n\nI started the program anyway though, and you can access it as `app` in the developer console.';
+}
+</script>
+</body>
 </html>
-
 "##;

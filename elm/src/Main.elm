@@ -20,11 +20,6 @@ import Util exposing (RectSize)
 
 
 -- import WebSocket
----------------------------------------
-{- wsUrl : String
-   wsUrl =
-       "ws://localhost:1234"
--}
 
 
 type Msg
@@ -80,11 +75,8 @@ init flags =
                 |> Maybe.andThen List.head
                 |> Maybe.map (\loc -> "ws:" ++ loc ++ ":" ++ String.fromInt flags.wsport)
                 |> Maybe.withDefault ""
-
-        _ =
-            Debug.log "wsurl" <| wsUrl
     in
     SvgControlPage.init
         wsUrl
-        (SvgThings.Rect 0 0 500 300)
+        (SvgThings.Rect 0 0 flags.width flags.height)
         (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)

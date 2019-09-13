@@ -30,10 +30,6 @@ jsSpec =
         (JD.maybe (JD.field "label" JD.string))
 
 
-
--- MODEL
-
-
 type alias Model =
     { name : String
     , label : String
@@ -88,10 +84,6 @@ pressedColor pressed =
 
         False ->
             "#60B5CC"
-
-
-
--- UPDATE
 
 
 type Msg
@@ -280,10 +272,6 @@ resize model rect =
       }
     , Cmd.none
     )
-
-
-
--- VIEW
 
 
 buttonEvt : String -> (JD.Value -> Msg) -> VD.Attribute Msg

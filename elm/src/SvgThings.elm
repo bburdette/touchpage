@@ -1,25 +1,5 @@
 module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, calcText, calcTextSvg, computeFontScaling, containsXY, decodeControlId, encodeControlId, ff, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
 
-{- module SvgThings exposing ( Orientation,
-   Rect,
-   SRect,
-   ControlId,
-   jsOrientation,
-   encodeControlId,
-   decodeControlId,
-   containsXY,
-   toSRect,
-   shrinkRect,
-   computeFontScaling,
-   calcText ,
-   calcTextSvg,
-   processProps,
-   mekvr,
-   ff,
-   vrects
-   )
--}
-
 import Json.Decode as JD
 import Json.Encode as JE
 import List exposing (..)
@@ -31,7 +11,6 @@ import Tuple
 
 
 
--- import Template.Infix exposing ((%>), (<%))
 -- font family
 
 
@@ -117,10 +96,8 @@ shrinkRect border rect =
         (rect.h - border - border)
 
 
-
--- make a number of horizontally evenly spaced rects.
-
-
+{-| make a number of horizontally evenly spaced rects.
+-}
 hrects : Rect -> Int -> List Rect
 hrects rct count =
     let
@@ -139,10 +116,8 @@ mekhr br w i =
     Rect (br.x + (w * i)) br.y w br.h
 
 
-
--- make a number of horizontally proportionally sized rects.
-
-
+{-| make a number of horizontally proportionally sized rects.
+-}
 hrectsp : Rect -> Int -> List Float -> List Rect
 hrectsp rct count props =
     let
@@ -166,10 +141,8 @@ mekhrp prect ( x, w ) =
     Rect x prect.y w prect.h
 
 
-
--- make a number of vertically evenly spaced rects.
-
-
+{-| make a number of vertically evenly spaced rects.
+-}
 vrectsp : Rect -> Int -> List Float -> List Rect
 vrectsp rct count props =
     let
@@ -193,11 +166,9 @@ mekvrp prect ( y, h ) =
     Rect prect.x y prect.w h
 
 
-
--- given a list [a,b,c,d,e], produce the sum list:
--- [0, a, a+b, a+b+c, etc]
-
-
+{-| given a list [a,b,c,d,e], produce the sum list:
+[0, a, a+b, a+b+c, etc]
+-}
 somme : Int -> List Int -> List Int
 somme f lst =
     case head lst of
@@ -220,10 +191,8 @@ somme f lst =
                     f :: somme s t
 
 
-
--- make a number of vertically evenly spaced rects.
-
-
+{-| make a number of vertically evenly spaced rects.
+-}
 vrects : Rect -> Int -> List Rect
 vrects rct count =
     let

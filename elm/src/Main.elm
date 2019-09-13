@@ -1,4 +1,4 @@
-module Main exposing (Msg(..), init, main)
+port module Main exposing (init, main)
 
 -- import Keyboard
 -- import SvgTouch
@@ -7,6 +7,8 @@ import Browser
 import Browser.Events as BE
 import Char
 import Html
+import Json.Decode as JD
+import Json.Encode as JE
 import String
 import SvgButton
 import SvgControl
@@ -16,15 +18,27 @@ import SvgTextSize
 import SvgThings
 import Task exposing (Task)
 import Util exposing (RectSize)
+import WebSocket
 
 
+port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
 
--- import WebSocket
+
+port sendSocketCommand : JE.Value -> Cmd msg
+
+
+wssend =
+    WebSocket.send sendSocketCommand
+
+
+wsreceive =
+    receiveSocketMsg <|
+        WebSocket.receive WsMsg
 
 
 type Msg
-    = Receive String
-    | Send
+    = WsMsg (Result JD.Error WebSocket.WebSocketMsg)
+    | ScpMsg SvgControlPage.Msg
 
 
 type alias Flags =
@@ -35,16 +49,43 @@ type alias Flags =
     }
 
 
-main : Program Flags SvgControlPage.Model SvgControlPage.Msg
+main : Program Flags SvgControlPage.Model Msg
 main =
     Browser.document
-        { init = init
-        , subscriptions = \_ -> BE.onResize (\a b -> SvgControlPage.Resize <| RectSize (toFloat a) (toFloat b))
-        , update = SvgControlPage.update
+        { init =
+            \flags ->
+                let
+                    ( mod, cmd ) =
+                        init flags
+                in
+                ( mod, Cmd.map ScpMsg cmd )
+        , subscriptions =
+            \_ ->
+                Sub.batch
+                    [ Sub.map ScpMsg <|
+                        BE.onResize
+                            (\a b ->
+                                SvgControlPage.Resize <|
+                                    RectSize (toFloat a) (toFloat b)
+                            )
+                    , wsreceive
+                    ]
+        , update =
+            \msg mod ->
+                case msg of
+                    ScpMsg sm ->
+                        let
+                            ( umod, cmd ) =
+                                SvgControlPage.update sm mod
+                        in
+                        ( umod, Cmd.map ScpMsg cmd )
+
+                    WsMsg _ ->
+                        ( mod, Cmd.none )
         , view =
             \model ->
                 Browser.Document "svg control"
-                    [ SvgControlPage.view model ]
+                    [ Html.map ScpMsg <| SvgControlPage.view model ]
         }
 
 

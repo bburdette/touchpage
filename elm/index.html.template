@@ -8,18 +8,39 @@
 <div id="elm"></div>
 <script>{{elm-main}}</script>
 <script>
-var app = Elm.Main.init( 
-    { flags: { location : document.location.origin || "", 
-               wsport : {{websockets-port}},
-               width : window.innerWidth, 
-               height : window.innerHeight
-             }, 
-      node: document.getElementById("elm") 
-    });
-if (document.getElementById("elm"))
-{
-  document.getElementById("elm").innerText = 'This is a headless program, meaning there is nothing to show here.\n\nI started the program anyway though, and you can access it as `app` in the developer console.';
-}
+	var socket = new WebSocket("ws://127.0.0.1:2794", "rust-websocket");
+	socket.onmessage = function (event) {
+		var received = document.getElementById("received");
+		var br = document.createElement("BR");
+		var text = document.createTextNode(event.data);
+		received.appendChild(br);
+		received.appendChild(text);
+	};
+	
+	function send(element) {
+		var input = document.getElementById(element);
+		socket.send(input.value);
+		input.value = "";
+	}
+  function sendSocketCommand(wat) {
+    console.log( "ssc: " +  wat);
+  }
+
+</script>
+<script>
+    var app = Elm.Main.init( 
+        { flags: { location : document.location.origin || "", 
+                   wsport : {{websockets-port}},
+                   width : window.innerWidth, 
+                   height : window.innerHeight
+                 }, 
+          node: document.getElementById("elm") 
+        });
+    if (document.getElementById("elm"))
+    {
+      document.getElementById("elm").innerText = 'This is a headless program, meaning there is nothing to show here.\n\nI started the program anyway though, and you can access it as `app` in the developer console.';
+    }
+    app.ports.sendSocketCommand.subscribe(sendSocketCommand);
 </script>
 </body>
 </html>

@@ -180,12 +180,11 @@ update msg model =
             pressup model Press
 
         SvgUnpress ->
-            case model.pressed of
-                True ->
-                    pressup model Unpress
+            if model.pressed then
+                pressup model Unpress
 
-                False ->
-                    ( model, Cmd.none )
+            else
+                ( model, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )

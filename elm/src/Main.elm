@@ -61,7 +61,12 @@ main =
                 ( mod
                 , Cmd.batch
                     [ Cmd.map ScpMsg cmd
-                    , wssend <| WebSocket.Connect { name = "touchpage", address = mod.sendaddr, protocol = "rust_websocket" }
+                    , wssend <|
+                        WebSocket.Connect
+                            { name = "touchpage"
+                            , address = mod.sendaddr
+                            , protocol = "rust_websocket"
+                            }
                     ]
                 )
         , subscriptions =

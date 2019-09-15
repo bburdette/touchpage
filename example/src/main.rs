@@ -9,9 +9,12 @@ fn main() {
 
   let meh = PrintUpdateMsg {};
 
-  startwebserver( "localhost", "8000", "9001", None);
     // Some(touchpage::string_defaults::MAIN_HTML));
-  startserver(GUI, Box::new(meh), "localhost", "8500", false);
+    //
+  println!("before websocketserver");
+  startserver(GUI, Box::new(meh), "localhost", "9001", false);
+  println!("before webserver");
+  startwebserver( "localhost", "8000", "9001", None);
 }
 
 const GUI: &'static str = r##"

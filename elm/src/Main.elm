@@ -65,7 +65,7 @@ main =
                         WebSocket.Connect
                             { name = "touchpage"
                             , address = mod.sendaddr
-                            , protocol = "rust_websocket"
+                            , protocol = "rust-websocket"
                             }
                     ]
                 )

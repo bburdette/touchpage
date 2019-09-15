@@ -10,15 +10,16 @@
 <script>
   var mySockets = {};
 
-	// var socket = new WebSocket("ws://127.0.0.1:2794", "rust-websocket");
-	socket.onmessage = function (event) {
+	var socket = new WebSocket("ws://127.0.0.1:9001", "rust-websocket");
+	/* socket.onmessage = function (event) {
 		var received = document.getElementById("received");
 		var br = document.createElement("BR");
 		var text = document.createTextNode(event.data);
 		received.appendChild(br);
 		received.appendChild(text);
 	};
-	
+	*/
+
 	function send(element) {
 		var input = document.getElementById(element);
 		socket.send(input.value);

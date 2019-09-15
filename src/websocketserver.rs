@@ -77,9 +77,12 @@ fn websockets_main(
   broadcaster: broadcaster::Broadcaster,
   cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
 ) -> Result<(), Box<std::error::Error>> {
+
+  println!("websockets_main {:?}", ipaddr);
   let server = Server::bind(&ipaddr[..])?;
 
   for request in server.filter_map(Result::ok) {
+    println!("request: {:?}", request.protocols());
     // Spawn a new thread for each connection.
     thread::spawn(move || {
       if !request.protocols().contains(&"rust-websocket".to_string()) {

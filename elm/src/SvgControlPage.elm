@@ -7,6 +7,7 @@ import List exposing (..)
 import Svg
 import Svg.Attributes as SA
 import Svg.Events as SE
+import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgThings
 import Task
@@ -36,7 +37,6 @@ type alias Model =
     , srect : SvgThings.SRect
     , spec : Spec
     , control : SvgControl.Model
-    , sendaddr : String
     , windowSize : RectSize
     }
 
@@ -67,19 +67,19 @@ jsMessage =
         ]
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Command )
 update msg model =
     case msg of
         JsonMsg s ->
             case JD.decodeString jsMessage s of
                 Ok (JmSpec spec) ->
-                    init model.sendaddr model.mahrect spec
+                    ( init model.mahrect spec, None )
 
                 Ok (JmUpdate jmact) ->
                     update jmact model
 
                 Err e ->
-                    ( { model | title = JD.errorToString e }, Cmd.none )
+                    ( { model | title = JD.errorToString e }, None )
 
         CMsg act ->
             let
@@ -89,14 +89,14 @@ update msg model =
                 newmod =
                     { model | control = Tuple.first wha }
             in
-            ( newmod, Cmd.map CMsg (Tuple.second wha) )
+            ( newmod, Tuple.second wha )
 
         Resize newSize ->
             let
                 nr =
                     SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
 
-                ( ctrl, cmds ) =
+                ctrl =
                     SvgControl.resize model.control nr
             in
             ( { model
@@ -105,11 +105,11 @@ update msg model =
                 , windowSize = newSize
                 , control = ctrl
               }
-            , Cmd.map CMsg cmds
+            , None
             )
 
         NoOp ->
-            ( model, Cmd.none )
+            ( model, None )
 
 
 
@@ -164,31 +164,28 @@ update msg model =
 
 
 init :
-    String
-    -> SvgThings.Rect
+    SvgThings.Rect
     -> Spec
-    -> ( Model, Cmd Msg )
-init sendaddr rect spec =
+    -> Model
+init rect spec =
     let
-        ( conmod, conevt ) =
-            SvgControl.init sendaddr rect [] spec.rootControl
+        conmod =
+            SvgControl.init rect [] spec.rootControl
 
-        ( updmod, evts ) =
-            SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
-
+        {- ( updmod, evts ) =
+           SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
+        -}
         -- combevts = Cmd.batch [conevt, evts]
     in
-    ( Model spec.title
+    (Model spec.title
         rect
         (SvgThings.toSRect rect)
         spec
-        updmod
+        conmod
         -- Dict.empty
-        sendaddr
         (RectSize 0 0)
-      -- , Task.perform (\x -> Resize x) Window.size
-      --    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
-    , Cmd.none
+     -- , Task.perform (\x -> Resize x) Window.size
+     --    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
     )
 
 

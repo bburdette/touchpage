@@ -7,6 +7,7 @@ import Json.Encode as JE
 import String
 import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
+import SvgCommand exposing (Command(..))
 import SvgTextSize exposing (..)
 import SvgThings
 import Task
@@ -64,13 +65,13 @@ init :
     SvgThings.Rect
     -> SvgThings.ControlId
     -> Spec
-    -> ( Model, Cmd msg )
+    -> Model
 init rect cid spec =
     let
         ts =
             SvgThings.calcTextSvg SvgThings.ff spec.label rect
     in
-    ( Model spec.name
+    Model spec.name
         spec.label
         cid
         rect
@@ -80,11 +81,9 @@ init rect cid spec =
             (String.fromInt rect.h)
         )
         (List.map (\meh -> VD.map (\_ -> NoOp) meh) ts)
-    , Cmd.none
-    )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         SvgUpdate um ->
@@ -95,25 +94,23 @@ update msg model =
                 ts =
                     List.map (\meh -> VD.map (\_ -> NoOp) meh) tswk
             in
-            ( { model | label = um.label, textSvg = ts }
-            , Cmd.none
-            )
+            { model | label = um.label, textSvg = ts }
 
         NoOp ->
-            ( model, Cmd.none )
+            model
 
 
 
 --    SvgTouch touches -> (model, Cmd.none)
 
 
-resize : Model -> SvgThings.Rect -> ( Model, Cmd Msg )
+resize : Model -> SvgThings.Rect -> Model
 resize model rect =
     let
         ts =
             SvgThings.calcTextSvg SvgThings.ff model.label rect
     in
-    ( { model
+    { model
         | rect = rect
         , srect =
             SvgThings.SRect (String.fromInt rect.x)
@@ -121,9 +118,7 @@ resize model rect =
                 (String.fromInt rect.w)
                 (String.fromInt rect.h)
         , textSvg = List.map (\meh -> VD.map (\_ -> NoOp) meh) ts
-      }
-    , Cmd.none
-    )
+    }
 
 
 view : Model -> Svg Msg

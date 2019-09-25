@@ -7,6 +7,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
+import SvgCommand exposing (Command(..))
 import SvgThings
 import SvgTouch as ST
 import Task
@@ -37,19 +38,17 @@ type alias Model =
     , rect : SvgThings.Rect
     , srect : SvgThings.SRect
     , pressed : Bool
-    , sendaddr : String
     , textSvg : List (Svg ())
     , touchonly : Bool
     }
 
 
 init :
-    String
-    -> SvgThings.Rect
+    SvgThings.Rect
     -> SvgThings.ControlId
     -> Spec
-    -> ( Model, Cmd Msg )
-init sendaddr rect cid spec =
+    -> Model
+init rect cid spec =
     let
         ts =
             case spec.label of
@@ -59,7 +58,7 @@ init sendaddr rect cid spec =
                 Nothing ->
                     []
     in
-    ( Model spec.name
+    Model spec.name
         (Maybe.withDefault "" spec.label)
         cid
         rect
@@ -69,11 +68,8 @@ init sendaddr rect cid spec =
             (String.fromInt rect.h)
         )
         False
-        sendaddr
         ts
         False
-    , Cmd.none
-    )
 
 
 pressedColor : Bool -> String
@@ -173,7 +169,7 @@ jsUpdateType ut =
             JD.succeed Unpress
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Command )
 update msg model =
     case msg of
         SvgPress ->
@@ -184,13 +180,13 @@ update msg model =
                 pressup model Unpress
 
             else
-                ( model, Cmd.none )
+                ( model, None )
 
         NoOp ->
-            ( model, Cmd.none )
+            ( model, None )
 
         Reply s ->
-            ( { model | name = s }, Cmd.none )
+            ( { model | name = s }, None )
 
         SvgUpdate um ->
             -- sanity check for ids?  or don't.
@@ -220,7 +216,7 @@ update msg model =
                         Nothing ->
                             model.textSvg
               }
-            , Cmd.none
+            , None
             )
 
         SvgTouch stm ->
@@ -230,17 +226,17 @@ update msg model =
                         pressup model Unpress
 
                     else
-                        ( model, Cmd.none )
+                        ( model, None )
 
                 Just _ ->
                     if model.pressed == False then
                         pressup model Press
 
                     else
-                        ( model, Cmd.none )
+                        ( model, None )
 
 
-pressup : Model -> UpdateType -> ( Model, Cmd Msg )
+pressup : Model -> UpdateType -> ( Model, Command )
 pressup model ut =
     let
         um =
@@ -250,17 +246,18 @@ pressup model ut =
                 )
     in
     ( { model | pressed = ut == Press }
-    , Cmd.none {- TODO implement.   , WebSocket.send model.sendaddr um -}
+    , Send um
+      -- , Cmd.none {- TODO implement.   , WebSocket.send model.sendaddr um -}
     )
 
 
-resize : Model -> SvgThings.Rect -> ( Model, Cmd Msg )
+resize : Model -> SvgThings.Rect -> Model
 resize model rect =
     let
         ts =
             SvgThings.calcTextSvg SvgThings.ff model.label rect
     in
-    ( { model
+    { model
         | rect = rect
         , srect =
             SvgThings.SRect (String.fromInt rect.x)
@@ -268,9 +265,7 @@ resize model rect =
                 (String.fromInt rect.w)
                 (String.fromInt rect.h)
         , textSvg = ts
-      }
-    , Cmd.none
-    )
+    }
 
 
 buttonEvt : String -> (JD.Value -> Msg) -> VD.Attribute Msg

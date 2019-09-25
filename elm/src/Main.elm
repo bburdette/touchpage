@@ -88,7 +88,8 @@ main =
                             ( umod, cmd ) =
                                 SvgControlPage.update sm mod
                         in
-                        ( umod, Cmd.map ScpMsg cmd )
+                        -- ( umod, Cmd.map ScpMsg cmd )
+                        ( umod, Cmd.none )
 
                     WsMsg x ->
                         let

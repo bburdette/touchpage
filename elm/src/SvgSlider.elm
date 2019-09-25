@@ -11,6 +11,7 @@ import String
 import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick, onMouseDown, onMouseOut, onMouseUp)
+import SvgCommand exposing (Command(..))
 import SvgThings exposing (Orientation(..))
 import SvgTouch as ST
 import Toop
@@ -55,7 +56,6 @@ type alias Model =
     , orientation : SvgThings.Orientation
     , pressed : Bool
     , location : Float
-    , sendaddr : String
     , textSvg : List (Svg ())
     , touchonly : Bool
     }
@@ -85,12 +85,11 @@ type alias UpdateMessage =
 
 
 init :
-    String
-    -> SvgThings.Rect
+    SvgThings.Rect
     -> SvgThings.ControlId
     -> Spec
-    -> ( Model, Cmd msg )
-init sendaddr rect cid spec =
+    -> Model
+init rect cid spec =
     let
         ts =
             case spec.label of
@@ -100,7 +99,7 @@ init sendaddr rect cid spec =
                 Nothing ->
                     []
     in
-    ( Model spec.name
+    Model spec.name
         (Maybe.withDefault "" spec.label)
         cid
         rect
@@ -112,11 +111,8 @@ init sendaddr rect cid spec =
         spec.orientation
         False
         0.5
-        sendaddr
         ts
         False
-    , Cmd.none
-    )
 
 
 pressedColor : Bool -> String
@@ -237,7 +233,7 @@ getLocation model v =
                     Err (JD.errorToString e)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Command )
 update msg model =
     case msg of
         SvgPress v ->
@@ -246,7 +242,7 @@ update msg model =
                     updsend model (Just Press) l
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, None )
 
         SvgUnpress v ->
             case model.pressed of
@@ -254,13 +250,13 @@ update msg model =
                     updsend model (Just Unpress) model.location
 
                 False ->
-                    ( model, Cmd.none )
+                    ( model, None )
 
         NoOp ->
-            ( model, Cmd.none )
+            ( model, None )
 
         Reply s ->
-            ( { model | name = s }, Cmd.none )
+            ( { model | name = s }, None )
 
         SvgMoved v ->
             case model.pressed of
@@ -270,10 +266,10 @@ update msg model =
                             updsend model Nothing l
 
                         _ ->
-                            ( model, Cmd.none )
+                            ( model, None )
 
                 False ->
-                    ( model, Cmd.none )
+                    ( model, None )
 
         SvgUpdate um ->
             -- sanity check for ids?  or don't.
@@ -313,7 +309,7 @@ update msg model =
                                     model.textSvg
                     }
             in
-            ( mod, Cmd.none )
+            ( mod, None )
 
         SvgTouch stm ->
             case ST.extractFirstRectTouchSE stm model.rect of
@@ -322,7 +318,7 @@ update msg model =
                         updsend model (Just Unpress) model.location
 
                     else
-                        ( model, Cmd.none )
+                        ( model, None )
 
                 Just touch ->
                     case model.orientation of
@@ -351,7 +347,7 @@ update msg model =
                                 updsend model Nothing loc
 
 
-updsend : Model -> Maybe UpdateType -> Float -> ( Model, Cmd Msg )
+updsend : Model -> Maybe UpdateType -> Float -> ( Model, Command )
 updsend model mbut loc =
     let
         bLoc =
@@ -369,7 +365,7 @@ updsend model mbut loc =
     in
     -- if nothing changed, no message.
     if model.location == bLoc && model.pressed == prest then
-        ( model, Cmd.none )
+        ( model, None )
 
     else
         let
@@ -380,18 +376,18 @@ updsend model mbut loc =
                     )
         in
         ( { model | location = bLoc, pressed = prest }
-        , Cmd.none
+        , Send um
           -- , WebSocket.send model.sendaddr um  TODO implement
         )
 
 
-resize : Model -> SvgThings.Rect -> ( Model, Cmd Msg )
+resize : Model -> SvgThings.Rect -> Model
 resize model rect =
     let
         ts =
             SvgThings.calcTextSvg SvgThings.ff model.label rect
     in
-    ( { model
+    { model
         | rect = rect
         , srect =
             SvgThings.SRect (String.fromInt rect.x)
@@ -399,9 +395,7 @@ resize model rect =
                 (String.fromInt rect.w)
                 (String.fromInt rect.h)
         , textSvg = ts
-      }
-    , Cmd.none
-    )
+    }
 
 
 

@@ -10,7 +10,7 @@
 <script>
   var mySockets = {};
 
-	var socket = new WebSocket("ws://127.0.0.1:9001", "rust-websocket");
+	// var socket = new WebSocket("ws://127.0.0.1:9001", "rust-websocket");
 	/* socket.onmessage = function (event) {
 		var received = document.getElementById("received");
 		var br = document.createElement("BR");
@@ -31,6 +31,11 @@
     {
       console.log("connecting!");
       mySockets[wat.name] = new WebSocket(wat.address, wat.protocol);
+    }
+    else if (wat.cmd == "send")
+    {
+      console.log("sending!");
+      mySockets[wat.name].send(wat.content); 
     }
   }
 

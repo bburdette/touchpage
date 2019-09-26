@@ -11,6 +11,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import String
 import SvgButton
+import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgControlPage
 import SvgSlider
@@ -49,25 +50,28 @@ type alias Flags =
     }
 
 
-main : Program Flags SvgControlPage.Model Msg
+type alias Model =
+    { scpModel : SvgControlPage.Model
+    , wsUrl : String
+    }
+
+
+main : Program Flags Model Msg
 main =
     Browser.document
         { init =
             \flags ->
                 let
-                    ( mod, cmd ) =
+                    mod =
                         init flags
                 in
                 ( mod
-                , Cmd.batch
-                    [ Cmd.map ScpMsg cmd
-                    , wssend <|
-                        WebSocket.Connect
-                            { name = "touchpage"
-                            , address = mod.sendaddr
-                            , protocol = "rust-websocket"
-                            }
-                    ]
+                , wssend <|
+                    WebSocket.Connect
+                        { name = "touchpage"
+                        , address = mod.wsUrl
+                        , protocol = "rust-websocket"
+                        }
                 )
         , subscriptions =
             \_ ->
@@ -86,10 +90,24 @@ main =
                     ScpMsg sm ->
                         let
                             ( umod, cmd ) =
-                                SvgControlPage.update sm mod
+                                SvgControlPage.update sm mod.scpModel
+
+                            _ =
+                                Debug.log "cmd: " cmd
                         in
                         -- ( umod, Cmd.map ScpMsg cmd )
-                        ( umod, Cmd.none )
+                        ( { mod | scpModel = umod }
+                        , case cmd of
+                            Send dta ->
+                                wssend <|
+                                    WebSocket.Send
+                                        { name = "touchpage"
+                                        , content = dta
+                                        }
+
+                            None ->
+                                Cmd.none
+                        )
 
                     WsMsg x ->
                         let
@@ -100,7 +118,7 @@ main =
         , view =
             \model ->
                 Browser.Document "svg control"
-                    [ Html.map ScpMsg <| SvgControlPage.view model ]
+                    [ Html.map ScpMsg <| SvgControlPage.view model.scpModel ]
         }
 
 
@@ -122,7 +140,7 @@ main =
 -}
 
 
-init : Flags -> ( SvgControlPage.Model, Cmd SvgControlPage.Msg )
+init : Flags -> Model
 init flags =
     let
         wsUrl =
@@ -132,7 +150,9 @@ init flags =
                 |> Maybe.map (\loc -> "ws:" ++ loc ++ ":" ++ String.fromInt flags.wsport)
                 |> Maybe.withDefault ""
     in
-    SvgControlPage.init
-        wsUrl
-        (SvgThings.Rect 0 0 flags.width flags.height)
-        (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
+    { scpModel =
+        SvgControlPage.init
+            (SvgThings.Rect 0 0 flags.width flags.height)
+            (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
+    , wsUrl = wsUrl
+    }

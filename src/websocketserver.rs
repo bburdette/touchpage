@@ -114,6 +114,8 @@ fn websockets_main(
         // TODO message handler here.
         let message = message.unwrap();
 
+        println!("received msg: {:?}", message);
+
         match message {
           OwnedMessage::Close(_) => {
             let message = OwnedMessage::Close(None);

@@ -34,7 +34,9 @@
       socket = new WebSocket(wat.address, wat.protocol);
       socket.onmessage = function (event) {
         console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
-        app.ports.receiveSocketMsg.send(event.data);
+        app.ports.receiveSocketMsg.send({ name : wat.name
+                                        , msg : "data"
+                                        , data : event.data} );
     	}
     	mySockets[wat.name] = socket;
     }

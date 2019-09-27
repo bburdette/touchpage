@@ -5891,6 +5891,9 @@ var author$project$WebSocket$send = F2(
 			author$project$WebSocket$encodeCmd(wsc));
 	});
 var author$project$Main$wssend = author$project$WebSocket$send(author$project$Main$sendSocketCommand);
+var author$project$SvgControlPage$JsonMsg = function (a) {
+	return {$: 'JsonMsg', a: a};
+};
 var author$project$SvgControlPage$Resize = function (a) {
 	return {$: 'Resize', a: a};
 };
@@ -8174,7 +8177,27 @@ var author$project$Main$main = elm$browser$Browser$document(
 				} else {
 					var x = msg.a;
 					var _n5 = A2(elm$core$Debug$log, 'wsmsg: ', x);
-					return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
+					if (x.$ === 'Ok') {
+						if (x.a.$ === 'Data') {
+							var wsd = x.a.a;
+							var _n7 = A2(
+								author$project$SvgControlPage$update,
+								author$project$SvgControlPage$JsonMsg(wsd.data),
+								mod.scpModel);
+							var scpModel = _n7.a;
+							var scpCommand = _n7.b;
+							return _Utils_Tuple2(
+								_Utils_update(
+									mod,
+									{scpModel: scpModel}),
+								elm$core$Platform$Cmd$none);
+						} else {
+							var wse = x.a.a;
+							return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
+						}
+					} else {
+						return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
+					}
 				}
 			}),
 		view: function (model) {
@@ -8240,7 +8263,9 @@ _Platform_export({'Main':{'init':author$project$Main$main(
       socket = new WebSocket(wat.address, wat.protocol);
       socket.onmessage = function (event) {
         console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
-        app.ports.receiveSocketMsg.send(event.data);
+        app.ports.receiveSocketMsg.send({ name : wat.name
+                                        , msg : "data"
+                                        , data : event.data} );
     	}
     	mySockets[wat.name] = socket;
     }

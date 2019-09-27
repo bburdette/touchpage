@@ -113,7 +113,19 @@ main =
                             _ =
                                 Debug.log "wsmsg: " x
                         in
-                        ( mod, Cmd.none )
+                        case x of
+                            Ok (WebSocket.Data wsd) ->
+                                let
+                                    ( scpModel, scpCommand ) =
+                                        SvgControlPage.update (SvgControlPage.JsonMsg wsd.data) mod.scpModel
+                                in
+                                ( { mod | scpModel = scpModel }, Cmd.none )
+
+                            Ok (WebSocket.Error wse) ->
+                                ( mod, Cmd.none )
+
+                            Err _ ->
+                                ( mod, Cmd.none )
         , view =
             \model ->
                 Browser.Document "svg control"

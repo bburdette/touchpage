@@ -6,6 +6,7 @@ use controls;
 use json;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use websocket::message::Message;
 use websocket::sync::Server;
 use websocket::OwnedMessage;
 
@@ -77,11 +78,12 @@ fn websockets_main(
   broadcaster: broadcaster::Broadcaster,
   cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
 ) -> Result<(), Box<std::error::Error>> {
-
   println!("websockets_main {:?}", ipaddr);
   let server = Server::bind(&ipaddr[..])?;
-
   for request in server.filter_map(Result::ok) {
+    let sci = ci.clone();
+    let broadcaster = broadcaster.clone();
+    let cup = cup.clone();
     println!("request: {:?}", request.protocols());
     // Spawn a new thread for each connection.
     thread::spawn(move || {
@@ -126,6 +128,44 @@ fn websockets_main(
           OwnedMessage::Ping(ping) => {
             let message = OwnedMessage::Pong(ping);
             sender.send_message(&message).unwrap();
+          }
+          OwnedMessage::Text(txt) => {
+            println!("txt {}", txt);
+            // let message = OwnedMessage::Pong(ping);
+            // sender.send_message(&message).unwrap();
+            match serde_json::from_str(txt.as_str()) {
+              Err(e) => println!("error {:?}", e),
+              Ok(jsonval) => {
+                let s_um = json::decode_update_message(&jsonval);
+                match s_um {
+                  Some(updmsg) => {
+                    {
+                      println!("updmsg: {:?}", updmsg);
+                      let mut sci = sci.lock().unwrap();
+                      {
+                        let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));
+                        match mbcntrl {
+                          Some(cntrl) => {
+                            (*cntrl).update(&updmsg);
+                            broadcaster.broadcast_others(&ip, Message::text(txt.clone()));
+                            ()
+                          }
+                          None => println!("none"),
+                        }
+                      }
+                    }
+                    let mut scup = cup.lock().unwrap();
+                    let sci = match sci.lock() {
+                      Ok(sci) => sci,
+                      Err(poisoned) => poisoned.into_inner(),
+                    };
+
+                    scup.on_update_received(&updmsg, &*sci);
+                  }
+                  _ => println!("decode_update_message failed on websockets msg: {:?}", txt),
+                }
+              }
+            }
           }
           _ => sender.send_message(&message).unwrap(),
         }

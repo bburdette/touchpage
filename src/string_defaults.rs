@@ -4373,6 +4373,12 @@ function _Browser_load(url)
 		}
 	}));
 }
+var author$project$Main$ScpMsg = function (a) {
+	return {$: 'ScpMsg', a: a};
+};
+var author$project$Main$WsMsg = function (a) {
+	return {$: 'WsMsg', a: a};
+};
 var author$project$SvgControl$CsSlider = function (a) {
 	return {$: 'CsSlider', a: a};
 };
@@ -4380,9 +4386,9 @@ var author$project$SvgControlPage$Spec = F3(
 	function (title, rootControl, state) {
 		return {rootControl: rootControl, state: state, title: title};
 	});
-var author$project$SvgButton$Model = F9(
-	function (name, label, cid, rect, srect, pressed, sendaddr, textSvg, touchonly) {
-		return {cid: cid, label: label, name: name, pressed: pressed, rect: rect, sendaddr: sendaddr, srect: srect, textSvg: textSvg, touchonly: touchonly};
+var author$project$SvgButton$Model = F8(
+	function (name, label, cid, rect, srect, pressed, textSvg, touchonly) {
+		return {cid: cid, label: label, name: name, pressed: pressed, rect: rect, srect: srect, textSvg: textSvg, touchonly: touchonly};
 	});
 var author$project$SvgThings$SRect = F4(
 	function (x, y, w, h) {
@@ -5085,10 +5091,8 @@ var elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
-var author$project$SvgButton$init = F4(
-	function (sendaddr, rect, cid, spec) {
+var author$project$SvgButton$init = F3(
+	function (rect, cid, spec) {
 		var ts = function () {
 			var _n0 = spec.label;
 			if (_n0.$ === 'Just') {
@@ -5098,37 +5102,22 @@ var author$project$SvgButton$init = F4(
 				return _List_Nil;
 			}
 		}();
-		return _Utils_Tuple2(
-			A9(
-				author$project$SvgButton$Model,
-				spec.name,
-				A2(elm$core$Maybe$withDefault, '', spec.label),
-				cid,
-				rect,
-				A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				false,
-				sendaddr,
-				ts,
-				false),
-			elm$core$Platform$Cmd$none);
+		return A8(
+			author$project$SvgButton$Model,
+			spec.name,
+			A2(elm$core$Maybe$withDefault, '', spec.label),
+			cid,
+			rect,
+			A4(
+				author$project$SvgThings$SRect,
+				elm$core$String$fromInt(rect.x),
+				elm$core$String$fromInt(rect.y),
+				elm$core$String$fromInt(rect.w),
+				elm$core$String$fromInt(rect.h)),
+			false,
+			ts,
+			false);
 	});
-var author$project$SvgControl$CaButton = function (a) {
-	return {$: 'CaButton', a: a};
-};
-var author$project$SvgControl$CaLabel = function (a) {
-	return {$: 'CaLabel', a: a};
-};
-var author$project$SvgControl$CaSizer = function (a) {
-	return {$: 'CaSizer', a: a};
-};
-var author$project$SvgControl$CaSlider = function (a) {
-	return {$: 'CaSlider', a: a};
-};
 var author$project$SvgControl$CmButton = function (a) {
 	return {$: 'CmButton', a: a};
 };
@@ -5141,10 +5130,6 @@ var author$project$SvgControl$CmSizer = function (a) {
 var author$project$SvgControl$CmSlider = function (a) {
 	return {$: 'CmSlider', a: a};
 };
-var author$project$SvgControl$SzCMsg = F2(
-	function (a, b) {
-		return {$: 'SzCMsg', a: a, b: b};
-	});
 var author$project$SvgControl$SzModel = F5(
 	function (cid, rect, controls, orientation, proportions) {
 		return {cid: cid, controls: controls, orientation: orientation, proportions: proportions, rect: rect};
@@ -5484,31 +5469,29 @@ var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var author$project$SvgLabel$init = F3(
 	function (rect, cid, spec) {
 		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, spec.label, rect);
-		return _Utils_Tuple2(
-			A6(
-				author$project$SvgLabel$Model,
-				spec.name,
-				spec.label,
-				cid,
-				rect,
-				A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				A2(
-					elm$core$List$map,
-					function (meh) {
-						return A2(
-							elm$virtual_dom$VirtualDom$map,
-							function (_n0) {
-								return author$project$SvgLabel$NoOp;
-							},
-							meh);
-					},
-					ts)),
-			elm$core$Platform$Cmd$none);
+		return A6(
+			author$project$SvgLabel$Model,
+			spec.name,
+			spec.label,
+			cid,
+			rect,
+			A4(
+				author$project$SvgThings$SRect,
+				elm$core$String$fromInt(rect.x),
+				elm$core$String$fromInt(rect.y),
+				elm$core$String$fromInt(rect.w),
+				elm$core$String$fromInt(rect.h)),
+			A2(
+				elm$core$List$map,
+				function (meh) {
+					return A2(
+						elm$virtual_dom$VirtualDom$map,
+						function (_n0) {
+							return author$project$SvgLabel$NoOp;
+						},
+						meh);
+				},
+				ts));
 	});
 var author$project$SvgSlider$Model = function (name) {
 	return function (label) {
@@ -5518,11 +5501,9 @@ var author$project$SvgSlider$Model = function (name) {
 					return function (orientation) {
 						return function (pressed) {
 							return function (location) {
-								return function (sendaddr) {
-									return function (textSvg) {
-										return function (touchonly) {
-											return {cid: cid, label: label, location: location, name: name, orientation: orientation, pressed: pressed, rect: rect, sendaddr: sendaddr, srect: srect, textSvg: textSvg, touchonly: touchonly};
-										};
+								return function (textSvg) {
+									return function (touchonly) {
+										return {cid: cid, label: label, location: location, name: name, orientation: orientation, pressed: pressed, rect: rect, srect: srect, textSvg: textSvg, touchonly: touchonly};
 									};
 								};
 							};
@@ -5533,8 +5514,8 @@ var author$project$SvgSlider$Model = function (name) {
 		};
 	};
 };
-var author$project$SvgSlider$init = F4(
-	function (sendaddr, rect, cid, spec) {
+var author$project$SvgSlider$init = F3(
+	function (rect, cid, spec) {
 		var ts = function () {
 			var _n0 = spec.label;
 			if (_n0.$ === 'Just') {
@@ -5544,16 +5525,14 @@ var author$project$SvgSlider$init = F4(
 				return _List_Nil;
 			}
 		}();
-		return _Utils_Tuple2(
-			author$project$SvgSlider$Model(spec.name)(
-				A2(elm$core$Maybe$withDefault, '', spec.label))(cid)(rect)(
-				A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)))(spec.orientation)(false)(0.5)(sendaddr)(ts)(false),
-			elm$core$Platform$Cmd$none);
+		return author$project$SvgSlider$Model(spec.name)(
+			A2(elm$core$Maybe$withDefault, '', spec.label))(cid)(rect)(
+			A4(
+				author$project$SvgThings$SRect,
+				elm$core$String$fromInt(rect.x),
+				elm$core$String$fromInt(rect.y),
+				elm$core$String$fromInt(rect.w),
+				elm$core$String$fromInt(rect.h)))(spec.orientation)(false)(0.5)(ts)(false);
 	});
 var author$project$SvgThings$shrinkRect = F2(
 	function (border, rect) {
@@ -5683,64 +5662,41 @@ var elm$core$Dict$fromList = function (assocs) {
 		assocs);
 };
 var elm$core$List$map3 = _List_map3;
-var elm$core$Platform$Cmd$map = _Platform_map;
-var elm$core$Tuple$second = function (_n0) {
-	var y = _n0.b;
-	return y;
-};
-var author$project$SvgControl$init = F4(
-	function (sendaddr, rect, cid, spec) {
+var author$project$SvgControl$init = F3(
+	function (rect, cid, spec) {
 		switch (spec.$) {
 			case 'CsButton':
 				var s = spec.a;
-				var _n3 = A4(
-					author$project$SvgButton$init,
-					sendaddr,
-					A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
-					cid,
-					s);
-				var a = _n3.a;
-				var b = _n3.b;
-				return _Utils_Tuple2(
-					author$project$SvgControl$CmButton(a),
-					A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaButton, b));
+				return author$project$SvgControl$CmButton(
+					A3(
+						author$project$SvgButton$init,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
+						cid,
+						s));
 			case 'CsSlider':
 				var s = spec.a;
-				var _n4 = A4(
-					author$project$SvgSlider$init,
-					sendaddr,
-					A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
-					cid,
-					s);
-				var a = _n4.a;
-				var b = _n4.b;
-				return _Utils_Tuple2(
-					author$project$SvgControl$CmSlider(a),
-					A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaSlider, b));
+				return author$project$SvgControl$CmSlider(
+					A3(
+						author$project$SvgSlider$init,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
+						cid,
+						s));
 			case 'CsLabel':
 				var s = spec.a;
-				var _n5 = A3(
-					author$project$SvgLabel$init,
-					A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
-					cid,
-					s);
-				var a = _n5.a;
-				var b = _n5.b;
-				return _Utils_Tuple2(
-					author$project$SvgControl$CmLabel(a),
-					A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaLabel, b));
+				return author$project$SvgControl$CmLabel(
+					A3(
+						author$project$SvgLabel$init,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
+						cid,
+						s));
 			default:
 				var s = spec.a;
-				var _n6 = A4(author$project$SvgControl$szinit, sendaddr, rect, cid, s);
-				var a = _n6.a;
-				var b = _n6.b;
-				return _Utils_Tuple2(
-					author$project$SvgControl$CmSizer(a),
-					A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaSizer, b));
+				return author$project$SvgControl$CmSizer(
+					A3(author$project$SvgControl$szinit, rect, cid, s));
 		}
 	});
-var author$project$SvgControl$szinit = F4(
-	function (sendaddr, rect, cid, szspec) {
+var author$project$SvgControl$szinit = F3(
+	function (rect, cid, szspec) {
 		var rlist = A4(
 			author$project$SvgControl$mkRlist,
 			szspec.orientation,
@@ -5753,13 +5709,12 @@ var author$project$SvgControl$szinit = F4(
 			elm$core$List$length(szspec.controls));
 		var blist = A2(
 			elm$core$List$map,
-			function (_n1) {
-				var spec = _n1.a;
-				var rect_ = _n1.b;
-				var idx = _n1.c;
-				return A4(
+			function (_n0) {
+				var spec = _n0.a;
+				var rect_ = _n0.b;
+				var idx = _n0.c;
+				return A3(
 					author$project$SvgControl$init,
-					sendaddr,
 					rect_,
 					_Utils_ap(
 						cid,
@@ -5776,34 +5731,283 @@ var author$project$SvgControl$szinit = F4(
 				szspec.controls,
 				rlist,
 				idxs));
-		var controlz = A2(
-			author$project$SvgControl$zip,
-			idxs,
-			A2(elm$core$List$map, elm$core$Tuple$first, blist));
-		var fx = elm$core$Platform$Cmd$batch(
+		var controlz = A2(author$project$SvgControl$zip, idxs, blist);
+		return A5(
+			author$project$SvgControl$SzModel,
+			cid,
+			rect,
+			elm$core$Dict$fromList(controlz),
+			szspec.orientation,
+			szspec.proportions);
+	});
+var author$project$SvgControlPage$Model = F6(
+	function (title, mahrect, srect, spec, control, windowSize) {
+		return {control: control, mahrect: mahrect, spec: spec, srect: srect, title: title, windowSize: windowSize};
+	});
+var author$project$SvgThings$toSRect = function (rect) {
+	return A4(
+		author$project$SvgThings$SRect,
+		elm$core$String$fromInt(rect.x),
+		elm$core$String$fromInt(rect.y),
+		elm$core$String$fromInt(rect.w),
+		elm$core$String$fromInt(rect.h));
+};
+var author$project$Util$RectSize = F2(
+	function (width, height) {
+		return {height: height, width: width};
+	});
+var author$project$SvgControlPage$init = F2(
+	function (rect, spec) {
+		var conmod = A3(author$project$SvgControl$init, rect, _List_Nil, spec.rootControl);
+		return A6(
+			author$project$SvgControlPage$Model,
+			spec.title,
+			rect,
+			author$project$SvgThings$toSRect(rect),
+			spec,
+			conmod,
+			A2(author$project$Util$RectSize, 0, 0));
+	});
+var author$project$SvgSlider$Spec = F3(
+	function (name, label, orientation) {
+		return {label: label, name: name, orientation: orientation};
+	});
+var author$project$SvgThings$Vertical = {$: 'Vertical'};
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$Main$init = function (flags) {
+	var wsUrl = A2(
+		elm$core$Maybe$withDefault,
+		'',
+		A2(
+			elm$core$Maybe$map,
+			function (loc) {
+				return 'ws:' + (loc + (':' + elm$core$String$fromInt(flags.wsport)));
+			},
 			A2(
-				elm$core$List$map,
-				function (_n0) {
-					var i = _n0.a;
-					var a = _n0.b;
-					return A2(
-						elm$core$Platform$Cmd$map,
-						author$project$SvgControl$SzCMsg(i),
-						a);
-				},
-				A2(
-					author$project$SvgControl$zip,
-					idxs,
-					A2(elm$core$List$map, elm$core$Tuple$second, blist))));
-		return _Utils_Tuple2(
-			A5(
-				author$project$SvgControl$SzModel,
-				cid,
-				rect,
-				elm$core$Dict$fromList(controlz),
-				szspec.orientation,
-				szspec.proportions),
-			fx);
+				elm$core$Maybe$andThen,
+				elm$core$List$head,
+				elm$core$List$tail(
+					A2(elm$core$String$split, ':', flags.location)))));
+	return {
+		scpModel: A2(
+			author$project$SvgControlPage$init,
+			A4(author$project$SvgThings$Rect, 0, 0, flags.width, flags.height),
+			A3(
+				author$project$SvgControlPage$Spec,
+				wsUrl,
+				author$project$SvgControl$CsSlider(
+					A3(author$project$SvgSlider$Spec, 'blah', elm$core$Maybe$Nothing, author$project$SvgThings$Vertical)),
+				elm$core$Maybe$Nothing)),
+		wsUrl: wsUrl
+	};
+};
+var elm$json$Json$Decode$value = _Json_decodeValue;
+var author$project$Main$receiveSocketMsg = _Platform_incomingPort('receiveSocketMsg', elm$json$Json$Decode$value);
+var author$project$Main$sendSocketCommand = _Platform_outgoingPort('sendSocketCommand', elm$core$Basics$identity);
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$WebSocket$encodeCmd = function (wsc) {
+	switch (wsc.$) {
+		case 'Connect':
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('connect')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name)),
+						_Utils_Tuple2(
+						'address',
+						elm$json$Json$Encode$string(msg.address)),
+						_Utils_Tuple2(
+						'protocol',
+						elm$json$Json$Encode$string(msg.protocol))
+					]));
+		case 'Send':
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('send')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name)),
+						_Utils_Tuple2(
+						'content',
+						elm$json$Json$Encode$string(msg.content))
+					]));
+		default:
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('close')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name))
+					]));
+	}
+};
+var author$project$WebSocket$send = F2(
+	function (tocmd, wsc) {
+		return tocmd(
+			author$project$WebSocket$encodeCmd(wsc));
+	});
+var author$project$Main$wssend = author$project$WebSocket$send(author$project$Main$sendSocketCommand);
+var author$project$SvgControlPage$Resize = function (a) {
+	return {$: 'Resize', a: a};
+};
+var author$project$SvgCommand$None = {$: 'None'};
+var author$project$SvgButton$resize = F2(
+	function (model, rect) {
+		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
+		return _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: ts
+			});
+	});
+var author$project$SvgLabel$resize = F2(
+	function (model, rect) {
+		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
+		return _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: A2(
+					elm$core$List$map,
+					function (meh) {
+						return A2(
+							elm$virtual_dom$VirtualDom$map,
+							function (_n0) {
+								return author$project$SvgLabel$NoOp;
+							},
+							meh);
+					},
+					ts)
+			});
+	});
+var author$project$SvgSlider$resize = F2(
+	function (model, rect) {
+		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
+		return _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: ts
+			});
+	});
+var author$project$SvgControl$resize = F2(
+	function (model, rect) {
+		switch (model.$) {
+			case 'CmButton':
+				var mod = model.a;
+				return author$project$SvgControl$CmButton(
+					A2(
+						author$project$SvgButton$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			case 'CmSlider':
+				var mod = model.a;
+				return author$project$SvgControl$CmSlider(
+					A2(
+						author$project$SvgSlider$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			case 'CmLabel':
+				var mod = model.a;
+				return author$project$SvgControl$CmLabel(
+					A2(
+						author$project$SvgLabel$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			default:
+				var mod = model.a;
+				return author$project$SvgControl$CmSizer(
+					A2(author$project$SvgControl$szresize, mod, rect));
+		}
+	});
+var author$project$SvgControl$szresize = F2(
+	function (model, rect) {
+		var clist = elm$core$Dict$toList(model.controls);
+		var rlist = A4(
+			author$project$SvgControl$mkRlist,
+			model.orientation,
+			rect,
+			elm$core$List$length(clist),
+			model.proportions);
+		var controls = A2(
+			elm$core$List$map,
+			function (_n0) {
+				var _n1 = _n0.a;
+				var i = _n1.a;
+				var c = _n1.b;
+				var r = _n0.b;
+				return _Utils_Tuple2(
+					i,
+					A2(author$project$SvgControl$resize, c, r));
+			},
+			A2(author$project$SvgControl$zip, clist, rlist));
+		var cdict = elm$core$Dict$fromList(controls);
+		return _Utils_update(
+			model,
+			{controls: cdict, rect: rect});
 	});
 var author$project$SvgButton$Press = {$: 'Press'};
 var author$project$SvgButton$Unpress = {$: 'Unpress'};
@@ -5811,7 +6015,6 @@ var author$project$SvgButton$UpdateMessage = F3(
 	function (controlId, updateType, label) {
 		return {controlId: controlId, label: label, updateType: updateType};
 	});
-var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$SvgButton$encodeUpdateType = function (ut) {
 	if (ut.$ === 'Press') {
 		return elm$json$Json$Encode$string('Press');
@@ -5831,19 +6034,6 @@ var elm$json$Json$Encode$list = F2(
 	});
 var author$project$SvgThings$encodeControlId = function (cid) {
 	return A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, cid);
-};
-var elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n0, obj) {
-					var k = _n0.a;
-					var v = _n0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
 };
 var author$project$SvgButton$encodeUpdateMessage = function (um) {
 	var outlist1 = _List_fromArray(
@@ -5891,6 +6081,9 @@ var author$project$SvgButton$encodeUpdateMessage = function (um) {
 	}();
 	return elm$json$Json$Encode$object(outlist3);
 };
+var author$project$SvgCommand$Send = function (a) {
+	return {$: 'Send', a: a};
+};
 var author$project$SvgButton$pressup = F2(
 	function (model, ut) {
 		var um = A2(
@@ -5908,7 +6101,7 @@ var author$project$SvgButton$pressup = F2(
 				{
 					pressed: _Utils_eq(ut, author$project$SvgButton$Press)
 				}),
-			elm$core$Platform$Cmd$none);
+			author$project$SvgCommand$Send(um));
 	});
 var author$project$SvgTouch$Touch = F3(
 	function (x, y, id) {
@@ -5975,21 +6168,16 @@ var author$project$SvgButton$update = F2(
 			case 'SvgPress':
 				return A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Press);
 			case 'SvgUnpress':
-				var _n1 = model.pressed;
-				if (_n1) {
-					return A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Unpress);
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				}
+				return model.pressed ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Unpress) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 			case 'NoOp':
-				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(model, author$project$SvgCommand$None);
 			case 'Reply':
 				var s = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{name: s}),
-					elm$core$Platform$Cmd$none);
+					author$project$SvgCommand$None);
 			case 'SvgUpdate':
 				var um = msg.a;
 				return _Utils_Tuple2(
@@ -5997,22 +6185,22 @@ var author$project$SvgButton$update = F2(
 						model,
 						{
 							label: function () {
-								var _n2 = um.label;
-								if (_n2.$ === 'Just') {
-									var txt = _n2.a;
+								var _n1 = um.label;
+								if (_n1.$ === 'Just') {
+									var txt = _n1.a;
 									return txt;
 								} else {
 									return model.label;
 								}
 							}(),
 							pressed: function () {
-								var _n3 = um.updateType;
-								if (_n3.$ === 'Just') {
-									if (_n3.a.$ === 'Press') {
-										var _n4 = _n3.a;
+								var _n2 = um.updateType;
+								if (_n2.$ === 'Just') {
+									if (_n2.a.$ === 'Press') {
+										var _n3 = _n2.a;
 										return true;
 									} else {
-										var _n5 = _n3.a;
+										var _n4 = _n2.a;
 										return false;
 									}
 								} else {
@@ -6020,23 +6208,23 @@ var author$project$SvgButton$update = F2(
 								}
 							}(),
 							textSvg: function () {
-								var _n6 = um.label;
-								if (_n6.$ === 'Just') {
-									var txt = _n6.a;
+								var _n5 = um.label;
+								if (_n5.$ === 'Just') {
+									var txt = _n5.a;
 									return A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, txt, model.rect);
 								} else {
 									return model.textSvg;
 								}
 							}()
 						}),
-					elm$core$Platform$Cmd$none);
+					author$project$SvgCommand$None);
 			default:
 				var stm = msg.a;
-				var _n7 = author$project$SvgTouch$extractFirstTouchSE(stm);
-				if (_n7.$ === 'Nothing') {
-					return model.pressed ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Unpress) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				var _n6 = author$project$SvgTouch$extractFirstTouchSE(stm);
+				if (_n6.$ === 'Nothing') {
+					return model.pressed ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Unpress) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 				} else {
-					return (!model.pressed) ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Press) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					return (!model.pressed) ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Press) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 				}
 		}
 	});
@@ -6056,13 +6244,11 @@ var author$project$SvgLabel$update = F2(
 						meh);
 				},
 				tswk);
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{label: um.label, textSvg: ts}),
-				elm$core$Platform$Cmd$none);
+			return _Utils_update(
+				model,
+				{label: um.label, textSvg: ts});
 		} else {
-			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			return model;
 		}
 	});
 var author$project$SvgSlider$Press = {$: 'Press'};
@@ -6177,7 +6363,7 @@ var author$project$SvgSlider$updsend = F3(
 			elm$core$Maybe$Just(author$project$SvgSlider$Unpress));
 		var bLoc = (loc > 1.0) ? 1.0 : ((loc < 0.0) ? 0.0 : loc);
 		if (_Utils_eq(model.location, bLoc) && _Utils_eq(model.pressed, prest)) {
-			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2(model, author$project$SvgCommand$None);
 		} else {
 			var um = A2(
 				elm$json$Json$Encode$encode,
@@ -6193,7 +6379,7 @@ var author$project$SvgSlider$updsend = F3(
 				_Utils_update(
 					model,
 					{location: bLoc, pressed: prest}),
-				elm$core$Platform$Cmd$none);
+				author$project$SvgCommand$Send(um));
 		}
 	});
 var elm$core$Basics$ge = _Utils_ge;
@@ -6309,7 +6495,7 @@ var author$project$SvgSlider$update = F2(
 						elm$core$Maybe$Just(author$project$SvgSlider$Press),
 						l);
 				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(model, author$project$SvgCommand$None);
 				}
 			case 'SvgUnpress':
 				var v = msg.a;
@@ -6321,17 +6507,17 @@ var author$project$SvgSlider$update = F2(
 						elm$core$Maybe$Just(author$project$SvgSlider$Unpress),
 						model.location);
 				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(model, author$project$SvgCommand$None);
 				}
 			case 'NoOp':
-				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(model, author$project$SvgCommand$None);
 			case 'Reply':
 				var s = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{name: s}),
-					elm$core$Platform$Cmd$none);
+					author$project$SvgCommand$None);
 			case 'SvgMoved':
 				var v = msg.a;
 				var _n3 = model.pressed;
@@ -6341,10 +6527,10 @@ var author$project$SvgSlider$update = F2(
 						var l = _n4.a;
 						return A3(author$project$SvgSlider$updsend, model, elm$core$Maybe$Nothing, l);
 					} else {
-						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						return _Utils_Tuple2(model, author$project$SvgCommand$None);
 					}
 				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(model, author$project$SvgCommand$None);
 				}
 			case 'SvgUpdate':
 				var um = msg.a;
@@ -6393,7 +6579,7 @@ var author$project$SvgSlider$update = F2(
 							}
 						}()
 					});
-				return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(mod, author$project$SvgCommand$None);
 			default:
 				var stm = msg.a;
 				var _n11 = A2(author$project$SvgTouch$extractFirstRectTouchSE, stm, model.rect);
@@ -6402,7 +6588,7 @@ var author$project$SvgSlider$update = F2(
 						author$project$SvgSlider$updsend,
 						model,
 						elm$core$Maybe$Just(author$project$SvgSlider$Unpress),
-						model.location) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						model.location) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 				} else {
 					var touch = _n11.a;
 					var _n12 = model.orientation;
@@ -6455,6 +6641,10 @@ var elm$core$Dict$get = F2(
 			}
 		}
 	});
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
 var author$project$SvgControl$szupdate = F2(
 	function (msg, model) {
 		var id = msg.a;
@@ -6467,14 +6657,9 @@ var author$project$SvgControl$szupdate = F2(
 			var newmod = _Utils_update(
 				model,
 				{controls: updcontrols});
-			return _Utils_Tuple2(
-				newmod,
-				A2(
-					elm$core$Platform$Cmd$map,
-					author$project$SvgControl$SzCMsg(id),
-					wha.b));
+			return _Utils_Tuple2(newmod, wha.b);
 		} else {
-			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2(model, author$project$SvgCommand$None);
 		}
 	});
 var author$project$SvgControl$update = F2(
@@ -6492,7 +6677,7 @@ var author$project$SvgControl$update = F2(
 						var b = _n1.b;
 						return _Utils_Tuple2(
 							author$project$SvgControl$CmButton(a),
-							A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaButton, b));
+							b);
 					} else {
 						break _n0$4;
 					}
@@ -6505,7 +6690,7 @@ var author$project$SvgControl$update = F2(
 						var b = _n2.b;
 						return _Utils_Tuple2(
 							author$project$SvgControl$CmSlider(a),
-							A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaSlider, b));
+							b);
 					} else {
 						break _n0$4;
 					}
@@ -6513,12 +6698,10 @@ var author$project$SvgControl$update = F2(
 					if (_n0.b.$ === 'CmLabel') {
 						var ms = _n0.a.a;
 						var m = _n0.b.a;
-						var _n3 = A2(author$project$SvgLabel$update, ms, m);
-						var a = _n3.a;
-						var b = _n3.b;
 						return _Utils_Tuple2(
-							author$project$SvgControl$CmLabel(a),
-							A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaLabel, b));
+							author$project$SvgControl$CmLabel(
+								A2(author$project$SvgLabel$update, ms, m)),
+							author$project$SvgCommand$None);
 					} else {
 						break _n0$4;
 					}
@@ -6526,299 +6709,19 @@ var author$project$SvgControl$update = F2(
 					if (_n0.b.$ === 'CmSizer') {
 						var ms = _n0.a.a;
 						var m = _n0.b.a;
-						var _n4 = A2(author$project$SvgControl$szupdate, ms, m);
-						var a = _n4.a;
-						var b = _n4.b;
+						var _n3 = A2(author$project$SvgControl$szupdate, ms, m);
+						var a = _n3.a;
+						var b = _n3.b;
 						return _Utils_Tuple2(
 							author$project$SvgControl$CmSizer(a),
-							A2(elm$core$Platform$Cmd$map, author$project$SvgControl$CaSizer, b));
+							b);
 					} else {
 						break _n0$4;
 					}
 			}
 		}
-		return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+		return _Utils_Tuple2(model, author$project$SvgCommand$None);
 	});
-var author$project$SvgControl$update_list = F2(
-	function (msgs, model) {
-		return A3(
-			elm$core$List$foldl,
-			F2(
-				function (msg, _n0) {
-					var mod = _n0.a;
-					var c = _n0.b;
-					var _n1 = A2(author$project$SvgControl$update, msg, mod);
-					var modnew = _n1.a;
-					var cmd = _n1.b;
-					return _Utils_Tuple2(
-						modnew,
-						elm$core$Platform$Cmd$batch(
-							_List_fromArray(
-								[c, cmd])));
-				}),
-			_Utils_Tuple2(model, elm$core$Platform$Cmd$none),
-			msgs);
-	});
-var author$project$SvgControlPage$Model = F7(
-	function (title, mahrect, srect, spec, control, sendaddr, windowSize) {
-		return {control: control, mahrect: mahrect, sendaddr: sendaddr, spec: spec, srect: srect, title: title, windowSize: windowSize};
-	});
-var author$project$SvgThings$toSRect = function (rect) {
-	return A4(
-		author$project$SvgThings$SRect,
-		elm$core$String$fromInt(rect.x),
-		elm$core$String$fromInt(rect.y),
-		elm$core$String$fromInt(rect.w),
-		elm$core$String$fromInt(rect.h));
-};
-var author$project$Util$RectSize = F2(
-	function (width, height) {
-		return {height: height, width: width};
-	});
-var author$project$SvgControlPage$init = F3(
-	function (sendaddr, rect, spec) {
-		var _n0 = A4(author$project$SvgControl$init, sendaddr, rect, _List_Nil, spec.rootControl);
-		var conmod = _n0.a;
-		var conevt = _n0.b;
-		var _n1 = A2(
-			author$project$SvgControl$update_list,
-			A2(elm$core$Maybe$withDefault, _List_Nil, spec.state),
-			conmod);
-		var updmod = _n1.a;
-		var evts = _n1.b;
-		return _Utils_Tuple2(
-			A7(
-				author$project$SvgControlPage$Model,
-				spec.title,
-				rect,
-				author$project$SvgThings$toSRect(rect),
-				spec,
-				updmod,
-				sendaddr,
-				A2(author$project$Util$RectSize, 0, 0)),
-			elm$core$Platform$Cmd$none);
-	});
-var author$project$SvgSlider$Spec = F3(
-	function (name, label, orientation) {
-		return {label: label, name: name, orientation: orientation};
-	});
-var author$project$SvgThings$Vertical = {$: 'Vertical'};
-var elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var author$project$Main$init = function (flags) {
-	var wsUrl = A2(
-		elm$core$Maybe$withDefault,
-		'',
-		A2(
-			elm$core$Maybe$map,
-			function (loc) {
-				return 'ws:' + (loc + (':' + elm$core$String$fromInt(flags.wsport)));
-			},
-			A2(
-				elm$core$Maybe$andThen,
-				elm$core$List$head,
-				elm$core$List$tail(
-					A2(elm$core$String$split, ':', flags.location)))));
-	return A3(
-		author$project$SvgControlPage$init,
-		wsUrl,
-		A4(author$project$SvgThings$Rect, 0, 0, flags.width, flags.height),
-		A3(
-			author$project$SvgControlPage$Spec,
-			wsUrl,
-			author$project$SvgControl$CsSlider(
-				A3(author$project$SvgSlider$Spec, 'blah', elm$core$Maybe$Nothing, author$project$SvgThings$Vertical)),
-			elm$core$Maybe$Nothing));
-};
-var author$project$SvgControlPage$Resize = function (a) {
-	return {$: 'Resize', a: a};
-};
-var author$project$SvgButton$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					rect: rect,
-					srect: A4(
-						author$project$SvgThings$SRect,
-						elm$core$String$fromInt(rect.x),
-						elm$core$String$fromInt(rect.y),
-						elm$core$String$fromInt(rect.w),
-						elm$core$String$fromInt(rect.h)),
-					textSvg: ts
-				}),
-			elm$core$Platform$Cmd$none);
-	});
-var author$project$SvgControl$tupMap2 = F3(
-	function (fa, fb, ab) {
-		return _Utils_Tuple2(
-			fa(ab.a),
-			fb(ab.b));
-	});
-var author$project$SvgLabel$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					rect: rect,
-					srect: A4(
-						author$project$SvgThings$SRect,
-						elm$core$String$fromInt(rect.x),
-						elm$core$String$fromInt(rect.y),
-						elm$core$String$fromInt(rect.w),
-						elm$core$String$fromInt(rect.h)),
-					textSvg: A2(
-						elm$core$List$map,
-						function (meh) {
-							return A2(
-								elm$virtual_dom$VirtualDom$map,
-								function (_n0) {
-									return author$project$SvgLabel$NoOp;
-								},
-								meh);
-						},
-						ts)
-				}),
-			elm$core$Platform$Cmd$none);
-	});
-var author$project$SvgSlider$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					rect: rect,
-					srect: A4(
-						author$project$SvgThings$SRect,
-						elm$core$String$fromInt(rect.x),
-						elm$core$String$fromInt(rect.y),
-						elm$core$String$fromInt(rect.w),
-						elm$core$String$fromInt(rect.h)),
-					textSvg: ts
-				}),
-			elm$core$Platform$Cmd$none);
-	});
-var author$project$SvgControl$resize = F2(
-	function (model, rect) {
-		switch (model.$) {
-			case 'CmButton':
-				var mod = model.a;
-				return A3(
-					author$project$SvgControl$tupMap2,
-					author$project$SvgControl$CmButton,
-					elm$core$Platform$Cmd$map(author$project$SvgControl$CaButton),
-					A2(
-						author$project$SvgButton$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			case 'CmSlider':
-				var mod = model.a;
-				return A3(
-					author$project$SvgControl$tupMap2,
-					author$project$SvgControl$CmSlider,
-					elm$core$Platform$Cmd$map(author$project$SvgControl$CaSlider),
-					A2(
-						author$project$SvgSlider$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			case 'CmLabel':
-				var mod = model.a;
-				return A3(
-					author$project$SvgControl$tupMap2,
-					author$project$SvgControl$CmLabel,
-					elm$core$Platform$Cmd$map(author$project$SvgControl$CaLabel),
-					A2(
-						author$project$SvgLabel$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			default:
-				var mod = model.a;
-				return A3(
-					author$project$SvgControl$tupMap2,
-					author$project$SvgControl$CmSizer,
-					elm$core$Platform$Cmd$map(author$project$SvgControl$CaSizer),
-					A2(author$project$SvgControl$szresize, mod, rect));
-		}
-	});
-var author$project$SvgControl$szresize = F2(
-	function (model, rect) {
-		var clist = elm$core$Dict$toList(model.controls);
-		var rlist = A4(
-			author$project$SvgControl$mkRlist,
-			model.orientation,
-			rect,
-			elm$core$List$length(clist),
-			model.proportions);
-		var ctlsNeffs = A2(
-			elm$core$List$map,
-			function (_n4) {
-				var _n5 = _n4.a;
-				var i = _n5.a;
-				var c = _n5.b;
-				var r = _n4.b;
-				return _Utils_Tuple2(
-					i,
-					A2(author$project$SvgControl$resize, c, r));
-			},
-			A2(author$project$SvgControl$zip, clist, rlist));
-		var controls = A2(
-			elm$core$List$map,
-			function (_n2) {
-				var i = _n2.a;
-				var _n3 = _n2.b;
-				var c = _n3.a;
-				var efs = _n3.b;
-				return _Utils_Tuple2(i, c);
-			},
-			ctlsNeffs);
-		var effs = elm$core$Platform$Cmd$batch(
-			A2(
-				elm$core$List$map,
-				function (_n0) {
-					var i = _n0.a;
-					var _n1 = _n0.b;
-					var c = _n1.a;
-					var efs = _n1.b;
-					return A2(
-						elm$core$Platform$Cmd$map,
-						function (ef) {
-							return A2(author$project$SvgControl$SzCMsg, i, ef);
-						},
-						efs);
-				},
-				ctlsNeffs));
-		var cdict = elm$core$Dict$fromList(controls);
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{controls: cdict, rect: rect}),
-			effs);
-	});
-var author$project$SvgControlPage$CMsg = function (a) {
-	return {$: 'CMsg', a: a};
-};
 var author$project$SvgButton$SvgUpdate = function (a) {
 	return {$: 'SvgUpdate', a: a};
 };
@@ -6856,6 +6759,22 @@ var author$project$SvgButton$jsUpdateMessage = A4(
 			A2(elm$json$Json$Decode$field, 'state', elm$json$Json$Decode$string))),
 	elm$json$Json$Decode$maybe(
 		A2(elm$json$Json$Decode$field, 'label', elm$json$Json$Decode$string)));
+var author$project$SvgControl$CaButton = function (a) {
+	return {$: 'CaButton', a: a};
+};
+var author$project$SvgControl$CaLabel = function (a) {
+	return {$: 'CaLabel', a: a};
+};
+var author$project$SvgControl$CaSlider = function (a) {
+	return {$: 'CaSlider', a: a};
+};
+var author$project$SvgControl$CaSizer = function (a) {
+	return {$: 'CaSizer', a: a};
+};
+var author$project$SvgControl$SzCMsg = F2(
+	function (a, b) {
+		return {$: 'SzCMsg', a: a, b: b};
+	});
 var author$project$SvgControl$myTail = function (lst) {
 	var tl = elm$core$List$tail(lst);
 	if (tl.$ === 'Just') {
@@ -6968,6 +6887,9 @@ var author$project$SvgControl$jsUpdateMessage = A2(
 	elm$json$Json$Decode$andThen,
 	author$project$SvgControl$jsUmType,
 	A2(elm$json$Json$Decode$field, 'controlType', elm$json$Json$Decode$string));
+var author$project$SvgControlPage$CMsg = function (a) {
+	return {$: 'CMsg', a: a};
+};
 var author$project$SvgControlPage$JmSpec = function (a) {
 	return {$: 'JmSpec', a: a};
 };
@@ -7166,7 +7088,9 @@ var author$project$SvgControlPage$update = F2(
 					if (_n1.$ === 'Ok') {
 						if (_n1.a.$ === 'JmSpec') {
 							var spec = _n1.a.a;
-							return A3(author$project$SvgControlPage$init, model.sendaddr, model.mahrect, spec);
+							return _Utils_Tuple2(
+								A2(author$project$SvgControlPage$init, model.mahrect, spec),
+								author$project$SvgCommand$None);
 						} else {
 							var jmact = _n1.a.a;
 							var $temp$msg = jmact,
@@ -7183,7 +7107,7 @@ var author$project$SvgControlPage$update = F2(
 								{
 									title: elm$json$Json$Decode$errorToString(e)
 								}),
-							elm$core$Platform$Cmd$none);
+							author$project$SvgCommand$None);
 					}
 				case 'CMsg':
 					var act = msg.a;
@@ -7191,9 +7115,7 @@ var author$project$SvgControlPage$update = F2(
 					var newmod = _Utils_update(
 						model,
 						{control: wha.a});
-					return _Utils_Tuple2(
-						newmod,
-						A2(elm$core$Platform$Cmd$map, author$project$SvgControlPage$CMsg, wha.b));
+					return _Utils_Tuple2(newmod, wha.b);
 				case 'Resize':
 					var newSize = msg.a;
 					var nr = A4(
@@ -7202,9 +7124,7 @@ var author$project$SvgControlPage$update = F2(
 						0,
 						elm$core$Basics$round(newSize.width - 1),
 						elm$core$Basics$round(newSize.height - 4));
-					var _n2 = A2(author$project$SvgControl$resize, model.control, nr);
-					var ctrl = _n2.a;
-					var cmds = _n2.b;
+					var ctrl = A2(author$project$SvgControl$resize, model.control, nr);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7214,9 +7134,9 @@ var author$project$SvgControlPage$update = F2(
 								srect: author$project$SvgThings$toSRect(nr),
 								windowSize: newSize
 							}),
-						A2(elm$core$Platform$Cmd$map, author$project$SvgControlPage$CMsg, cmds));
+						author$project$SvgCommand$None);
 				default:
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(model, author$project$SvgCommand$None);
 			}
 		}
 	});
@@ -7226,7 +7146,6 @@ var author$project$SvgButton$SvgUnpress = {$: 'SvgUnpress'};
 var author$project$SvgButton$SvgTouch = function (a) {
 	return {$: 'SvgTouch', a: a};
 };
-var elm$json$Json$Decode$value = _Json_decodeValue;
 var elm$virtual_dom$VirtualDom$Custom = function (a) {
 	return {$: 'Custom', a: a};
 };
@@ -7626,6 +7545,55 @@ var author$project$SvgControlPage$view = function (model) {
 						author$project$SvgControlPage$viewSvgControl(model.control))
 					]))
 			]));
+};
+var author$project$WebSocket$Connect = function (a) {
+	return {$: 'Connect', a: a};
+};
+var author$project$WebSocket$Send = function (a) {
+	return {$: 'Send', a: a};
+};
+var author$project$WebSocket$Data = function (a) {
+	return {$: 'Data', a: a};
+};
+var author$project$WebSocket$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var author$project$WebSocket$decodeMsg = A2(
+	elm$json$Json$Decode$andThen,
+	function (msg) {
+		switch (msg) {
+			case 'error':
+				return A3(
+					elm$json$Json$Decode$map2,
+					F2(
+						function (a, b) {
+							return author$project$WebSocket$Error(
+								{error: b, name: a});
+						}),
+					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+					A2(elm$json$Json$Decode$field, 'error', elm$json$Json$Decode$string));
+			case 'data':
+				return A3(
+					elm$json$Json$Decode$map2,
+					F2(
+						function (a, b) {
+							return author$project$WebSocket$Data(
+								{data: b, name: a});
+						}),
+					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+					A2(elm$json$Json$Decode$field, 'data', elm$json$Json$Decode$string));
+			default:
+				var unk = msg;
+				return elm$json$Json$Decode$fail('unknown websocketmsg type: ' + unk);
+		}
+	},
+	A2(elm$json$Json$Decode$field, 'msg', elm$json$Json$Decode$string));
+var author$project$WebSocket$receive = function (wsmMsg) {
+	return function (v) {
+		var _n0 = A2(elm$core$Debug$log, 'receive v: ', v);
+		return wsmMsg(
+			A2(elm$json$Json$Decode$decodeValue, author$project$WebSocket$decodeMsg, v));
+	};
 };
 var elm$browser$Browser$Document = F2(
 	function (title, body) {
@@ -8149,25 +8117,76 @@ var elm$browser$Browser$Events$onResize = function (func) {
 				A2(elm$json$Json$Decode$field, 'innerWidth', elm$json$Json$Decode$int),
 				A2(elm$json$Json$Decode$field, 'innerHeight', elm$json$Json$Decode$int))));
 };
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var elm$core$Platform$Sub$map = _Platform_map;
+var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
 var author$project$Main$main = elm$browser$Browser$document(
 	{
-		init: author$project$Main$init,
-		subscriptions: function (_n0) {
-			return elm$browser$Browser$Events$onResize(
-				F2(
-					function (a, b) {
-						return author$project$SvgControlPage$Resize(
-							A2(author$project$Util$RectSize, a, b));
-					}));
+		init: function (flags) {
+			var mod = author$project$Main$init(flags);
+			return _Utils_Tuple2(
+				mod,
+				author$project$Main$wssend(
+					author$project$WebSocket$Connect(
+						{address: mod.wsUrl, name: 'touchpage', protocol: 'rust-websocket'})));
 		},
-		update: author$project$SvgControlPage$update,
+		subscriptions: function (_n0) {
+			return elm$core$Platform$Sub$batch(
+				_List_fromArray(
+					[
+						A2(
+						elm$core$Platform$Sub$map,
+						author$project$Main$ScpMsg,
+						elm$browser$Browser$Events$onResize(
+							F2(
+								function (a, b) {
+									return author$project$SvgControlPage$Resize(
+										A2(author$project$Util$RectSize, a, b));
+								}))),
+						author$project$Main$receiveSocketMsg(
+						author$project$WebSocket$receive(author$project$Main$WsMsg))
+					]));
+		},
+		update: F2(
+			function (msg, mod) {
+				if (msg.$ === 'ScpMsg') {
+					var sm = msg.a;
+					var _n2 = A2(author$project$SvgControlPage$update, sm, mod.scpModel);
+					var umod = _n2.a;
+					var cmd = _n2.b;
+					var _n3 = A2(elm$core$Debug$log, 'cmd: ', cmd);
+					return _Utils_Tuple2(
+						_Utils_update(
+							mod,
+							{scpModel: umod}),
+						function () {
+							if (cmd.$ === 'Send') {
+								var dta = cmd.a;
+								return author$project$Main$wssend(
+									author$project$WebSocket$Send(
+										{content: dta, name: 'touchpage'}));
+							} else {
+								return elm$core$Platform$Cmd$none;
+							}
+						}());
+				} else {
+					var x = msg.a;
+					var _n5 = A2(elm$core$Debug$log, 'wsmsg: ', x);
+					return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
+				}
+			}),
 		view: function (model) {
 			return A2(
 				elm$browser$Browser$Document,
 				'svg control',
 				_List_fromArray(
 					[
-						author$project$SvgControlPage$view(model)
+						A2(
+						elm$html$Html$map,
+						author$project$Main$ScpMsg,
+						author$project$SvgControlPage$view(model.scpModel))
 					]));
 		}
 	});
@@ -8195,18 +8214,58 @@ _Platform_export({'Main':{'init':author$project$Main$main(
 		},
 		A2(elm$json$Json$Decode$field, 'wsport', elm$json$Json$Decode$int)))(0)}});}(this));</script>
 <script>
-var app = Elm.Main.init( 
-    { flags: { location : document.location.origin || "", 
-               wsport : {{websockets-port}},
-               width : window.innerWidth, 
-               height : window.innerHeight
-             }, 
-      node: document.getElementById("elm") 
-    });
-if (document.getElementById("elm"))
-{
-  document.getElementById("elm").innerText = 'This is a headless program, meaning there is nothing to show here.\n\nI started the program anyway though, and you can access it as `app` in the developer console.';
-}
+  var mySockets = {};
+
+	// var socket = new WebSocket("ws://127.0.0.1:9001", "rust-websocket");
+	/* socket.onmessage = function (event) {
+		var received = document.getElementById("received");
+		var br = document.createElement("BR");
+		var text = document.createTextNode(event.data);
+		received.appendChild(br);
+		received.appendChild(text);
+	};
+
+	function send(element) {
+		var input = document.getElementById(element);
+		socket.send(input.value);
+		input.value = "";
+		}
+	*/
+
+  function sendSocketCommand(wat) {
+    console.log( "ssc: " +  JSON.stringify(wat, null, 4));
+    if (wat.cmd == "connect") 
+    {
+      console.log("connecting!");
+      socket = new WebSocket(wat.address, wat.protocol);
+      socket.onmessage = function (event) {
+        console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
+        app.ports.receiveSocketMsg.send(event.data);
+    	}
+    	mySockets[wat.name] = socket;
+    }
+    else if (wat.cmd == "send")
+    {
+      console.log("sending!");
+      mySockets[wat.name].send(wat.content); 
+    }
+  }
+
+</script>
+<script>
+    var app = Elm.Main.init( 
+        { flags: { location : document.location.origin || "", 
+                   wsport : {{websockets-port}},
+                   width : window.innerWidth, 
+                   height : window.innerHeight
+                 }, 
+          node: document.getElementById("elm") 
+        });
+    if (document.getElementById("elm"))
+    {
+      document.getElementById("elm").innerText = 'This is a headless program, meaning there is nothing to show here.\n\nI started the program anyway though, and you can access it as `app` in the developer console.';
+    }
+    app.ports.sendSocketCommand.subscribe(sendSocketCommand);
 </script>
 </body>
 </html>

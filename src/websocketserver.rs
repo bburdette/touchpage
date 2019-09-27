@@ -82,7 +82,7 @@ fn websockets_main(
   let server = Server::bind(&ipaddr[..])?;
   for request in server.filter_map(Result::ok) {
     let sci = ci.clone();
-    let broadcaster = broadcaster.clone();
+    let mut broadcaster = broadcaster.clone();
     let cup = cup.clone();
     println!("request: {:?}", request.protocols());
     // Spawn a new thread for each connection.
@@ -106,11 +106,14 @@ fn websockets_main(
             broadcaster.register(sendmeh.clone());
       */
 
-      let message = OwnedMessage::Text("Hello".to_string());
-      client.send_message(&message).unwrap();
-
+      /*      let message = OwnedMessage::Text("Hello".to_string());
+            client.send_message(&message).unwrap();
+      */
       //(websocket::receiver::Reader<std::net::TcpStream>, websocket::sender::Writer<std::net::TcpStream> )
       let (mut receiver, mut sender) = client.split().unwrap();
+
+      let sendmeh = Arc::new(Mutex::new(sender));
+      broadcaster.register(sendmeh.clone());
 
       for message in receiver.incoming_messages() {
         // TODO message handler here.
@@ -121,13 +124,15 @@ fn websockets_main(
         match message {
           OwnedMessage::Close(_) => {
             let message = OwnedMessage::Close(None);
-            sender.send_message(&message).unwrap();
+            let mut s = sendmeh.lock().unwrap();
+            s.send_message(&message).unwrap();
             println!("Client {} disconnected", ip);
             return;
           }
           OwnedMessage::Ping(ping) => {
             let message = OwnedMessage::Pong(ping);
-            sender.send_message(&message).unwrap();
+            let mut s = sendmeh.lock().unwrap();
+            s.send_message(&message).unwrap();
           }
           OwnedMessage::Text(txt) => {
             println!("txt {}", txt);
@@ -167,7 +172,9 @@ fn websockets_main(
               }
             }
           }
-          _ => sender.send_message(&message).unwrap(),
+          _ => {
+            println!("unrecognized message type: {:?}", message);
+          }
         }
       }
     });

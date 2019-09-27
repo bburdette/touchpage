@@ -33,8 +33,7 @@ wssend =
 
 
 wsreceive =
-    receiveSocketMsg <|
-        WebSocket.receive WsMsg
+    receiveSocketMsg <| WebSocket.receive WsMsg
 
 
 type Msg
@@ -82,7 +81,7 @@ main =
                                 SvgControlPage.Resize <|
                                     RectSize (toFloat a) (toFloat b)
                             )
-                    , wsreceive
+                    , receiveSocketMsg <| WebSocket.receive WsMsg
                     ]
         , update =
             \msg mod ->

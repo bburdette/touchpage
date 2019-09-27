@@ -18,6 +18,10 @@ send tocmd wsc =
 receive : (Result JD.Error WebSocketMsg -> msg) -> (JD.Value -> msg)
 receive wsmMsg =
     \v ->
+        let
+            _ =
+                Debug.log "receive v: " v
+        in
         JD.decodeValue decodeMsg v
             |> wsmMsg
 

@@ -54,14 +54,15 @@ impl Broadcaster {
   // broadcast to all except for ones with the same socket address.
   pub fn broadcast_others(&self, sa: &SocketAddr, msg: Message) {
     let mut tvs = self.tvs.lock().unwrap();
+    println!("broadcast-others, {:?}", tvs.len());
     for tv in tvs.iter_mut() {
       let mut tvsend = tv.lock().unwrap();
       let sa_send = tvsend.stream.peer_addr();
       match sa_send {
         Ok(ss) => {
-          // println!("checking eq: {:?}, {:?}", sa, sa_send);
+          println!("checking eq: {:?}, {:?}", sa, sa_send);
           if !mysockeq(sa, &ss) {
-            // println!("sending to: {:?}", sa_send);
+            println!("sending to: {:?}", sa_send);
             match tvsend.send_message( &msg) {
               Err(e) => {
                 println!("error from send_message: {:?}", e);

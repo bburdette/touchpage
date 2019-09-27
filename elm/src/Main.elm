@@ -81,7 +81,7 @@ main =
                                 SvgControlPage.Resize <|
                                     RectSize (toFloat a) (toFloat b)
                             )
-                    , receiveSocketMsg <| WebSocket.receive WsMsg
+                    , wsreceive
                     ]
         , update =
             \msg mod ->
@@ -105,6 +105,8 @@ main =
                                         }
 
                             None ->
+                                -- test socket close.
+                                -- wssend <| WebSocket.Close { name = "touchpage" }
                                 Cmd.none
                         )
 
@@ -131,24 +133,6 @@ main =
                 Browser.Document "svg control"
                     [ Html.map ScpMsg <| SvgControlPage.view model.scpModel ]
         }
-
-
-
-{- Html.programWithFlags
-   { init = init
-   , update = SvgControlPage.update
-   , view = SvgControlPage.view
-   , subscriptions =
-       \model ->
-           Sub.batch
-               [ Window.resizes SvgControlPage.Resize
-
-               -- WebSocket.listen model.sendaddr SvgControlPage.JsonMsg
-               ]
-   }
-
-
--}
 
 
 init : Flags -> Model

@@ -4376,9 +4376,6 @@ function _Browser_load(url)
 var author$project$Main$ScpMsg = function (a) {
 	return {$: 'ScpMsg', a: a};
 };
-var author$project$Main$WsMsg = function (a) {
-	return {$: 'WsMsg', a: a};
-};
 var author$project$SvgControl$CsSlider = function (a) {
 	return {$: 'CsSlider', a: a};
 };
@@ -5819,8 +5816,60 @@ var author$project$Main$init = function (flags) {
 		wsUrl: wsUrl
 	};
 };
+var author$project$Main$WsMsg = function (a) {
+	return {$: 'WsMsg', a: a};
+};
 var elm$json$Json$Decode$value = _Json_decodeValue;
 var author$project$Main$receiveSocketMsg = _Platform_incomingPort('receiveSocketMsg', elm$json$Json$Decode$value);
+var author$project$WebSocket$Data = function (a) {
+	return {$: 'Data', a: a};
+};
+var author$project$WebSocket$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$WebSocket$decodeMsg = A2(
+	elm$json$Json$Decode$andThen,
+	function (msg) {
+		switch (msg) {
+			case 'error':
+				return A3(
+					elm$json$Json$Decode$map2,
+					F2(
+						function (a, b) {
+							return author$project$WebSocket$Error(
+								{error: b, name: a});
+						}),
+					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+					A2(elm$json$Json$Decode$field, 'error', elm$json$Json$Decode$string));
+			case 'data':
+				return A3(
+					elm$json$Json$Decode$map2,
+					F2(
+						function (a, b) {
+							return author$project$WebSocket$Data(
+								{data: b, name: a});
+						}),
+					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+					A2(elm$json$Json$Decode$field, 'data', elm$json$Json$Decode$string));
+			default:
+				var unk = msg;
+				return elm$json$Json$Decode$fail('unknown websocketmsg type: ' + unk);
+		}
+	},
+	A2(elm$json$Json$Decode$field, 'msg', elm$json$Json$Decode$string));
+var elm$json$Json$Decode$decodeValue = _Json_run;
+var author$project$WebSocket$receive = function (wsmMsg) {
+	return function (v) {
+		return wsmMsg(
+			A2(elm$json$Json$Decode$decodeValue, author$project$WebSocket$decodeMsg, v));
+	};
+};
+var author$project$Main$wsreceive = author$project$Main$receiveSocketMsg(
+	author$project$WebSocket$receive(author$project$Main$WsMsg));
 var author$project$Main$sendSocketCommand = _Platform_outgoingPort('sendSocketCommand', elm$core$Basics$identity);
 var elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
@@ -6110,7 +6159,6 @@ var author$project$SvgTouch$Touch = F3(
 	function (x, y, id) {
 		return {id: id, x: x, y: y};
 	});
-var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$float = _Json_decodeFloat;
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var elm$json$Json$Decode$map3 = _Json_map3;
@@ -6125,7 +6173,6 @@ var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
 	});
-var elm$json$Json$Decode$decodeValue = _Json_run;
 var author$project$SvgTouch$extractFirstTouch = function (evt) {
 	var _n0 = A2(
 		elm$json$Json$Decode$decodeValue,
@@ -6740,7 +6787,6 @@ var author$project$SvgButton$jsUpdateType = function (ut) {
 };
 var elm$json$Json$Decode$list = _Json_decodeList;
 var author$project$SvgThings$decodeControlId = elm$json$Json$Decode$list(elm$json$Json$Decode$int);
-var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$oneOf = _Json_oneOf;
 var elm$json$Json$Decode$maybe = function (decoder) {
 	return elm$json$Json$Decode$oneOf(
@@ -6750,7 +6796,6 @@ var elm$json$Json$Decode$maybe = function (decoder) {
 				elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing)
 			]));
 };
-var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$SvgButton$jsUpdateMessage = A4(
 	elm$json$Json$Decode$map3,
 	author$project$SvgButton$UpdateMessage,
@@ -6843,7 +6888,6 @@ var author$project$SvgSlider$jsUpdateMessage = A5(
 		A2(elm$json$Json$Decode$field, 'location', elm$json$Json$Decode$float)),
 	elm$json$Json$Decode$maybe(
 		A2(elm$json$Json$Decode$field, 'label', elm$json$Json$Decode$string)));
-var elm$json$Json$Decode$fail = _Json_fail;
 var author$project$SvgControl$jsUmType = function (wat) {
 	switch (wat) {
 		case 'button':
@@ -7555,49 +7599,6 @@ var author$project$WebSocket$Connect = function (a) {
 var author$project$WebSocket$Send = function (a) {
 	return {$: 'Send', a: a};
 };
-var author$project$WebSocket$Data = function (a) {
-	return {$: 'Data', a: a};
-};
-var author$project$WebSocket$Error = function (a) {
-	return {$: 'Error', a: a};
-};
-var author$project$WebSocket$decodeMsg = A2(
-	elm$json$Json$Decode$andThen,
-	function (msg) {
-		switch (msg) {
-			case 'error':
-				return A3(
-					elm$json$Json$Decode$map2,
-					F2(
-						function (a, b) {
-							return author$project$WebSocket$Error(
-								{error: b, name: a});
-						}),
-					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-					A2(elm$json$Json$Decode$field, 'error', elm$json$Json$Decode$string));
-			case 'data':
-				return A3(
-					elm$json$Json$Decode$map2,
-					F2(
-						function (a, b) {
-							return author$project$WebSocket$Data(
-								{data: b, name: a});
-						}),
-					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-					A2(elm$json$Json$Decode$field, 'data', elm$json$Json$Decode$string));
-			default:
-				var unk = msg;
-				return elm$json$Json$Decode$fail('unknown websocketmsg type: ' + unk);
-		}
-	},
-	A2(elm$json$Json$Decode$field, 'msg', elm$json$Json$Decode$string));
-var author$project$WebSocket$receive = function (wsmMsg) {
-	return function (v) {
-		var _n0 = A2(elm$core$Debug$log, 'receive v: ', v);
-		return wsmMsg(
-			A2(elm$json$Json$Decode$decodeValue, author$project$WebSocket$decodeMsg, v));
-	};
-};
 var elm$browser$Browser$Document = F2(
 	function (title, body) {
 		return {body: body, title: title};
@@ -8148,8 +8149,7 @@ var author$project$Main$main = elm$browser$Browser$document(
 									return author$project$SvgControlPage$Resize(
 										A2(author$project$Util$RectSize, a, b));
 								}))),
-						author$project$Main$receiveSocketMsg(
-						author$project$WebSocket$receive(author$project$Main$WsMsg))
+						author$project$Main$wsreceive
 					]));
 		},
 		update: F2(
@@ -8239,22 +8239,6 @@ _Platform_export({'Main':{'init':author$project$Main$main(
 <script>
   var mySockets = {};
 
-	// var socket = new WebSocket("ws://127.0.0.1:9001", "rust-websocket");
-	/* socket.onmessage = function (event) {
-		var received = document.getElementById("received");
-		var br = document.createElement("BR");
-		var text = document.createTextNode(event.data);
-		received.appendChild(br);
-		received.appendChild(text);
-	};
-
-	function send(element) {
-		var input = document.getElementById(element);
-		socket.send(input.value);
-		input.value = "";
-		}
-	*/
-
   function sendSocketCommand(wat) {
     console.log( "ssc: " +  JSON.stringify(wat, null, 4));
     if (wat.cmd == "connect") 
@@ -8271,8 +8255,14 @@ _Platform_export({'Main':{'init':author$project$Main$main(
     }
     else if (wat.cmd == "send")
     {
-      console.log("sending!");
+      console.log("sending to socket: " + wat.name );
       mySockets[wat.name].send(wat.content); 
+    }
+    else if (wat.cmd == "close")
+    {
+      console.log("closing socket: " + wat.name);
+      mySockets[wat.name].close();
+      delete mySockets[wat.name];
     }
   }
 

@@ -10,22 +10,6 @@
 <script>
   var mySockets = {};
 
-	// var socket = new WebSocket("ws://127.0.0.1:9001", "rust-websocket");
-	/* socket.onmessage = function (event) {
-		var received = document.getElementById("received");
-		var br = document.createElement("BR");
-		var text = document.createTextNode(event.data);
-		received.appendChild(br);
-		received.appendChild(text);
-	};
-
-	function send(element) {
-		var input = document.getElementById(element);
-		socket.send(input.value);
-		input.value = "";
-		}
-	*/
-
   function sendSocketCommand(wat) {
     console.log( "ssc: " +  JSON.stringify(wat, null, 4));
     if (wat.cmd == "connect") 
@@ -42,8 +26,14 @@
     }
     else if (wat.cmd == "send")
     {
-      console.log("sending!");
+      console.log("sending to socket: " + wat.name );
       mySockets[wat.name].send(wat.content); 
+    }
+    else if (wat.cmd == "close")
+    {
+      console.log("closing socket: " + wat.name);
+      mySockets[wat.name].close();
+      delete mySockets[wat.name];
     }
   }
 

@@ -2,6 +2,7 @@ module SvgControlPage exposing (ID, JsMessage(..), Model, Msg(..), Spec, init, j
 
 import Dict exposing (..)
 import Html
+import Html.Attributes exposing (style)
 import Json.Decode as JD
 import List exposing (..)
 import Svg
@@ -135,7 +136,7 @@ init rect spec =
 
 view : Model -> Html.Html Msg
 view model =
-    Html.div []
+    Html.div [ style "margin" "0" ]
         [ Svg.svg
             [ SA.width model.srect.w
             , SA.height model.srect.h

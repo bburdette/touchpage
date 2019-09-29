@@ -1,4 +1,4 @@
-module SvgControl exposing (ID, Model(..), Msg(..), Spec(..), SzModel, SzMsg(..), SzSpec, border, controlId, controlName, findControl, firstJust, init, jsCs, jsSpec, jsSzSpec, jsUmType, jsUpdateMessage, mkRlist, myTail, processProps, resize, szFindControl, szinit, szresize, szupdate, szview, toCtrlMsg, tupMap2, update, view, viewSvgControls, zip)
+module SvgControl exposing (ID, Model(..), Msg(..), Spec(..), SzModel, SzMsg(..), SzSpec, border, controlId, controlName, findControl, firstJust, init, jsCs, jsSpec, jsSzSpec, jsUmType, jsUpdateMessage, mkRlist, myTail, processProps, resize, szFindControl, szinit, szresize, szupdate, szview, toCtrlMsg, tupMap2, update, update_list, view, viewSvgControls, zip)
 
 import Dict exposing (..)
 import Html
@@ -237,21 +237,20 @@ update msg model =
 
 
 -- should probably produce an error.  to the user??
-{- update_list : List Msg -> Model -> ( Model, Command )
-   update_list msgs model =
-       List.foldl
-           (\msg ( mod, c ) ->
-               let
-                   ( modnew, cmd ) =
-                       update msg mod
-               in
-               ( modnew, Cmd.batch [ c, cmd ] )
-           )
-           ( model, Cmd.none )
-           msgs
 
 
--}
+update_list : List Msg -> Model -> ( Model, List Command )
+update_list msgs model =
+    List.foldl
+        (\msg ( mod, cmds ) ->
+            let
+                ( modnew, cmd ) =
+                    update msg mod
+            in
+            ( modnew, cmd :: cmds )
+        )
+        ( model, [] )
+        msgs
 
 
 init :

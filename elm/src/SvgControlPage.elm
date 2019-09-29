@@ -112,57 +112,6 @@ update msg model =
             ( model, None )
 
 
-
-{-
-   Touche touchlist ->
-     let tdict = touchDict model.control touchlist
-         curtouches = Dict.map (\_ v -> fst v) tdict
-         prevs = Dict.diff model.prevtouches curtouches in
-     ({model | prevtouches = curtouches}, Cmd.batch
-       (
-         (List.map (\t -> Cmd.task (Task.succeed (CMsg t)))
-             (List.filterMap (\(cid, (tam, tl)) ->
-               Maybe.map (SvgControl.toCtrlMsg cid) (tam tl))
-               (Dict.toList tdict)))
-         ++
-         (List.map (\t -> Cmd.task (Task.succeed (CMsg t)))
-             (List.filterMap (\(cid, tam) ->
-               Maybe.map (SvgControl.toCtrlMsg cid) (tam []))
-               (Dict.toList prevs)))))
--}
--- build a dict of controls -> touches.
-{-
-   touchDict: SvgControl.Model -> (List SvgTouch.Touch) ->
-       Dict SvgThings.ControlId (SvgControl.ControlTam, (List SvgTouch.Touch))
-   touchDict root touches =
-     let meh = List.filterMap (\t -> Maybe.andThen (SvgControl.findControl t.x t.y root) (\c -> Just (c,t))) touches in
-     List.foldl updict Dict.empty meh
-
-   updict: (SvgControl.Model, SvgTouch.Touch)
-         -> Dict SvgThings.ControlId (SvgControl.ControlTam, (List SvgTouch.Touch))
-         -> Dict SvgThings.ControlId (SvgControl.ControlTam, (List SvgTouch.Touch))
-   updict mt dict =
-     Dict.update (SvgControl.controlId (fst mt))
-                 (\mbpair -> case mbpair of
-                   Nothing -> Just (SvgControl.controlTouchMsgMaker (fst mt), [(snd mt)])
-                   Just (a,b) -> Just (a, (snd mt) :: b))
-                 dict
--}
-{-
-
-   Touche touchlist ->
-     case head touchlist of
-       Nothing -> ({model | title = "no touches" }, Cmd.none)
-       Just touch ->
-         case SvgControl.findControl touch.x touch.y model.control of
-           Just control ->
-             ({model | title = SvgControl.controlName control }, Cmd.none)
-           Nothing -> ({model | title = "no touches" }, Cmd.none)
-
-
--}
-
-
 init :
     SvgThings.Rect
     -> Spec
@@ -172,21 +121,16 @@ init rect spec =
         conmod =
             SvgControl.init rect [] spec.rootControl
 
-        {- ( updmod, evts ) =
-           SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
-        -}
-        -- combevts = Cmd.batch [conevt, evts]
+        -- throwing away commands!
+        ( updmod, cmds ) =
+            SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
     in
-    (Model spec.title
+    Model spec.title
         rect
         (SvgThings.toSRect rect)
         spec
-        conmod
-        -- Dict.empty
+        updmod
         (RectSize 0 0)
-     -- , Task.perform (\x -> Resize x) Window.size
-     --    , Task.perform (\_ -> NoOp) (\x -> Resize x) Window.size)  -- add conevt evts to this??
-    )
 
 
 view : Model -> Html.Html Msg

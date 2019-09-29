@@ -138,6 +138,9 @@ main =
 init : Flags -> Model
 init flags =
     let
+        _ =
+            Debug.log "initblah" "blah"
+
         wsUrl =
             String.split ":" flags.location
                 |> List.tail

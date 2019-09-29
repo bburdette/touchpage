@@ -42,8 +42,10 @@ fi
 
 
 # optionally update the rust string_default.rs
-./make-string-defaults.sh
+# ./make-string-defaults.sh
 
+# make ../example/index.html
+./make-example-html.sh
 
 # print this because elm doesn't print a message when the link
 # step is finally done.

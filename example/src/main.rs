@@ -1,20 +1,27 @@
 extern crate touchpage;
 
+use failure::Error as FError;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use touchpage::control_nexus::PrintUpdateMsg;
-use touchpage::websocketserver::startserver;
 use touchpage::webserver::startwebserver;
+use touchpage::websocketserver::startserver;
 
 fn main() {
   // println!("Hello, world!");
 
   let meh = PrintUpdateMsg {};
 
-    // Some(touchpage::string_defaults::MAIN_HTML));
-    //
+  let mbhtml = match load_string("index.html") {
+    Ok(html) => Some(html),
+    _ => None,
+  };
+
   println!("before websocketserver");
   startserver(GUI, Box::new(meh), "localhost", "9001", false);
   println!("before webserver");
-  startwebserver( "localhost", "8000", "9001", None);
+  startwebserver("localhost", "8000", "9001", mbhtml);
 }
 
 const GUI: &'static str = r##"
@@ -39,3 +46,11 @@ const GUI: &'static str = r##"
       ]
     }
 }"##;
+
+pub fn load_string(file_name: &str) -> Result<String, FError> {
+  let path = &Path::new(&file_name);
+  let mut inf = File::open(path)?;
+  let mut result = String::new();
+  inf.read_to_string(&mut result)?;
+  Ok(result)
+}

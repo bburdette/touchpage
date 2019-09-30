@@ -12,11 +12,11 @@ use websocket::OwnedMessage;
 
 pub fn startserver<'a>(
   guistring: &str,
-  cup: Box<ControlUpdateProcessor>,
+  cup: Box<dyn ControlUpdateProcessor>,
   ip: &str,
   websockets_port: &str,
   block: bool,
-) -> Result<ControlNexus, Box<std::error::Error>> {
+) -> Result<ControlNexus, Box<dyn std::error::Error>> {
   let guival = serde_json::from_str(guistring)?;
 
   let blah = try!(json::deserialize_root(&guival));
@@ -76,7 +76,7 @@ fn websockets_main(
   ipaddr: String,
   ci: Arc<Mutex<ControlInfo>>,
   broadcaster: broadcaster::Broadcaster,
-  cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
+  cup: Arc<Mutex<Box<dyn ControlUpdateProcessor>>>,
 ) -> Result<(), Box<std::error::Error>> {
   println!("websockets_main {:?}", ipaddr);
   let server = Server::bind(&ipaddr[..])?;
@@ -92,7 +92,7 @@ fn websockets_main(
         return;
       }
 
-      let mut client = request.use_protocol("rust-websocket").accept().unwrap();
+      let client = request.use_protocol("rust-websocket").accept().unwrap();
 
       let ip = client.peer_addr().unwrap();
 
@@ -100,7 +100,7 @@ fn websockets_main(
 
       // TODO send up controls.
 
-      /*      let (sender, mut receiver) = client.split();
+      /*    let (sender, mut receiver) = client.split();
             // register the sender with broadcaster.
             let sendmeh = Arc::new(Mutex::new(sender));
             broadcaster.register(sendmeh.clone());
@@ -110,7 +110,7 @@ fn websockets_main(
             client.send_message(&message).unwrap();
       */
       //(websocket::receiver::Reader<std::net::TcpStream>, websocket::sender::Writer<std::net::TcpStream> )
-      let (mut receiver, mut sender) = client.split().unwrap();
+      let (mut receiver, sender) = client.split().unwrap();
 
       let sendmeh = Arc::new(Mutex::new(sender));
       broadcaster.register(sendmeh.clone());
@@ -280,7 +280,7 @@ fn websockets_main(
   ipaddr: String,
   ci: Arc<Mutex<ControlInfo>>,
   broadcaster: broadcaster::Broadcaster,
-  cup: Arc<Mutex<Box<ControlUpdateProcessor>>>,
+  cup: Arc<Mutex<Box<dyn ControlUpdateProcessor>>>,
 ) -> Result<(), Box<std::error::Error>> {
   let server = try!(Server::bind(&ipaddr[..]));
 

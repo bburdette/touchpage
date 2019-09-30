@@ -33,7 +33,7 @@ fn get_string<'a>(data: &'a BTreeMap<String, Value>, name: &str) -> Result<&'a s
     .ok_or(err_msg(format!("{} not a string", name)))
 }
 
-fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<Control>, FError> {
+fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, FError> {
   // what's the type?
   let obj = data
     .as_object()

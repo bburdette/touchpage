@@ -8,6 +8,7 @@ use touchpage::control_nexus::PrintUpdateMsg;
 use touchpage::webserver::startwebserver;
 use touchpage::websocketserver::startserver;
 
+
 fn main() {
   // println!("Hello, world!");
 
@@ -19,7 +20,11 @@ fn main() {
   };
 
   println!("before websocketserver");
-  startserver(GUI, Box::new(meh), "localhost", "9001", false);
+  match startserver(GUI, Box::new(meh), "localhost", "9001", false) {
+    Ok(_) => (),
+    Err(e) =>
+      println!("error starting websocket server: {},", e),
+  }
   println!("before webserver");
   startwebserver("localhost", "8000", "9001", mbhtml);
 }

@@ -1,7 +1,5 @@
 use control_updates as cu;
 use controls;
-use util::{load_string, write_string};
-use serde_json::Value;
 use broadcaster;
 use failure::Error as FError;
 use json;
@@ -20,7 +18,7 @@ pub struct PrintUpdateMsg {
 }
 
 impl ControlUpdateProcessor for PrintUpdateMsg { 
-  fn on_update_received(&mut self, update: &cu::UpdateMsg, ci: &ControlInfo) -> ()
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, _ci: &ControlInfo) -> ()
   {
     println!("update callback called! {:?}", update);
   }

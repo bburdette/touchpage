@@ -1,35 +1,9 @@
 extern crate websocket;
 
-use std::net::TcpListener;
-use std::string::*;
-use std::sync::{Arc, Mutex};
-use std::thread;
-
-use websocket as ws;
-use websocket::header::WebSocketProtocol;
-use websocket::message::Type;
-
-use websocket::async::TcpListener as Atl;
-use websocket::message::Message;
-use websocket::sender;
-use websocket::stream::Stream as WebSocketStream;
-use websocket::stream::Stream;
-use websocket::ws::Sender;
-
-
-use websocket::sync::Server;
-// use websocket::async::Server;
-
 #[macro_use]
 extern crate log;
-
-// extern crate iron;
 extern crate serde_json;
-use serde_json::Value;
-
 extern crate failure;
-use failure::Error as FError;
-
 extern crate actix_web;
 extern crate toml;
 
@@ -38,14 +12,12 @@ mod controls;
 mod broadcaster;
 pub mod json;
 // mod server;
-pub mod string_defaults;
-mod util;
 pub mod control_nexus;
 pub mod control_updates;
-pub mod websocketserver;
+pub mod guibuilder;
+pub mod string_defaults;
 pub mod webserver;
-
-
+pub mod websocketserver;
 
 // need to lock the control structs and stuff, refresh them, then send out the
 // updates.

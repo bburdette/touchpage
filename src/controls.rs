@@ -10,7 +10,7 @@ use std::fmt::Debug;
 #[derive(Debug)]
 pub struct Root {
   pub title: String,
-  pub root_control: Box<Control>,
+  pub root_control: Box<dyn Control>,
 }
 
 // --------------------------------------------------------
@@ -20,8 +20,8 @@ pub struct Root {
 pub trait Control: Debug + Send {
   fn control_type(&self) -> &'static str;
   fn control_id(&self) -> &Vec<i32>;
-  fn clone_trol(&self) -> Box<Control>;
-  fn sub_controls(&self) -> Option<&Vec<Box<Control>>>;
+  fn clone_trol(&self) -> Box<dyn Control>;
+  fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>>;
   fn update(&mut self, _: &cu::UpdateMsg);
   fn empty_update(&self) -> Option<cu::UpdateMsg>;
   // build full update message of current state.
@@ -45,7 +45,7 @@ impl Control for Slider {
   fn control_id(&self) -> &Vec<i32> {
     &self.control_id
   }
-  fn clone_trol(&self) -> Box<Control> {
+  fn clone_trol(&self) -> Box<dyn Control> {
     Box::new(Slider {
       control_id: self.control_id.clone(),
       name: self.name.clone(),
@@ -54,7 +54,7 @@ impl Control for Slider {
       location: self.location.clone(),
     })
   }
-  fn sub_controls(&self) -> Option<&Vec<Box<Control>>> {
+  fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     None
   }
   fn update(&mut self, um: &cu::UpdateMsg) {
@@ -123,7 +123,7 @@ impl Control for Button {
   fn control_id(&self) -> &Vec<i32> {
     &self.control_id
   }
-  fn clone_trol(&self) -> Box<Control> {
+  fn clone_trol(&self) -> Box<dyn Control> {
     Box::new(Button {
       control_id: self.control_id.clone(),
       name: self.name.clone(),
@@ -131,7 +131,7 @@ impl Control for Button {
       pressed: self.pressed.clone(),
     })
   }
-  fn sub_controls(&self) -> Option<&Vec<Box<Control>>> {
+  fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     None
   }
   fn update(&mut self, um: &cu::UpdateMsg) {
@@ -193,14 +193,14 @@ impl Control for Label {
   fn control_id(&self) -> &Vec<i32> {
     &self.control_id
   }
-  fn clone_trol(&self) -> Box<Control> {
+  fn clone_trol(&self) -> Box<dyn Control> {
     Box::new(Label {
       control_id: self.control_id.clone(),
       name: self.name.clone(),
       label: self.label.clone(),
     })
   }
-  fn sub_controls(&self) -> Option<&Vec<Box<Control>>> {
+  fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     None
   }
   fn update(&mut self, um: &cu::UpdateMsg) {
@@ -236,7 +236,7 @@ impl Control for Label {
 #[derive(Debug)]
 pub struct Sizer {
   pub control_id: Vec<i32>,
-  pub controls: Vec<Box<Control>>,
+  pub controls: Vec<Box<dyn Control>>,
 }
 
 impl Control for Sizer {
@@ -246,13 +246,13 @@ impl Control for Sizer {
   fn control_id(&self) -> &Vec<i32> {
     &self.control_id
   }
-  fn clone_trol(&self) -> Box<Control> {
+  fn clone_trol(&self) -> Box<dyn Control> {
     Box::new(Sizer {
       control_id: self.control_id.clone(),
       controls: Vec::new(),
     })
   }
-  fn sub_controls(&self) -> Option<&Vec<Box<Control>>> {
+  fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     Some(&self.controls)
   }
   fn update(&mut self, _: &cu::UpdateMsg) {}
@@ -293,15 +293,15 @@ pub fn get_um_id(um: &cu::UpdateMsg) -> &Vec<i32> {
 // control state map.  copies all the controls.
 // --------------------------------------------------------
 
-pub type ControlMap = BTreeMap<Vec<i32>, Box<Control>>;
+pub type ControlMap = BTreeMap<Vec<i32>, Box<dyn Control>>;
 
-pub fn make_control_map(control: &Control) -> ControlMap {
+pub fn make_control_map(control: &dyn Control) -> ControlMap {
   let btm = BTreeMap::new();
 
   make_control_map_impl(control, btm)
 }
 
-fn make_control_map_impl(control: &Control, mut map: ControlMap) -> ControlMap {
+fn make_control_map_impl(control: &dyn Control, mut map: ControlMap) -> ControlMap {
   map.insert(control.control_id().clone(), control.clone_trol());
 
   match control.sub_controls() {

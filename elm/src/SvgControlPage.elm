@@ -7,14 +7,11 @@ import Json.Decode as JD
 import List exposing (..)
 import Svg
 import Svg.Attributes as SA
-import Svg.Events as SE
 import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgThings
-import Task
 import Util exposing (RectSize)
 import VirtualDom as VD
-import WebSocket
 
 
 type alias Spec =

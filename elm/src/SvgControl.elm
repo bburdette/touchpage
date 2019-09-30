@@ -291,9 +291,10 @@ view model =
 
 
 -------------------- sizer -------------------
--- json spec
 
 
+{-| json spec
+-}
 type alias SzSpec =
     { orientation : SvgThings.Orientation
     , proportions : Maybe (List Float)

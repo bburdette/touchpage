@@ -2,12 +2,9 @@ module SvgSlider exposing (Model, Msg(..), Spec, UpdateMessage, UpdateType(..), 
 
 -- import NoDragEvents exposing (onClick, onMouseUp, onMouseMove, onMouseDown, onMouseOut)
 
-import Dict
-import Html exposing (Html)
 import Json.Decode as JD
 import Json.Encode as JE
 import List
-import String
 import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick, onMouseDown, onMouseOut, onMouseUp)
@@ -16,20 +13,6 @@ import SvgThings exposing (Orientation(..))
 import SvgTouch as ST
 import Toop
 import VirtualDom as VD
-
-
-
-{- buttonEvt : String -> (JD.Value -> Msg) -> VD.Attribute Msg
-   buttonEvt evtname mkmsg =
-       VD.on evtname <|
-           VD.Custom
-               (JD.map
-                   (\v ->
-                       { stopPropagation = True, preventDefault = True, message = mkmsg v }
-                   )
-                   JD.value
-               )
--}
 
 
 type alias Spec =
@@ -389,7 +372,6 @@ updsend model mbut loc =
         in
         ( { model | location = bLoc, pressed = prest }
         , Send um
-          -- , WebSocket.send model.sendaddr um  TODO implement
         )
 
 

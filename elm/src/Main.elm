@@ -1,23 +1,15 @@
 port module Main exposing (init, main)
 
--- import Keyboard
--- import SvgTouch
-
 import Browser
 import Browser.Events as BE
-import Char
 import Html
 import Json.Decode as JD
 import Json.Encode as JE
-import String
-import SvgButton
 import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgControlPage
 import SvgSlider
-import SvgTextSize
 import SvgThings
-import Task exposing (Task)
 import Util exposing (RectSize)
 import WebSocket
 
@@ -138,9 +130,6 @@ main =
 init : Flags -> Model
 init flags =
     let
-        _ =
-            Debug.log "initblah" "blah"
-
         wsUrl =
             String.split ":" flags.location
                 |> List.tail

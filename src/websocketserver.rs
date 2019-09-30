@@ -77,7 +77,7 @@ fn websockets_main(
   ci: Arc<Mutex<ControlInfo>>,
   broadcaster: broadcaster::Broadcaster,
   cup: Arc<Mutex<Box<dyn ControlUpdateProcessor>>>,
-) -> Result<(), Box<std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>> {
   println!("websockets_main {:?}", ipaddr);
   let server = Server::bind(&ipaddr[..])?;
   for request in server.filter_map(Result::ok) {

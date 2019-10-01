@@ -111,10 +111,12 @@ impl Gui {
   }
 
   pub fn add_sizer(&mut self) -> Result<&mut Gui, FError> {
+    let id = self.next_id()?;
     let newsizer = Box::new(Sizer {
-      control_id: self.next_id()?,
+      control_id: id.clone(),
       controls: Vec::new(),
     });
+    self.sizerstack.push(id);
     self.add_control(newsizer)
   }
 

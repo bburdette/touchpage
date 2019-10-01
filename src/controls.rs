@@ -284,9 +284,11 @@ pub struct Sizer {
 
 impl Control for Sizer {
   fn as_json(&self) -> Value {
+    let ctrlvals = self.controls.iter().map(|c| c.as_json()).collect();
     let mut btv = BTreeMap::new();
     btv.insert(String::from("type"), Value::String(self.control_type().to_string()));
     btv.insert( String::from("orientation"), Value::String("vertical".to_string()));
+    btv.insert(String::from("controls"), Value::Array(ctrlvals));
     Value::Object(btv)
   }
   fn control_type(&self) -> &'static str {

@@ -1,13 +1,18 @@
 extern crate touchpage;
 
 use failure::Error as FError;
+use failure::err_msg;
+use serde_json::Value;
 use std::fs::File;
 use std::io::Read;
+use std::io::Write;
 use std::path::Path;
 use touchpage::control_nexus::PrintUpdateMsg;
+use touchpage::controls as C;
+use touchpage::guibuilder as G;
+use touchpage::json as J;
 use touchpage::webserver::startwebserver;
 use touchpage::websocketserver::startserver;
-use touchpage::guibuilder as G;
 
 fn main() {
   // println!("Hello, world!");
@@ -19,11 +24,18 @@ fn main() {
     _ => None,
   };
 
+  let rootv: Result<(), FError> = build_gui()
+    .and_then(|gui| gui.to_root())
+    .map(|root| J::serialize_root(&root))
+    .and_then(|rootv| serde_json::to_string_pretty(&rootv).map_err(|_| err_msg("uh oh")))
+    .and_then(|st| write_string(st.as_str(), "json.out"));
+
+  println!("rootv result: {:?}", rootv);
+
   println!("before websocketserver");
   match startserver(GUI, Box::new(meh), "localhost", "9001", false) {
     Ok(_) => (),
-    Err(e) =>
-      println!("error starting websocket server: {},", e),
+    Err(e) => println!("error starting websocket server: {},", e),
   }
   println!("before webserver");
   startwebserver("localhost", "8000", "9001", mbhtml);
@@ -31,10 +43,12 @@ fn main() {
 
 fn build_gui() -> Result<G::Gui, FError> {
   let mut gui = G::Gui::new_gui("test".to_string());
-  gui.add_sizer()?
+  gui
+    .add_sizer()?
     .add_label("lb3".to_string(), "blah".to_string())?
     .add_button("b1".to_string(), None)?
-    .add_slider("hs2".to_string(), None)?;
+    .add_slider("hs2".to_string(), None)?
+    .end_sizer()?;
   Ok(gui)
 }
 
@@ -68,3 +82,11 @@ pub fn load_string(file_name: &str) -> Result<String, FError> {
   inf.read_to_string(&mut result)?;
   Ok(result)
 }
+
+pub fn write_string(text: &str, file_name: &str) -> Result<(), FError> {
+  let path = &Path::new(&file_name);
+  let mut inf = File::create(path)?;
+  inf.write(text.as_bytes())?;
+  Ok(())
+}
+

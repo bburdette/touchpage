@@ -8,7 +8,7 @@ extern crate actix_web;
 extern crate toml;
 
 #[macro_use]
-mod controls;
+pub mod controls;
 mod broadcaster;
 pub mod json;
 pub mod control_nexus;

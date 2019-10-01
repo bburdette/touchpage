@@ -10,6 +10,12 @@ pub struct Gui {
 }
 
 impl Gui {
+  pub fn new_gui(title: String) -> Gui {
+    Gui {
+      title: title
+    , root_control: None
+    , sizerstack: Vec::new()}
+  }
   // one way function!
   pub fn to_root(self) -> Result<Root, FError> {
     match self.root_control {

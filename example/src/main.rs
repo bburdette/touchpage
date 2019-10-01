@@ -7,7 +7,7 @@ use std::path::Path;
 use touchpage::control_nexus::PrintUpdateMsg;
 use touchpage::webserver::startwebserver;
 use touchpage::websocketserver::startserver;
-
+use touchpage::guibuilder as G;
 
 fn main() {
   // println!("Hello, world!");
@@ -27,6 +27,15 @@ fn main() {
   }
   println!("before webserver");
   startwebserver("localhost", "8000", "9001", mbhtml);
+}
+
+fn build_gui() -> Result<G::Gui, FError> {
+  let mut gui = G::Gui::new_gui("test".to_string());
+  gui.add_sizer()?
+    .add_label("lb3".to_string(), "blah".to_string())?
+    .add_button("b1".to_string(), None)?
+    .add_slider("hs2".to_string(), None)?;
+  Ok(gui)
 }
 
 const GUI: &'static str = r##"

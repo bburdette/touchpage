@@ -1,7 +1,7 @@
 use actix_web::fs::NamedFile;
 use actix_web::http::{Method, StatusCode};
 // use actix_web::middleware::Logger;
-use actix_web::{server, App, HttpMessage, HttpRequest, HttpResponse, Result};
+use actix_web::{server, App, HttpRequest, HttpResponse, Result};
 use std::path::{Path, PathBuf};
 // use std::sync::Arc;
 // use std::thread;

@@ -10,6 +10,23 @@ pub struct Gui {
 }
 
 impl Gui {
+  // one way function!
+  pub fn to_root(self) -> Result<Root, FError> {
+    match self.root_control {
+      Some(rc) => {
+        if self.sizerstack.is_empty() {
+          Ok(Root {
+            title: self.title.clone(),
+            root_control: rc,
+          })
+        } else {
+          Err(err_msg("there are still incomplete sizers!"))
+        }
+      }
+      None => Err(err_msg("no controls in the gui yet!")),
+    }
+  }
+
   pub fn next_id(&self) -> Result<Vec<i32>, FError> {
     match &self.root_control {
       Some(rc) => match self.sizerstack.last() {

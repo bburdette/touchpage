@@ -25,6 +25,20 @@ pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
   }))
 }
 
+pub fn serialize_root(root: &Root) -> Value {
+  let mut btv = BTreeMap::new();
+  btv.insert(
+    String::from("title"),
+    Value::String(root.title.clone()),
+  );
+  btv.insert(
+    String::from("rootControl"),
+    root.root_control.as_json(),
+  );
+
+  Value::Object(btv)
+}
+
 fn get_string<'a>(data: &'a BTreeMap<String, Value>, name: &str) -> Result<&'a str, FError> {
   data
     .get(name)
@@ -34,6 +48,7 @@ fn get_string<'a>(data: &'a BTreeMap<String, Value>, name: &str) -> Result<&'a s
 }
 
 fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, FError> {
+
   // what's the type?
   let obj = data
     .as_object()

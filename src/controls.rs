@@ -1,4 +1,5 @@
 use control_updates as cu;
+use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 
@@ -29,6 +30,7 @@ pub trait Control: Debug + Send {
   // build full update message of current state.
   fn to_update(&self) -> Option<cu::UpdateMsg>;
   fn name(&self) -> &str;
+  fn as_json(&self) -> Value;
 }
 
 #[derive(Debug)]
@@ -41,6 +43,16 @@ pub struct Slider {
 }
 
 impl Control for Slider {
+  fn as_json(&self) -> Value {
+    let mut btv = BTreeMap::new();
+    btv.insert(String::from("type"), Value::String("slider".to_string()));
+    btv.insert( String::from("orientation"), Value::String("vertical".to_string()));
+    btv.insert(String::from("name"), Value::String(self.name.to_string()));
+    if let Some(lb) = &self.label {
+      btv.insert(String::from("label"), Value::String(lb.to_string()));
+    };
+    Value::Object(btv)
+  }
   fn control_type(&self) -> &'static str {
     "slider"
   }
@@ -62,7 +74,7 @@ impl Control for Slider {
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
     None
   }
-  fn add_control(&mut self, _control : Box<dyn Control>) {}
+  fn add_control(&mut self, _control: Box<dyn Control>) {}
 
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
@@ -124,6 +136,15 @@ pub struct Button {
 }
 
 impl Control for Button {
+  fn as_json(&self) -> Value {
+    let mut btv = BTreeMap::new();
+    btv.insert(String::from("type"), Value::String(self.control_type().to_string()));
+    btv.insert(String::from("name"), Value::String(self.name.to_string()));
+    if let Some(lb) = &self.label {
+      btv.insert(String::from("label"), Value::String(lb.to_string()));
+    };
+    Value::Object(btv)
+  }
   fn control_type(&self) -> &'static str {
     "button"
   }
@@ -144,7 +165,7 @@ impl Control for Button {
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
     None
   }
-  fn add_control(&mut self, _control : Box<dyn Control>) {}
+  fn add_control(&mut self, _control: Box<dyn Control>) {}
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
       &cu::UpdateMsg::Button {
@@ -198,6 +219,13 @@ pub struct Label {
 }
 
 impl Control for Label {
+  fn as_json(&self) -> Value {
+    let mut btv = BTreeMap::new();
+    btv.insert(String::from("type"), Value::String(self.control_type().to_string()));
+    btv.insert(String::from("name"), Value::String(self.name.to_string()));
+    btv.insert(String::from("label"), Value::String(self.label.to_string()));
+    Value::Object(btv)
+  }
   fn control_type(&self) -> &'static str {
     "label"
   }
@@ -217,7 +245,7 @@ impl Control for Label {
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
     None
   }
-  fn add_control(&mut self, _control : Box<dyn Control>) {}
+  fn add_control(&mut self, _control: Box<dyn Control>) {}
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
       &cu::UpdateMsg::Label {
@@ -255,6 +283,12 @@ pub struct Sizer {
 }
 
 impl Control for Sizer {
+  fn as_json(&self) -> Value {
+    let mut btv = BTreeMap::new();
+    btv.insert(String::from("type"), Value::String(self.control_type().to_string()));
+    btv.insert( String::from("orientation"), Value::String("vertical".to_string()));
+    Value::Object(btv)
+  }
   fn control_type(&self) -> &'static str {
     "sizer"
   }
@@ -273,7 +307,7 @@ impl Control for Sizer {
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
     Some(&mut self.controls)
   }
-  fn add_control(&mut self, control : Box<dyn Control>) {
+  fn add_control(&mut self, control: Box<dyn Control>) {
     self.controls.push(control);
   }
   fn update(&mut self, _: &cu::UpdateMsg) {}

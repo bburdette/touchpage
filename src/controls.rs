@@ -62,7 +62,7 @@ impl Control for Slider {
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
     None
   }
-  fn add_control(&mut self, control : Box<dyn Control>) {}
+  fn add_control(&mut self, _control : Box<dyn Control>) {}
 
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
@@ -144,7 +144,7 @@ impl Control for Button {
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
     None
   }
-  fn add_control(&mut self, control : Box<dyn Control>) {}
+  fn add_control(&mut self, _control : Box<dyn Control>) {}
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
       &cu::UpdateMsg::Button {
@@ -217,7 +217,7 @@ impl Control for Label {
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
     None
   }
-  fn add_control(&mut self, control : Box<dyn Control>) {}
+  fn add_control(&mut self, _control : Box<dyn Control>) {}
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
       &cu::UpdateMsg::Label {

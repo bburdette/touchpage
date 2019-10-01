@@ -47,7 +47,7 @@ impl Gui {
       Some(rootcontrol) => match self.sizerstack.last() {
         None => Err(err_msg("no active sizer, can't add Button element!")),
         Some(id) => {
-          match get_control(id, &mut *rootcontrol) {
+          match get_control(id, &mut **rootcontrol) {
             Some(c) => c.add_control(newbutton),
             None => (),
           }

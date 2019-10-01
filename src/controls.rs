@@ -22,6 +22,8 @@ pub trait Control: Debug + Send {
   fn control_id(&self) -> &Vec<i32>;
   fn clone_trol(&self) -> Box<dyn Control>;
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>>;
+  fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>>;
+  fn add_control(&mut self, Box<dyn Control>);
   fn update(&mut self, _: &cu::UpdateMsg);
   fn empty_update(&self) -> Option<cu::UpdateMsg>;
   // build full update message of current state.
@@ -57,6 +59,11 @@ impl Control for Slider {
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     None
   }
+  fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
+    None
+  }
+  fn add_control(&mut self, control : Box<dyn Control>) {}
+
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
       &cu::UpdateMsg::Slider {
@@ -134,6 +141,10 @@ impl Control for Button {
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     None
   }
+  fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
+    None
+  }
+  fn add_control(&mut self, control : Box<dyn Control>) {}
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
       &cu::UpdateMsg::Button {
@@ -203,6 +214,10 @@ impl Control for Label {
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     None
   }
+  fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
+    None
+  }
+  fn add_control(&mut self, control : Box<dyn Control>) {}
   fn update(&mut self, um: &cu::UpdateMsg) {
     match um {
       &cu::UpdateMsg::Label {
@@ -254,6 +269,12 @@ impl Control for Sizer {
   }
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
     Some(&self.controls)
+  }
+  fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
+    Some(&mut self.controls)
+  }
+  fn add_control(&mut self, control : Box<dyn Control>) {
+    self.controls.push(control);
   }
   fn update(&mut self, _: &cu::UpdateMsg) {}
   fn empty_update(&self) -> Option<cu::UpdateMsg> {

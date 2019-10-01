@@ -1,36 +1,58 @@
 use controls::{Button, Control, Label, Root, Sizer, Slider};
 use failure::err_msg;
 use failure::Error as FError;
-use serde_json::Value;
 
-pub struct gui<'a> {
+pub struct Gui {
   pub title: String,
   pub root_control: Option<Box<dyn Control>>,
-  sizerstack: Vec<&'a Sizer>,
+  sizerstack: Vec<Vec<i32>>,
 }
 
+fn get_control<'a>(id: &Vec<i32>, control: &'a mut dyn Control) -> Option<&'a mut dyn Control> {
+  // iterate through all controls, looking for our id.
+  if *id == *control.control_id() {
+    Some(control)
+  } else {
+    match control.mut_sub_controls() {
+      Some(cs) => {
+        let mut reet = None;
+        for mut c in cs.iter_mut() {
+          match get_control(id, &mut **c) {
+            Some(cr) => reet = Some(cr),
+            None => (),
+          };
+        }
+        reet
+      }
+      None => None,
+    }
+  }
+}
 
-impl gui<'_> {
-  fn add_button(&mut self, name: String, label: Option<String>) -> Result<&gui, FError> {
-let wat = [1,2,3];
+impl Gui {
+  fn add_button(&mut self, name: String, label: Option<String>) -> Result<&Gui, FError> {
+    let wat = [1, 2, 3];
     let newbutton = Box::new(Button {
       control_id: Vec::new(),
       name: String::from(name),
       label: label,
       pressed: false,
     });
-    match self.root_control {
+    match &mut self.root_control {
       None => {
         self.root_control = Some(newbutton);
         Ok(self)
       }
 
-      Some(_) => match self.sizerstack.last_mut() {
+      Some(rootcontrol) => match self.sizerstack.last() {
         None => Err(err_msg("no active sizer, can't add Button element!")),
-        Some(mut s) => {
+        Some(id) => {
+          match get_control(id, &mut *rootcontrol) {
+            Some(c) => c.add_control(newbutton),
+            None => (),
+          }
           // add new elt to sizer.
           // *s.control_id = wat[..];
-          // s.controls.push(newbutton);
           Ok(self)
         }
       },

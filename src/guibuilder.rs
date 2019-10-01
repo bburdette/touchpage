@@ -55,7 +55,7 @@ impl Gui {
     }
   }
 
-  pub fn add_control(&mut self, control: Box<dyn Control>) -> Result<&Gui, FError> {
+  pub fn add_control(&mut self, control: Box<dyn Control>) -> Result<&mut Gui, FError> {
     match &mut self.root_control {
       None => {
         // root level controls have an empty id - since there's only one control.
@@ -80,7 +80,7 @@ impl Gui {
     }
   }
 
-  pub fn add_button(&mut self, name: String, label: Option<String>) -> Result<&Gui, FError> {
+  pub fn add_button(&mut self, name: String, label: Option<String>) -> Result<&mut Gui, FError> {
     let newbutton = Box::new(Button {
       control_id: self.next_id()?,
       name: String::from(name),
@@ -90,7 +90,7 @@ impl Gui {
     self.add_control(newbutton)
   }
 
-  pub fn add_slider(&mut self, name: String, label: Option<String>) -> Result<&Gui, FError> {
+  pub fn add_slider(&mut self, name: String, label: Option<String>) -> Result<&mut Gui, FError> {
     let newslider = Box::new(Slider {
       control_id: self.next_id()?,
       name: String::from(name),
@@ -101,7 +101,7 @@ impl Gui {
     self.add_control(newslider)
   }
 
-  pub fn add_label(&mut self, name: String, label: String) -> Result<&Gui, FError> {
+  pub fn add_label(&mut self, name: String, label: String) -> Result<&mut Gui, FError> {
     let newlabel = Box::new(Label {
       control_id: self.next_id()?,
       name: name,
@@ -110,7 +110,7 @@ impl Gui {
     self.add_control(newlabel)
   }
 
-  pub fn add_sizer(&mut self) -> Result<&Gui, FError> {
+  pub fn add_sizer(&mut self) -> Result<&mut Gui, FError> {
     let newsizer = Box::new(Sizer {
       control_id: self.next_id()?,
       controls: Vec::new(),
@@ -118,7 +118,7 @@ impl Gui {
     self.add_control(newsizer)
   }
 
-  pub fn end_sizer(&mut self) -> Result<&Gui, FError> {
+  pub fn end_sizer(&mut self) -> Result<&mut Gui, FError> {
     if self.sizerstack.is_empty() {
       Err(err_msg(
         "mismatched end_sizer() call; sizer stack is empty!",

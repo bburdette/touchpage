@@ -25,15 +25,20 @@ fn main() {
     _ => None,
   };
 
-  let rootv: Result<(), FError> = build_gui()
+  let rootv: Result<String, FError> = build_gui()
     .and_then(|gui| gui.to_root())
     .map(|root| J::serialize_root(&root))
-    .and_then(|rootv| serde_json::to_string_pretty(&rootv).map_err(|_| err_msg("uh oh")))
-    .and_then(|st| write_string(st.as_str(), "json.out"));
+    .and_then(|rootv| serde_json::to_string_pretty(&rootv).map_err(|_| err_msg("uh oh")));
+    // .and_then(|st| write_string(st.as_str(), "json.out"));
 
   println!("rootv result: {:?}", rootv);
 
-  match startserver(GUI, Box::new(meh), "localhost", "9001", false) {
+  let gooey = match rootv {
+    Ok(s) => s,
+    Err(_) => GUI.to_string(),
+  };
+
+  match startserver(gooey.as_str(), Box::new(meh), "localhost", "9001", false) {
     Ok(_) => (),
     Err(e) => println!("error starting websocket server: {},", e),
   }
@@ -43,10 +48,13 @@ fn main() {
 fn build_gui() -> Result<G::Gui, FError> {
   let mut gui = G::Gui::new_gui("test".to_string());
   gui
-    .add_sizer(Horizontal)?
+    .add_sizer(Vertical)?
     .add_label("lb3".to_string(), "blah".to_string())?
     .add_button("b1".to_string(), None)?
-    .add_slider("hs2".to_string(), None, Vertical)?
+    .add_slider("hs1".to_string(), None, Horizontal)?
+    .add_slider("hs2".to_string(), None, Horizontal)?
+    .add_slider("hs3".to_string(), None, Horizontal)?
+    .add_slider("hs4".to_string(), None, Horizontal)?
     .end_sizer()?;
   Ok(gui)
 }

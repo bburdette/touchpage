@@ -4,10 +4,11 @@ use broadcaster;
 use control_nexus::{ControlInfo, ControlNexus, ControlUpdateProcessor};
 use controls;
 use json;
+use serde_json::Value;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use websocket::message::Message;
-use websocket::sync::Server;
+use websocket::sync::{Client, Server};
 use websocket::OwnedMessage;
 
 pub fn startserver<'a>(
@@ -72,6 +73,38 @@ pub fn startserver<'a>(
   Ok(cs_ret)
 }
 
+fn sendcontrols(
+  ci: &Arc<Mutex<ControlInfo>>,
+  client: &mut Client<std::net::TcpStream>,
+) -> Result<(), Box<dyn std::error::Error>> {
+  let sci = ci.lock().unwrap();
+
+  let updarray = controls::cm_to_update_array(&sci.cm);
+
+  // build json message containing both guijson and the updarray.
+  let mut updvals = Vec::new();
+
+  for upd in updarray {
+    let um = json::encode_update_message(&upd);
+    updvals.push(um);
+  }
+
+  let mut guival: Value = serde_json::from_str(&sci.guijson[..])?;
+
+  match guival.as_object_mut() {
+    Some(obj) => {
+      obj.insert("state".to_string(), Value::Array(updvals));
+      ()
+    }
+    None => (),
+  }
+
+  let guistring = serde_json::ser::to_string(&guival)?;
+  let message = Message::text(guistring);
+  client.send_message(&message)?;
+  Ok(())
+}
+
 fn websockets_main(
   ipaddr: String,
   ci: Arc<Mutex<ControlInfo>>,
@@ -92,23 +125,16 @@ fn websockets_main(
         return;
       }
 
-      let client = request.use_protocol("rust-websocket").accept().unwrap();
+      let mut client: Client<std::net::TcpStream> =
+        request.use_protocol("rust-websocket").accept().unwrap();
 
       let ip = client.peer_addr().unwrap();
 
       println!("Connection from {}", ip);
 
-      // TODO send up controls.
+      // send up controls.
+      let sendres = sendcontrols(&sci, &mut client);
 
-      /*    let (sender, mut receiver) = client.split();
-            // register the sender with broadcaster.
-            let sendmeh = Arc::new(Mutex::new(sender));
-            broadcaster.register(sendmeh.clone());
-      */
-
-      /*      let message = OwnedMessage::Text("Hello".to_string());
-            client.send_message(&message).unwrap();
-      */
       //(websocket::receiver::Reader<std::net::TcpStream>, websocket::sender::Writer<std::net::TcpStream> )
       let (mut receiver, sender) = client.split().unwrap();
 

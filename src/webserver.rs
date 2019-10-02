@@ -1,13 +1,8 @@
 use actix_web::fs::NamedFile;
 use actix_web::http::{Method, StatusCode};
-// use actix_web::middleware::Logger;
 use actix_web::{server, App, HttpRequest, HttpResponse, Result};
 use std::path::{Path, PathBuf};
-// use std::sync::Arc;
-// use std::thread;
 use string_defaults;
-// use toml;
-// use util::load_string;
 
 pub fn startwebserver<'a>(
   ip: &str,

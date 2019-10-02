@@ -14,10 +14,6 @@ import Task
 import VirtualDom as VD
 
 
-
--- how to specify a button in json.
-
-
 type alias Spec =
     { name : String
     , label : Maybe String
@@ -130,14 +126,6 @@ encodeUpdateMessage um =
     JE.object outlist3
 
 
-
-{- JE.object [ ("controlType", JE.string "button")
-   , ("controlId", SvgThings.encodeControlId um.controlId)
-   , ("updateType", encodeUpdateType um.updateType)
-   ]
--}
-
-
 encodeUpdateType : UpdateType -> JD.Value
 encodeUpdateType ut =
     case ut of
@@ -247,7 +235,6 @@ pressup model ut =
     in
     ( { model | pressed = ut == Press }
     , Send um
-      -- , Cmd.none {- TODO implement.   , WebSocket.send model.sendaddr um -}
     )
 
 
@@ -278,10 +265,6 @@ buttonEvt evtname mkmsg =
                 )
                 JD.value
             )
-
-
-
--- VD.onWithOptions evtname (VD.Options True True) (JD.map (\v -> mkmsg v) JD.value)
 
 
 onTouchStart =

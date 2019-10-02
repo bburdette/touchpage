@@ -17,17 +17,10 @@ import VirtualDom as VD
 
 
 ----------------------------------------------------------
--- Two things (objects?) in this file; control container
--- and sizer.  They are mutually recursive so they have to
+-- Both control container and sizer ard in this file.
+-- Normally I'd break them out into separate files, but
+-- they are mutually recursive so they have to
 -- both be in a single file.
-
-
-border : Int
-border =
-    1
-
-
-
 -------------------- control container -------------------
 
 
@@ -479,3 +472,8 @@ szview model =
 viewSvgControls : ( ID, Model ) -> Svg.Svg SzMsg
 viewSvgControls ( id, model ) =
     VD.map (SzCMsg id) (view model)
+
+
+border : Int
+border =
+    1

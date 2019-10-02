@@ -44,10 +44,6 @@ type Msg
     | NoOp
 
 
-
---    | SvgTouch (List Touch.Touch)
-
-
 type alias UpdateMessage =
     { controlId : SvgThings.ControlId
     , label : String
@@ -98,10 +94,6 @@ update msg model =
 
         NoOp ->
             model
-
-
-
---    SvgTouch touches -> (model, Cmd.none)
 
 
 resize : Model -> SvgThings.Rect -> Model

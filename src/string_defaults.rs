@@ -58,6 +58,7 @@ pub const MAIN_HTML: &'static str = r##"<!DOCTYPE HTML>
 <head>
   <meta charset="UTF-8">
   <title>Main</title>
+  <style> body { margin: 0; }</style>
 </head>
 <body>
 <div id="elm"></div>
@@ -5737,336 +5738,13 @@ var author$project$SvgControl$szinit = F3(
 			szspec.orientation,
 			szspec.proportions);
 	});
-var author$project$SvgControlPage$Model = F6(
-	function (title, mahrect, srect, spec, control, windowSize) {
-		return {control: control, mahrect: mahrect, spec: spec, srect: srect, title: title, windowSize: windowSize};
-	});
-var author$project$SvgThings$toSRect = function (rect) {
-	return A4(
-		author$project$SvgThings$SRect,
-		elm$core$String$fromInt(rect.x),
-		elm$core$String$fromInt(rect.y),
-		elm$core$String$fromInt(rect.w),
-		elm$core$String$fromInt(rect.h));
-};
-var author$project$Util$RectSize = F2(
-	function (width, height) {
-		return {height: height, width: width};
-	});
-var author$project$SvgControlPage$init = F2(
-	function (rect, spec) {
-		var conmod = A3(author$project$SvgControl$init, rect, _List_Nil, spec.rootControl);
-		return A6(
-			author$project$SvgControlPage$Model,
-			spec.title,
-			rect,
-			author$project$SvgThings$toSRect(rect),
-			spec,
-			conmod,
-			A2(author$project$Util$RectSize, 0, 0));
-	});
-var author$project$SvgSlider$Spec = F3(
-	function (name, label, orientation) {
-		return {label: label, name: name, orientation: orientation};
-	});
-var author$project$SvgThings$Vertical = {$: 'Vertical'};
-var elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var author$project$Main$init = function (flags) {
-	var wsUrl = A2(
-		elm$core$Maybe$withDefault,
-		'',
-		A2(
-			elm$core$Maybe$map,
-			function (loc) {
-				return 'ws:' + (loc + (':' + elm$core$String$fromInt(flags.wsport)));
-			},
-			A2(
-				elm$core$Maybe$andThen,
-				elm$core$List$head,
-				elm$core$List$tail(
-					A2(elm$core$String$split, ':', flags.location)))));
-	return {
-		scpModel: A2(
-			author$project$SvgControlPage$init,
-			A4(author$project$SvgThings$Rect, 0, 0, flags.width, flags.height),
-			A3(
-				author$project$SvgControlPage$Spec,
-				wsUrl,
-				author$project$SvgControl$CsSlider(
-					A3(author$project$SvgSlider$Spec, 'blah', elm$core$Maybe$Nothing, author$project$SvgThings$Vertical)),
-				elm$core$Maybe$Nothing)),
-		wsUrl: wsUrl
-	};
-};
-var author$project$Main$WsMsg = function (a) {
-	return {$: 'WsMsg', a: a};
-};
-var elm$json$Json$Decode$value = _Json_decodeValue;
-var author$project$Main$receiveSocketMsg = _Platform_incomingPort('receiveSocketMsg', elm$json$Json$Decode$value);
-var author$project$WebSocket$Data = function (a) {
-	return {$: 'Data', a: a};
-};
-var author$project$WebSocket$Error = function (a) {
-	return {$: 'Error', a: a};
-};
-var elm$json$Json$Decode$andThen = _Json_andThen;
-var elm$json$Json$Decode$fail = _Json_fail;
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$WebSocket$decodeMsg = A2(
-	elm$json$Json$Decode$andThen,
-	function (msg) {
-		switch (msg) {
-			case 'error':
-				return A3(
-					elm$json$Json$Decode$map2,
-					F2(
-						function (a, b) {
-							return author$project$WebSocket$Error(
-								{error: b, name: a});
-						}),
-					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-					A2(elm$json$Json$Decode$field, 'error', elm$json$Json$Decode$string));
-			case 'data':
-				return A3(
-					elm$json$Json$Decode$map2,
-					F2(
-						function (a, b) {
-							return author$project$WebSocket$Data(
-								{data: b, name: a});
-						}),
-					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-					A2(elm$json$Json$Decode$field, 'data', elm$json$Json$Decode$string));
-			default:
-				var unk = msg;
-				return elm$json$Json$Decode$fail('unknown websocketmsg type: ' + unk);
-		}
-	},
-	A2(elm$json$Json$Decode$field, 'msg', elm$json$Json$Decode$string));
-var elm$json$Json$Decode$decodeValue = _Json_run;
-var author$project$WebSocket$receive = function (wsmMsg) {
-	return function (v) {
-		return wsmMsg(
-			A2(elm$json$Json$Decode$decodeValue, author$project$WebSocket$decodeMsg, v));
-	};
-};
-var author$project$Main$wsreceive = author$project$Main$receiveSocketMsg(
-	author$project$WebSocket$receive(author$project$Main$WsMsg));
-var author$project$Main$sendSocketCommand = _Platform_outgoingPort('sendSocketCommand', elm$core$Basics$identity);
-var elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n0, obj) {
-					var k = _n0.a;
-					var v = _n0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var elm$json$Json$Encode$string = _Json_wrap;
-var author$project$WebSocket$encodeCmd = function (wsc) {
-	switch (wsc.$) {
-		case 'Connect':
-			var msg = wsc.a;
-			return elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'cmd',
-						elm$json$Json$Encode$string('connect')),
-						_Utils_Tuple2(
-						'name',
-						elm$json$Json$Encode$string(msg.name)),
-						_Utils_Tuple2(
-						'address',
-						elm$json$Json$Encode$string(msg.address)),
-						_Utils_Tuple2(
-						'protocol',
-						elm$json$Json$Encode$string(msg.protocol))
-					]));
-		case 'Send':
-			var msg = wsc.a;
-			return elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'cmd',
-						elm$json$Json$Encode$string('send')),
-						_Utils_Tuple2(
-						'name',
-						elm$json$Json$Encode$string(msg.name)),
-						_Utils_Tuple2(
-						'content',
-						elm$json$Json$Encode$string(msg.content))
-					]));
-		default:
-			var msg = wsc.a;
-			return elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'cmd',
-						elm$json$Json$Encode$string('close')),
-						_Utils_Tuple2(
-						'name',
-						elm$json$Json$Encode$string(msg.name))
-					]));
-	}
-};
-var author$project$WebSocket$send = F2(
-	function (tocmd, wsc) {
-		return tocmd(
-			author$project$WebSocket$encodeCmd(wsc));
-	});
-var author$project$Main$wssend = author$project$WebSocket$send(author$project$Main$sendSocketCommand);
-var author$project$SvgControlPage$JsonMsg = function (a) {
-	return {$: 'JsonMsg', a: a};
-};
-var author$project$SvgControlPage$Resize = function (a) {
-	return {$: 'Resize', a: a};
-};
-var author$project$SvgCommand$None = {$: 'None'};
-var author$project$SvgButton$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_update(
-			model,
-			{
-				rect: rect,
-				srect: A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				textSvg: ts
-			});
-	});
-var author$project$SvgLabel$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_update(
-			model,
-			{
-				rect: rect,
-				srect: A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				textSvg: A2(
-					elm$core$List$map,
-					function (meh) {
-						return A2(
-							elm$virtual_dom$VirtualDom$map,
-							function (_n0) {
-								return author$project$SvgLabel$NoOp;
-							},
-							meh);
-					},
-					ts)
-			});
-	});
-var author$project$SvgSlider$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_update(
-			model,
-			{
-				rect: rect,
-				srect: A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				textSvg: ts
-			});
-	});
-var author$project$SvgControl$resize = F2(
-	function (model, rect) {
-		switch (model.$) {
-			case 'CmButton':
-				var mod = model.a;
-				return author$project$SvgControl$CmButton(
-					A2(
-						author$project$SvgButton$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			case 'CmSlider':
-				var mod = model.a;
-				return author$project$SvgControl$CmSlider(
-					A2(
-						author$project$SvgSlider$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			case 'CmLabel':
-				var mod = model.a;
-				return author$project$SvgControl$CmLabel(
-					A2(
-						author$project$SvgLabel$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			default:
-				var mod = model.a;
-				return author$project$SvgControl$CmSizer(
-					A2(author$project$SvgControl$szresize, mod, rect));
-		}
-	});
-var author$project$SvgControl$szresize = F2(
-	function (model, rect) {
-		var clist = elm$core$Dict$toList(model.controls);
-		var rlist = A4(
-			author$project$SvgControl$mkRlist,
-			model.orientation,
-			rect,
-			elm$core$List$length(clist),
-			model.proportions);
-		var controls = A2(
-			elm$core$List$map,
-			function (_n0) {
-				var _n1 = _n0.a;
-				var i = _n1.a;
-				var c = _n1.b;
-				var r = _n0.b;
-				return _Utils_Tuple2(
-					i,
-					A2(author$project$SvgControl$resize, c, r));
-			},
-			A2(author$project$SvgControl$zip, clist, rlist));
-		var cdict = elm$core$Dict$fromList(controls);
-		return _Utils_update(
-			model,
-			{controls: cdict, rect: rect});
-	});
 var author$project$SvgButton$Press = {$: 'Press'};
 var author$project$SvgButton$Unpress = {$: 'Unpress'};
 var author$project$SvgButton$UpdateMessage = F3(
 	function (controlId, updateType, label) {
 		return {controlId: controlId, label: label, updateType: updateType};
 	});
+var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$SvgButton$encodeUpdateType = function (ut) {
 	if (ut.$ === 'Press') {
 		return elm$json$Json$Encode$string('Press');
@@ -6086,6 +5764,19 @@ var elm$json$Json$Encode$list = F2(
 	});
 var author$project$SvgThings$encodeControlId = function (cid) {
 	return A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, cid);
+};
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
 };
 var author$project$SvgButton$encodeUpdateMessage = function (um) {
 	var outlist1 = _List_fromArray(
@@ -6155,10 +5846,12 @@ var author$project$SvgButton$pressup = F2(
 				}),
 			author$project$SvgCommand$Send(um));
 	});
+var author$project$SvgCommand$None = {$: 'None'};
 var author$project$SvgTouch$Touch = F3(
 	function (x, y, id) {
 		return {id: id, x: x, y: y};
 	});
+var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$float = _Json_decodeFloat;
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var elm$json$Json$Decode$map3 = _Json_map3;
@@ -6173,6 +5866,7 @@ var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
 	});
+var elm$json$Json$Decode$decodeValue = _Json_run;
 var author$project$SvgTouch$extractFirstTouch = function (evt) {
 	var _n0 = A2(
 		elm$json$Json$Decode$decodeValue,
@@ -6303,28 +5997,29 @@ var author$project$SvgLabel$update = F2(
 	});
 var author$project$SvgSlider$Press = {$: 'Press'};
 var author$project$SvgSlider$Unpress = {$: 'Unpress'};
-var author$project$SvgSlider$getX = A2(elm$json$Json$Decode$field, 'clientX', elm$json$Json$Decode$int);
-var author$project$SvgSlider$getY = A2(elm$json$Json$Decode$field, 'clientY', elm$json$Json$Decode$int);
+var author$project$SvgSlider$getX = A2(elm$json$Json$Decode$field, 'pageX', elm$json$Json$Decode$int);
+var author$project$SvgSlider$getY = A2(elm$json$Json$Decode$field, 'pageY', elm$json$Json$Decode$int);
 var author$project$SvgSlider$getLocation = F2(
 	function (model, v) {
-		var _n0 = model.orientation;
-		if (_n0.$ === 'Horizontal') {
-			var _n1 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getX, v);
-			if (_n1.$ === 'Ok') {
-				var i = _n1.a;
+		var _n0 = A2(elm$core$Debug$log, 'getLocation: ', model.rect);
+		var _n1 = model.orientation;
+		if (_n1.$ === 'Horizontal') {
+			var _n2 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getX, v);
+			if (_n2.$ === 'Ok') {
+				var i = _n2.a;
 				return elm$core$Result$Ok((i - model.rect.x) / model.rect.w);
 			} else {
-				var e = _n1.a;
+				var e = _n2.a;
 				return elm$core$Result$Err(
 					elm$json$Json$Decode$errorToString(e));
 			}
 		} else {
-			var _n2 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getY, v);
-			if (_n2.$ === 'Ok') {
-				var i = _n2.a;
+			var _n3 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getY, v);
+			if (_n3.$ === 'Ok') {
+				var i = _n3.a;
 				return elm$core$Result$Ok((i - model.rect.y) / model.rect.h);
 			} else {
-				var e = _n2.a;
+				var e = _n3.a;
 				return elm$core$Result$Err(
 					elm$json$Json$Decode$errorToString(e));
 			}
@@ -6536,9 +6231,13 @@ var author$project$SvgSlider$update = F2(
 		switch (msg.$) {
 			case 'SvgPress':
 				var v = msg.a;
-				var _n1 = A2(author$project$SvgSlider$getLocation, model, v);
-				if (_n1.$ === 'Ok') {
-					var l = _n1.a;
+				var _n1 = A2(
+					elm$core$Debug$log,
+					'SvgPress: ',
+					A2(author$project$SvgSlider$getLocation, model, v));
+				var _n2 = A2(author$project$SvgSlider$getLocation, model, v);
+				if (_n2.$ === 'Ok') {
+					var l = _n2.a;
 					return A3(
 						author$project$SvgSlider$updsend,
 						model,
@@ -6549,8 +6248,8 @@ var author$project$SvgSlider$update = F2(
 				}
 			case 'SvgUnpress':
 				var v = msg.a;
-				var _n2 = model.pressed;
-				if (_n2) {
+				var _n3 = model.pressed;
+				if (_n3) {
 					return A3(
 						author$project$SvgSlider$updsend,
 						model,
@@ -6570,11 +6269,15 @@ var author$project$SvgSlider$update = F2(
 					author$project$SvgCommand$None);
 			case 'SvgMoved':
 				var v = msg.a;
-				var _n3 = model.pressed;
-				if (_n3) {
-					var _n4 = A2(author$project$SvgSlider$getLocation, model, v);
-					if (_n4.$ === 'Ok') {
-						var l = _n4.a;
+				var _n4 = model.pressed;
+				if (_n4) {
+					var _n5 = A2(
+						elm$core$Debug$log,
+						'SvgMoved: ',
+						A2(author$project$SvgSlider$getLocation, model, v));
+					var _n6 = A2(author$project$SvgSlider$getLocation, model, v);
+					if (_n6.$ === 'Ok') {
+						var l = _n6.a;
 						return A3(author$project$SvgSlider$updsend, model, elm$core$Maybe$Nothing, l);
 					} else {
 						return _Utils_Tuple2(model, author$project$SvgCommand$None);
@@ -6588,31 +6291,31 @@ var author$project$SvgSlider$update = F2(
 					model,
 					{
 						label: function () {
-							var _n5 = um.label;
-							if (_n5.$ === 'Just') {
-								var txt = _n5.a;
+							var _n7 = um.label;
+							if (_n7.$ === 'Just') {
+								var txt = _n7.a;
 								return txt;
 							} else {
 								return model.label;
 							}
 						}(),
 						location: function () {
-							var _n6 = um.location;
-							if (_n6.$ === 'Just') {
-								var loc = _n6.a;
+							var _n8 = um.location;
+							if (_n8.$ === 'Just') {
+								var loc = _n8.a;
 								return loc;
 							} else {
 								return model.location;
 							}
 						}(),
 						pressed: function () {
-							var _n7 = um.updateType;
-							if (_n7.$ === 'Just') {
-								if (_n7.a.$ === 'Press') {
-									var _n8 = _n7.a;
+							var _n9 = um.updateType;
+							if (_n9.$ === 'Just') {
+								if (_n9.a.$ === 'Press') {
+									var _n10 = _n9.a;
 									return true;
 								} else {
-									var _n9 = _n7.a;
+									var _n11 = _n9.a;
 									return false;
 								}
 							} else {
@@ -6620,9 +6323,9 @@ var author$project$SvgSlider$update = F2(
 							}
 						}(),
 						textSvg: function () {
-							var _n10 = um.label;
-							if (_n10.$ === 'Just') {
-								var txt = _n10.a;
+							var _n12 = um.label;
+							if (_n12.$ === 'Just') {
+								var txt = _n12.a;
 								return A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, txt, model.rect);
 							} else {
 								return model.textSvg;
@@ -6632,17 +6335,17 @@ var author$project$SvgSlider$update = F2(
 				return _Utils_Tuple2(mod, author$project$SvgCommand$None);
 			default:
 				var stm = msg.a;
-				var _n11 = A2(author$project$SvgTouch$extractFirstRectTouchSE, stm, model.rect);
-				if (_n11.$ === 'Nothing') {
+				var _n13 = A2(author$project$SvgTouch$extractFirstRectTouchSE, stm, model.rect);
+				if (_n13.$ === 'Nothing') {
 					return model.pressed ? A3(
 						author$project$SvgSlider$updsend,
 						model,
 						elm$core$Maybe$Just(author$project$SvgSlider$Unpress),
 						model.location) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 				} else {
-					var touch = _n11.a;
-					var _n12 = model.orientation;
-					if (_n12.$ === 'Horizontal') {
+					var touch = _n13.a;
+					var _n14 = model.orientation;
+					if (_n14.$ === 'Horizontal') {
 						var loc = (touch.x - model.rect.x) / model.rect.w;
 						return model.pressed ? A3(
 							author$project$SvgSlider$updsend,
@@ -6771,6 +6474,337 @@ var author$project$SvgControl$update = F2(
 			}
 		}
 		return _Utils_Tuple2(model, author$project$SvgCommand$None);
+	});
+var author$project$SvgControl$update_list = F2(
+	function (msgs, model) {
+		return A3(
+			elm$core$List$foldl,
+			F2(
+				function (msg, _n0) {
+					var mod = _n0.a;
+					var cmds = _n0.b;
+					var _n1 = A2(author$project$SvgControl$update, msg, mod);
+					var modnew = _n1.a;
+					var cmd = _n1.b;
+					return _Utils_Tuple2(
+						modnew,
+						A2(elm$core$List$cons, cmd, cmds));
+				}),
+			_Utils_Tuple2(model, _List_Nil),
+			msgs);
+	});
+var author$project$SvgControlPage$Model = F6(
+	function (title, mahrect, srect, spec, control, windowSize) {
+		return {control: control, mahrect: mahrect, spec: spec, srect: srect, title: title, windowSize: windowSize};
+	});
+var author$project$SvgThings$toSRect = function (rect) {
+	return A4(
+		author$project$SvgThings$SRect,
+		elm$core$String$fromInt(rect.x),
+		elm$core$String$fromInt(rect.y),
+		elm$core$String$fromInt(rect.w),
+		elm$core$String$fromInt(rect.h));
+};
+var author$project$Util$RectSize = F2(
+	function (width, height) {
+		return {height: height, width: width};
+	});
+var author$project$SvgControlPage$init = F2(
+	function (rect, spec) {
+		var conmod = A3(author$project$SvgControl$init, rect, _List_Nil, spec.rootControl);
+		var _n0 = A2(
+			author$project$SvgControl$update_list,
+			A2(elm$core$Maybe$withDefault, _List_Nil, spec.state),
+			conmod);
+		var updmod = _n0.a;
+		var cmds = _n0.b;
+		return A6(
+			author$project$SvgControlPage$Model,
+			spec.title,
+			rect,
+			author$project$SvgThings$toSRect(rect),
+			spec,
+			updmod,
+			A2(author$project$Util$RectSize, 0, 0));
+	});
+var author$project$SvgSlider$Spec = F3(
+	function (name, label, orientation) {
+		return {label: label, name: name, orientation: orientation};
+	});
+var author$project$SvgThings$Vertical = {$: 'Vertical'};
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$Main$init = function (flags) {
+	var wsUrl = A2(
+		elm$core$Maybe$withDefault,
+		'',
+		A2(
+			elm$core$Maybe$map,
+			function (loc) {
+				return 'ws:' + (loc + (':' + elm$core$String$fromInt(flags.wsport)));
+			},
+			A2(
+				elm$core$Maybe$andThen,
+				elm$core$List$head,
+				elm$core$List$tail(
+					A2(elm$core$String$split, ':', flags.location)))));
+	return {
+		scpModel: A2(
+			author$project$SvgControlPage$init,
+			A4(author$project$SvgThings$Rect, 0, 0, flags.width, flags.height),
+			A3(
+				author$project$SvgControlPage$Spec,
+				wsUrl,
+				author$project$SvgControl$CsSlider(
+					A3(author$project$SvgSlider$Spec, 'blah', elm$core$Maybe$Nothing, author$project$SvgThings$Vertical)),
+				elm$core$Maybe$Nothing)),
+		wsUrl: wsUrl
+	};
+};
+var author$project$Main$WsMsg = function (a) {
+	return {$: 'WsMsg', a: a};
+};
+var elm$json$Json$Decode$value = _Json_decodeValue;
+var author$project$Main$receiveSocketMsg = _Platform_incomingPort('receiveSocketMsg', elm$json$Json$Decode$value);
+var author$project$WebSocket$Data = function (a) {
+	return {$: 'Data', a: a};
+};
+var author$project$WebSocket$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$WebSocket$decodeMsg = A2(
+	elm$json$Json$Decode$andThen,
+	function (msg) {
+		switch (msg) {
+			case 'error':
+				return A3(
+					elm$json$Json$Decode$map2,
+					F2(
+						function (a, b) {
+							return author$project$WebSocket$Error(
+								{error: b, name: a});
+						}),
+					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+					A2(elm$json$Json$Decode$field, 'error', elm$json$Json$Decode$string));
+			case 'data':
+				return A3(
+					elm$json$Json$Decode$map2,
+					F2(
+						function (a, b) {
+							return author$project$WebSocket$Data(
+								{data: b, name: a});
+						}),
+					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+					A2(elm$json$Json$Decode$field, 'data', elm$json$Json$Decode$string));
+			default:
+				var unk = msg;
+				return elm$json$Json$Decode$fail('unknown websocketmsg type: ' + unk);
+		}
+	},
+	A2(elm$json$Json$Decode$field, 'msg', elm$json$Json$Decode$string));
+var author$project$WebSocket$receive = function (wsmMsg) {
+	return function (v) {
+		return wsmMsg(
+			A2(elm$json$Json$Decode$decodeValue, author$project$WebSocket$decodeMsg, v));
+	};
+};
+var author$project$Main$wsreceive = author$project$Main$receiveSocketMsg(
+	author$project$WebSocket$receive(author$project$Main$WsMsg));
+var author$project$Main$sendSocketCommand = _Platform_outgoingPort('sendSocketCommand', elm$core$Basics$identity);
+var author$project$WebSocket$encodeCmd = function (wsc) {
+	switch (wsc.$) {
+		case 'Connect':
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('connect')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name)),
+						_Utils_Tuple2(
+						'address',
+						elm$json$Json$Encode$string(msg.address)),
+						_Utils_Tuple2(
+						'protocol',
+						elm$json$Json$Encode$string(msg.protocol))
+					]));
+		case 'Send':
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('send')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name)),
+						_Utils_Tuple2(
+						'content',
+						elm$json$Json$Encode$string(msg.content))
+					]));
+		default:
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('close')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name))
+					]));
+	}
+};
+var author$project$WebSocket$send = F2(
+	function (tocmd, wsc) {
+		return tocmd(
+			author$project$WebSocket$encodeCmd(wsc));
+	});
+var author$project$Main$wssend = author$project$WebSocket$send(author$project$Main$sendSocketCommand);
+var author$project$SvgControlPage$JsonMsg = function (a) {
+	return {$: 'JsonMsg', a: a};
+};
+var author$project$SvgControlPage$Resize = function (a) {
+	return {$: 'Resize', a: a};
+};
+var author$project$SvgButton$resize = F2(
+	function (model, rect) {
+		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
+		return _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: ts
+			});
+	});
+var author$project$SvgLabel$resize = F2(
+	function (model, rect) {
+		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
+		return _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: A2(
+					elm$core$List$map,
+					function (meh) {
+						return A2(
+							elm$virtual_dom$VirtualDom$map,
+							function (_n0) {
+								return author$project$SvgLabel$NoOp;
+							},
+							meh);
+					},
+					ts)
+			});
+	});
+var author$project$SvgSlider$resize = F2(
+	function (model, rect) {
+		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
+		return _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: ts
+			});
+	});
+var author$project$SvgControl$resize = F2(
+	function (model, rect) {
+		switch (model.$) {
+			case 'CmButton':
+				var mod = model.a;
+				return author$project$SvgControl$CmButton(
+					A2(
+						author$project$SvgButton$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			case 'CmSlider':
+				var mod = model.a;
+				return author$project$SvgControl$CmSlider(
+					A2(
+						author$project$SvgSlider$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			case 'CmLabel':
+				var mod = model.a;
+				return author$project$SvgControl$CmLabel(
+					A2(
+						author$project$SvgLabel$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			default:
+				var mod = model.a;
+				return author$project$SvgControl$CmSizer(
+					A2(author$project$SvgControl$szresize, mod, rect));
+		}
+	});
+var author$project$SvgControl$szresize = F2(
+	function (model, rect) {
+		var clist = elm$core$Dict$toList(model.controls);
+		var rlist = A4(
+			author$project$SvgControl$mkRlist,
+			model.orientation,
+			rect,
+			elm$core$List$length(clist),
+			model.proportions);
+		var controls = A2(
+			elm$core$List$map,
+			function (_n0) {
+				var _n1 = _n0.a;
+				var i = _n1.a;
+				var c = _n1.b;
+				var r = _n0.b;
+				return _Utils_Tuple2(
+					i,
+					A2(author$project$SvgControl$resize, c, r));
+			},
+			A2(author$project$SvgControl$zip, clist, rlist));
+		var cdict = elm$core$Dict$fromList(controls);
+		return _Utils_update(
+			model,
+			{controls: cdict, rect: rect});
 	});
 var author$project$SvgButton$SvgUpdate = function (a) {
 	return {$: 'SvgUpdate', a: a};
@@ -7568,12 +7602,17 @@ var author$project$SvgControlPage$viewSvgControl = function (conmodel) {
 	return author$project$SvgControl$view(conmodel);
 };
 var elm$html$Html$div = _VirtualDom_node('div');
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
 var elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var author$project$SvgControlPage$view = function (model) {
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'margin', '0')
+			]),
 		_List_fromArray(
 			[
 				A2(

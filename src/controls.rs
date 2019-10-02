@@ -33,6 +33,12 @@ pub trait Control: Debug + Send {
   fn as_json(&self) -> Value;
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum Orientation {
+  Vertical,
+  Horizontal,
+}
+
 #[derive(Debug)]
 pub struct Slider {
   pub control_id: Vec<i32>,
@@ -40,16 +46,30 @@ pub struct Slider {
   pub label: Option<String>,
   pub pressed: bool,
   pub location: f32,
+  pub orientation: Orientation,
 }
 
 impl Control for Slider {
   fn as_json(&self) -> Value {
     let mut btv = BTreeMap::new();
     btv.insert(String::from("type"), Value::String("slider".to_string()));
-    btv.insert( String::from("orientation"), Value::String("vertical".to_string()));
+    btv.insert(
+      String::from("orientation"),
+      Value::String("vertical".to_string()),
+    );
     btv.insert(String::from("name"), Value::String(self.name.to_string()));
     if let Some(lb) = &self.label {
       btv.insert(String::from("label"), Value::String(lb.to_string()));
+    };
+    match self.orientation {
+      Orientation::Vertical => btv.insert(
+        String::from("orientation"),
+        Value::String("vertical".to_string()),
+      ),
+      Orientation::Horizontal => btv.insert(
+        String::from("orientation"),
+        Value::String("horizontal".to_string()),
+      ),
     };
     Value::Object(btv)
   }
@@ -66,6 +86,7 @@ impl Control for Slider {
       label: self.label.clone(),
       pressed: self.pressed.clone(),
       location: self.location.clone(),
+      orientation: self.orientation,
     })
   }
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
@@ -138,7 +159,10 @@ pub struct Button {
 impl Control for Button {
   fn as_json(&self) -> Value {
     let mut btv = BTreeMap::new();
-    btv.insert(String::from("type"), Value::String(self.control_type().to_string()));
+    btv.insert(
+      String::from("type"),
+      Value::String(self.control_type().to_string()),
+    );
     btv.insert(String::from("name"), Value::String(self.name.to_string()));
     if let Some(lb) = &self.label {
       btv.insert(String::from("label"), Value::String(lb.to_string()));
@@ -221,7 +245,10 @@ pub struct Label {
 impl Control for Label {
   fn as_json(&self) -> Value {
     let mut btv = BTreeMap::new();
-    btv.insert(String::from("type"), Value::String(self.control_type().to_string()));
+    btv.insert(
+      String::from("type"),
+      Value::String(self.control_type().to_string()),
+    );
     btv.insert(String::from("name"), Value::String(self.name.to_string()));
     btv.insert(String::from("label"), Value::String(self.label.to_string()));
     Value::Object(btv)
@@ -280,14 +307,27 @@ impl Control for Label {
 pub struct Sizer {
   pub control_id: Vec<i32>,
   pub controls: Vec<Box<dyn Control>>,
+  pub orientation: Orientation,
 }
 
 impl Control for Sizer {
   fn as_json(&self) -> Value {
     let ctrlvals = self.controls.iter().map(|c| c.as_json()).collect();
     let mut btv = BTreeMap::new();
-    btv.insert(String::from("type"), Value::String(self.control_type().to_string()));
-    btv.insert( String::from("orientation"), Value::String("vertical".to_string()));
+    btv.insert(
+      String::from("type"),
+      Value::String(self.control_type().to_string()),
+    );
+    match self.orientation {
+      Orientation::Vertical => btv.insert(
+        String::from("orientation"),
+        Value::String("vertical".to_string()),
+      ),
+      Orientation::Horizontal => btv.insert(
+        String::from("orientation"),
+        Value::String("horizontal".to_string()),
+      ),
+    };
     btv.insert(String::from("controls"), Value::Array(ctrlvals));
     Value::Object(btv)
   }
@@ -301,6 +341,7 @@ impl Control for Sizer {
     Box::new(Sizer {
       control_id: self.control_id.clone(),
       controls: Vec::new(),
+      orientation: self.orientation,
     })
   }
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {

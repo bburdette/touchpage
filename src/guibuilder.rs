@@ -1,4 +1,4 @@
-use controls::{Button, Control, Label, Root, Sizer, Slider};
+use controls::{Button, Control, Label, Orientation, Root, Sizer, Slider};
 use failure::err_msg;
 use failure::Error as FError;
 use std::convert::TryInto;
@@ -12,9 +12,10 @@ pub struct Gui {
 impl Gui {
   pub fn new_gui(title: String) -> Gui {
     Gui {
-      title: title
-    , root_control: None
-    , sizerstack: Vec::new()}
+      title: title,
+      root_control: None,
+      sizerstack: Vec::new(),
+    }
   }
   // one way function!
   pub fn to_root(self) -> Result<Root, FError> {
@@ -90,13 +91,19 @@ impl Gui {
     self.add_control(newbutton)
   }
 
-  pub fn add_slider(&mut self, name: String, label: Option<String>) -> Result<&mut Gui, FError> {
+  pub fn add_slider(
+    &mut self,
+    name: String,
+    label: Option<String>,
+    orientation: Orientation,
+  ) -> Result<&mut Gui, FError> {
     let newslider = Box::new(Slider {
       control_id: self.next_id()?,
       name: String::from(name),
       label: label,
       location: 0.5,
       pressed: false,
+      orientation: orientation,
     });
     self.add_control(newslider)
   }
@@ -110,11 +117,12 @@ impl Gui {
     self.add_control(newlabel)
   }
 
-  pub fn add_sizer(&mut self) -> Result<&mut Gui, FError> {
+  pub fn add_sizer(&mut self, orientation: Orientation) -> Result<&mut Gui, FError> {
     let id = self.next_id()?;
     let newsizer = Box::new(Sizer {
       control_id: id.clone(),
       controls: Vec::new(),
+      orientation: orientation,
     });
     self.sizerstack.push(id);
     self.add_control(newsizer)

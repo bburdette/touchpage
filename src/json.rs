@@ -2,7 +2,11 @@ extern crate serde;
 extern crate serde_json;
 
 use control_updates as cu;
-use controls::{Button, Control, Label, Root, Sizer, Slider};
+use controls::{
+  Button, Control, Label,
+  Orientation::{Horizontal, Vertical},
+  Root, Sizer, Slider,
+};
 use failure::err_msg;
 use failure::Error as FError;
 use serde_json::Value;
@@ -27,14 +31,8 @@ pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
 
 pub fn serialize_root(root: &Root) -> Value {
   let mut btv = BTreeMap::new();
-  btv.insert(
-    String::from("title"),
-    Value::String(root.title.clone()),
-  );
-  btv.insert(
-    String::from("rootControl"),
-    root.root_control.as_json(),
-  );
+  btv.insert(String::from("title"), Value::String(root.title.clone()));
+  btv.insert(String::from("rootControl"), root.root_control.as_json());
 
   Value::Object(btv)
 }
@@ -48,7 +46,6 @@ fn get_string<'a>(data: &'a BTreeMap<String, Value>, name: &str) -> Result<&'a s
 }
 
 fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, FError> {
-
   // what's the type?
   let obj = data
     .as_object()
@@ -81,12 +78,21 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
         }
         None => None,
       };
+      let orientation = match obj.get("orientation") {
+        Some(val) => match val.to_string().as_str() {
+          "vertical" => Vertical,
+          "horizontal" => Horizontal,
+          _ => Vertical,
+        },
+        _ => Vertical,
+      };
       Ok(Box::new(Slider {
         control_id: id.clone(),
         name: String::from(name),
         label: label,
         pressed: false,
         location: 0.5,
+        orientation: orientation,
       }))
     }
     "label" => {
@@ -115,9 +121,19 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
         controlv.push(c);
       }
 
+      let orientation = match obj.get("orientation") {
+        Some(val) => match val.to_string().as_str() {
+          "vertical" => Vertical,
+          "horizontal" => Horizontal,
+          _ => Vertical,
+        },
+        _ => Vertical,
+      };
+
       Ok(Box::new(Sizer {
         control_id: id.clone(),
         controls: controlv,
+        orientation: orientation,
       }))
     }
     _ => Err(err_msg(format!("objtype '{}' not supported!", objtype))),

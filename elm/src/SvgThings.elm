@@ -238,7 +238,7 @@ calcTextSvg : String -> String -> Rect -> List (Svg ())
 calcTextSvg fontFam textString rect =
     let
         w =
-            SvgTextSize.getTextWidth textString ("20px " ++ fontFam)
+            SvgTextSize.estimateTextWidth textString ("20px " ++ fontFam)
 
         fs =
             computeFontScaling (toFloat w) 20.0 (toFloat rect.w) (toFloat rect.h)

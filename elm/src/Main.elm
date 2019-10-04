@@ -9,6 +9,7 @@ import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgControlPage
 import SvgSlider
+import SvgTextSize exposing (Metrics, decodeMetrics, estimateTextWidth)
 import SvgThings
 import Util exposing (RectSize)
 import WebSocket
@@ -24,17 +25,6 @@ port requestTextSize : ( String, String ) -> Cmd msg
 
 
 port receiveTextMetrics : (JD.Value -> msg) -> Sub msg
-
-
-type alias Metrics =
-    { width : Float
-    }
-
-
-decodeMetrics : JD.Decoder Metrics
-decodeMetrics =
-    JD.map Metrics <|
-        JD.field "width" JD.float
 
 
 wssend =
@@ -82,7 +72,7 @@ main =
                             , address = mod.wsUrl
                             , protocol = "rust-websocket"
                             }
-                    , requestTextSize ( "blahhhhh", "20px sans-serif" )
+                    , requestTextSize ( "blah", "20px sans-serif" )
                     ]
                 )
         , subscriptions =

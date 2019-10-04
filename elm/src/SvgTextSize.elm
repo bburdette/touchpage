@@ -5,7 +5,7 @@ module SvgTextSize exposing (getTextWidth)
 
 getTextWidth : String -> String -> Int
 getTextWidth text font =
-    0
+    String.length text * 12
 
 
 

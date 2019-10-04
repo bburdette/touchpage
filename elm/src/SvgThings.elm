@@ -234,10 +234,6 @@ processProps controlcount lst =
     List.map (\x -> x / s) nwlst
 
 
-
--- text scaling!
-
-
 calcTextSvg : String -> String -> Rect -> List (Svg ())
 calcTextSvg fontFam textString rect =
     let

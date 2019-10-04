@@ -9,6 +9,29 @@
 <div id="elm"></div>
 <script>{{elm-main}}</script>
 <script>
+  
+  function getTextWidth (t, f) {
+    var blah = getTextMetrics(t, f);
+    return blah.width; 
+  };
+
+  function getTextMetrics (text, font) {
+     // re-use canvas object for better performance
+     var canvas = getTextMetrics.canvas || (getTextMetrics.canvas = document.createElement("canvas"));
+     var context = canvas.getContext("2d");
+     context.font = font;
+     var metrics = context.measureText(text);
+     return metrics;
+    };
+
+  function requestTextSize (text, font) {
+    metrics = getTextMetrics(text,font);
+    console.log( "getTextMetrics: " +  JSON.stringify(metrics, null, 4));
+    app.ports.receiveTextMetrics.send(metrics);
+  }
+ 
+</script>
+<script>
   var mySockets = {};
 
   function sendSocketCommand(wat) {
@@ -53,6 +76,7 @@
       document.getElementById("elm").innerText = 'This is a headless program, meaning there is nothing to show here.\n\nI started the program anyway though, and you can access it as `app` in the developer console.';
     }
     app.ports.sendSocketCommand.subscribe(sendSocketCommand);
+    app.ports.requestTextSize.subscribe(requestTextSize);
 </script>
 </body>
 </html>

@@ -20,6 +20,23 @@ port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
 port sendSocketCommand : JE.Value -> Cmd msg
 
 
+port requestTextSize : ( String, String ) -> Cmd msg
+
+
+port receiveTextMetrics : (JD.Value -> msg) -> Sub msg
+
+
+type alias Metrics =
+    { width : Float
+    }
+
+
+decodeMetrics : JD.Decoder Metrics
+decodeMetrics =
+    JD.map Metrics <|
+        JD.field "width" JD.float
+
+
 wssend =
     WebSocket.send sendSocketCommand
 
@@ -30,6 +47,7 @@ wsreceive =
 
 type Msg
     = WsMsg (Result JD.Error WebSocket.WebSocketMsg)
+    | TextSize (Result JD.Error Metrics)
     | ScpMsg SvgControlPage.Msg
 
 
@@ -57,12 +75,15 @@ main =
                         init flags
                 in
                 ( mod
-                , wssend <|
-                    WebSocket.Connect
-                        { name = "touchpage"
-                        , address = mod.wsUrl
-                        , protocol = "rust-websocket"
-                        }
+                , Cmd.batch
+                    [ wssend <|
+                        WebSocket.Connect
+                            { name = "touchpage"
+                            , address = mod.wsUrl
+                            , protocol = "rust-websocket"
+                            }
+                    , requestTextSize ( "blah", "" )
+                    ]
                 )
         , subscriptions =
             \_ ->
@@ -74,6 +95,7 @@ main =
                                     RectSize (toFloat a) (toFloat b)
                             )
                     , wsreceive
+                    , receiveTextMetrics (TextSize << JD.decodeValue decodeMetrics)
                     ]
         , update =
             \msg mod ->
@@ -120,6 +142,13 @@ main =
 
                             Err _ ->
                                 ( mod, Cmd.none )
+
+                    TextSize ts ->
+                        let
+                            _ =
+                                Debug.log "textsize: " ts
+                        in
+                        ( mod, Cmd.none )
         , view =
             \model ->
                 Browser.Document "svg control"

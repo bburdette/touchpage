@@ -82,7 +82,7 @@ main =
                             , address = mod.wsUrl
                             , protocol = "rust-websocket"
                             }
-                    , requestTextSize ( "blah", "" )
+                    , requestTextSize ( "blahhhhh", "20px sans-serif" )
                     ]
                 )
         , subscriptions =

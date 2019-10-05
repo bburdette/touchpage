@@ -1,11 +1,12 @@
-module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, calcText, calcTextSvg, computeFontScaling, containsXY, decodeControlId, encodeControlId, ff, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
+module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, containsXY, decodeControlId, encodeControlId, ff, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
+
+-- import SvgTextSize
 
 import Json.Decode as JD
 import Json.Encode as JE
 import List exposing (..)
 import Svg exposing (Attribute, Svg, g, rect, svg, text, text_)
 import Svg.Attributes exposing (..)
-import SvgTextSize
 import Template exposing (render, template, withString, withValue)
 import Tuple
 
@@ -232,85 +233,3 @@ processProps controlcount lst =
             sum nwlst
     in
     List.map (\x -> x / s) nwlst
-
-
-calcTextSvg : String -> String -> Rect -> List (Svg ())
-calcTextSvg fontFam textString rect =
-    let
-        w =
-            SvgTextSize.estimateTextWidth textString ("20px " ++ fontFam)
-
-        fs =
-            computeFontScaling (toFloat w) 20.0 (toFloat rect.w) (toFloat rect.h)
-    in
-    calcText fontFam textString w fs rect
-
-
-calcText : String -> String -> Int -> Float -> Rect -> List (Svg ())
-calcText fontFam lbtext labelMeasuredWidth fontScaling rect =
-    let
-        width =
-            labelMeasuredWidth
-
-        scale =
-            fontScaling
-
-        xc =
-            toFloat rect.x + toFloat rect.w / 2
-
-        yc =
-            toFloat rect.y + toFloat rect.h / 2
-
-        xt =
-            xc - (toFloat width * scale * 0.5)
-
-        yt =
-            yc + 20.0 * scale * 0.5
-
-        tmpl =
-            template "matrix("
-                |> withValue .scale
-                |> withString ", 0, 0, "
-                |> withValue .scale
-                |> withString ", "
-                |> withValue .xt
-                |> withString ", "
-                |> withValue .yt
-                |> withString ")"
-
-        -- template "matrix(" <% .scale %> ", 0, 0, " <% .scale %> ", " <% .xt %> ", " <% .yt %> ")"
-        xf =
-            render { scale = String.fromFloat scale, xt = String.fromFloat xt, yt = String.fromFloat yt } tmpl
-    in
-    [ text_
-        [ fill "black"
-
-        -- , textAnchor "middle"
-        -- , x model.middlex
-        -- , y fonty
-        -- , lengthAdjust "glyphs"
-        -- , textLength model.srect.w
-        -- , fontSize "20" -- model.srect.h
-        , fontSize "20px"
-        , fontFamily fontFam
-        , transform xf
-        , style "cursor: default; -webkit-user-select: none;  -moz-user-select: none;  -ms-user-select: none; user-select: none;"
-        ]
-        [ text lbtext ]
-    ]
-
-
-computeFontScaling : Float -> Float -> Float -> Float -> Float
-computeFontScaling fw fh rw rh =
-    let
-        wr =
-            rw / fw
-
-        hr =
-            rh / fh
-    in
-    if wr < hr then
-        wr
-
-    else
-        hr

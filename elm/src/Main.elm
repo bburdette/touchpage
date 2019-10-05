@@ -21,7 +21,7 @@ port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
 port sendSocketCommand : JE.Value -> Cmd msg
 
 
-port requestTextSize : ( String, String ) -> Cmd msg
+port requestTextSize : JE.Value -> Cmd msg
 
 
 port receiveTextMetrics : (JD.Value -> msg) -> Sub msg

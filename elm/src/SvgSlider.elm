@@ -9,6 +9,7 @@ import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick, onMouseDown, onMouseOut, onMouseUp)
 import SvgCommand exposing (Command(..))
+import SvgTextSize exposing (calcTextSvg)
 import SvgThings exposing (Orientation(..))
 import SvgTouch as ST
 import Toop
@@ -77,7 +78,7 @@ init rect cid spec =
         ts =
             case spec.label of
                 Just lbtext ->
-                    SvgThings.calcTextSvg SvgThings.ff lbtext rect
+                    calcTextSvg SvgThings.ff lbtext rect
 
                 Nothing ->
                     []
@@ -298,7 +299,7 @@ update msg model =
                         , textSvg =
                             case um.label of
                                 Just txt ->
-                                    SvgThings.calcTextSvg SvgThings.ff txt model.rect
+                                    calcTextSvg SvgThings.ff txt model.rect
 
                                 Nothing ->
                                     model.textSvg
@@ -379,7 +380,7 @@ resize : Model -> SvgThings.Rect -> Model
 resize model rect =
     let
         ts =
-            SvgThings.calcTextSvg SvgThings.ff model.label rect
+            calcTextSvg SvgThings.ff model.label rect
     in
     { model
         | rect = rect

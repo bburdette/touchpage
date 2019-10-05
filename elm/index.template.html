@@ -24,10 +24,13 @@
      return metrics;
     };
 
-  function requestTextSize (text, font) {
-    metrics = getTextMetrics(text,font);
-    console.log( "getTextMetricssss: " +  JSON.stringify(metrics, null, 4));
-    app.ports.receiveTextMetrics.send(metrics);
+  function requestTextSize (rts) {
+    console.log (" rts: " + JSON.stringify(rts, null, 4)); 
+    metrics = getTextMetrics(rts.string, rts.font);
+    console.log( "getTextMetricssss: " + metrics.width);
+    var reply = { width : metrics.width, controlId : rts.controlId };
+    console.log (" reply: " + JSON.stringify(reply, null, 4));
+    app.ports.receiveTextMetrics.send(reply);
   }
  
 </script>

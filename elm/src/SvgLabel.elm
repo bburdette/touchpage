@@ -65,7 +65,7 @@ init :
 init rect cid spec =
     let
         ts =
-            SvgThings.calcTextSvg SvgThings.ff spec.label rect
+            calcTextSvg SvgThings.ff spec.label rect
     in
     Model spec.name
         spec.label
@@ -85,7 +85,7 @@ update msg model =
         SvgUpdate um ->
             let
                 tswk =
-                    SvgThings.calcTextSvg SvgThings.ff um.label model.rect
+                    calcTextSvg SvgThings.ff um.label model.rect
 
                 ts =
                     List.map (\meh -> VD.map (\_ -> NoOp) meh) tswk
@@ -100,7 +100,7 @@ resize : Model -> SvgThings.Rect -> Model
 resize model rect =
     let
         ts =
-            SvgThings.calcTextSvg SvgThings.ff model.label rect
+            calcTextSvg SvgThings.ff model.label rect
     in
     { model
         | rect = rect

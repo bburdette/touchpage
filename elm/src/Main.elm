@@ -9,7 +9,7 @@ import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgControlPage
 import SvgSlider
-import SvgTextSize exposing (Metrics, decodeMetrics, estimateTextWidth)
+import SvgTextSize exposing (TextSizeReply, TextSizeRequest, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth)
 import SvgThings
 import Util exposing (RectSize)
 import WebSocket
@@ -37,7 +37,7 @@ wsreceive =
 
 type Msg
     = WsMsg (Result JD.Error WebSocket.WebSocketMsg)
-    | TextSize (Result JD.Error Metrics)
+    | TextSize (Result JD.Error TextSizeReply)
     | ScpMsg SvgControlPage.Msg
 
 
@@ -72,7 +72,9 @@ main =
                             , address = mod.wsUrl
                             , protocol = "rust-websocket"
                             }
-                    , requestTextSize ( "blah", "20px sans-serif" )
+                    , requestTextSize <|
+                        encodeTextSizeRequest <|
+                            TextSizeRequest "blah" "20px sans-serif" []
                     ]
                 )
         , subscriptions =
@@ -85,7 +87,7 @@ main =
                                     RectSize (toFloat a) (toFloat b)
                             )
                     , wsreceive
-                    , receiveTextMetrics (TextSize << JD.decodeValue decodeMetrics)
+                    , receiveTextMetrics (TextSize << JD.decodeValue decodeTextSizeReply)
                     ]
         , update =
             \msg mod ->
@@ -107,6 +109,9 @@ main =
                                         { name = "touchpage"
                                         , content = dta
                                         }
+
+                            RequestTextWidth rtw ->
+                                Cmd.none
 
                             None ->
                                 -- test socket close.

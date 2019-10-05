@@ -1,9 +1,10 @@
-module SvgTextSize exposing (Metrics, TextSizeReply, TextSizeRequest, calcText, calcTextSvg, computeFontScaling, decodeMetrics, estimateTextWidth)
+module SvgTextSize exposing (Metrics, TextSizeReply, TextSizeRequest, calcText, calcTextSvg, computeFontScaling, decodeMetrics, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth)
 
 import Json.Decode as JD
+import Json.Encode as JE
 import Svg exposing (Attribute, Svg, g, rect, svg, text, text_)
 import Svg.Attributes exposing (..)
-import SvgThings exposing (ControlId, Rect)
+import SvgThings exposing (ControlId, Rect, decodeControlId, encodeControlId)
 import Template exposing (render, template, withString, withValue)
 import Util exposing (andMap)
 
@@ -39,10 +40,26 @@ type alias TextSizeRequest =
     }
 
 
+encodeTextSizeRequest : TextSizeRequest -> JE.Value
+encodeTextSizeRequest tsr =
+    JE.object
+        [ ( "string", JE.string tsr.string )
+        , ( "font", JE.string tsr.font )
+        , ( "controlId", encodeControlId tsr.controlId )
+        ]
+
+
 type alias TextSizeReply =
     { width : Float
     , controlId : ControlId
     }
+
+
+decodeTextSizeReply : JD.Decoder TextSizeReply
+decodeTextSizeReply =
+    JD.succeed TextSizeReply
+        |> andMap (JD.field "width" JD.float)
+        |> andMap (JD.field "controlId" decodeControlId)
 
 
 decodeMetrics : JD.Decoder Metrics

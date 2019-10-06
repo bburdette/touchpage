@@ -84,7 +84,6 @@ decodeMetrics =
 -- |> andMap (JD.field "hangingBaseline" JD.float)
 -- |> andMap (JD.field "alphabeticBaseline" JD.float)
 -- |> andMap (JD.field "ideographicBaseline" JD.float)
---
 
 
 resizeCommand :
@@ -97,7 +96,13 @@ resizeCommand :
 resizeCommand model =
     case model.stringWidth of
         Nothing ->
-            RequestTextWidth <| SvgCommand.TextSizeRequest model.label sizingFont model.cid
+            if model.label == "" then
+                None
+
+            else
+                RequestTextWidth <|
+                    Debug.log "resizeCommand RequestTextWidth" <|
+                        SvgCommand.TextSizeRequest model.label sizingFont model.cid
 
         Just _ ->
             None

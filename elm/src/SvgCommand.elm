@@ -14,6 +14,4 @@ type Command
     = Send String
     | RequestTextWidth TextSizeRequest
     | None
-
-
-
+    | Batch (List Command)

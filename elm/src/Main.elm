@@ -55,14 +55,46 @@ type alias Model =
     }
 
 
+commandToCmd : SvgCommand.Command -> Cmd Msg
+commandToCmd scmd =
+    let
+        _ =
+            Debug.log "scmd: " scmd
+    in
+    case scmd of
+        Send dta ->
+            wssend <|
+                WebSocket.Send
+                    { name = "touchpage"
+                    , content = dta
+                    }
+
+        RequestTextWidth rtw ->
+            requestTextSize <|
+                encodeTextSizeRequest <|
+                    rtw
+
+        -- TextSizeRequest "blah" "20px sans-serif" []
+        None ->
+            -- test socket close.
+            -- wssend <| WebSocket.Close { name = "touchpage" }
+            Cmd.none
+
+        Batch cmds ->
+            Cmd.batch (List.map commandToCmd cmds)
+
+
 main : Program Flags Model Msg
 main =
     Browser.document
         { init =
             \flags ->
                 let
-                    mod =
+                    ( mod, cmd ) =
                         init flags
+
+                    _ =
+                        Debug.log "init cmd: " cmd
                 in
                 ( mod
                 , Cmd.batch
@@ -75,6 +107,7 @@ main =
                     , requestTextSize <|
                         encodeTextSizeRequest <|
                             TextSizeRequest "blah" "20px sans-serif" []
+                    , commandToCmd cmd
                     ]
                 )
         , subscriptions =
@@ -102,21 +135,7 @@ main =
                         in
                         -- ( umod, Cmd.map ScpMsg cmd )
                         ( { mod | scpModel = umod }
-                        , case cmd of
-                            Send dta ->
-                                wssend <|
-                                    WebSocket.Send
-                                        { name = "touchpage"
-                                        , content = dta
-                                        }
-
-                            RequestTextWidth rtw ->
-                                Cmd.none
-
-                            None ->
-                                -- test socket close.
-                                -- wssend <| WebSocket.Close { name = "touchpage" }
-                                Cmd.none
+                        , commandToCmd cmd
                         )
 
                     WsMsg x ->
@@ -130,7 +149,7 @@ main =
                                     ( scpModel, scpCommand ) =
                                         SvgControlPage.update (SvgControlPage.JsonMsg wsd.data) mod.scpModel
                                 in
-                                ( { mod | scpModel = scpModel }, Cmd.none )
+                                ( { mod | scpModel = scpModel }, commandToCmd scpCommand )
 
                             Ok (WebSocket.Error wse) ->
                                 ( mod, Cmd.none )
@@ -151,7 +170,7 @@ main =
         }
 
 
-init : Flags -> Model
+init : Flags -> ( Model, Command )
 init flags =
     let
         wsUrl =
@@ -160,10 +179,14 @@ init flags =
                 |> Maybe.andThen List.head
                 |> Maybe.map (\loc -> "ws:" ++ loc ++ ":" ++ String.fromInt flags.wsport)
                 |> Maybe.withDefault ""
+
+        ( sm, cmd ) =
+            SvgControlPage.init
+                (SvgThings.Rect 0 0 flags.width flags.height)
+                (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
     in
-    { scpModel =
-        SvgControlPage.init
-            (SvgThings.Rect 0 0 flags.width flags.height)
-            (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
-    , wsUrl = wsUrl
-    }
+    ( { scpModel = sm
+      , wsUrl = wsUrl
+      }
+    , cmd
+    )

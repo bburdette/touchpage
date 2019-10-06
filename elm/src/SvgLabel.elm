@@ -85,10 +85,6 @@ init rect cid spec =
     ( model, resizeCommand model )
 
 
-
--- (List.map (\meh -> VD.map (\_ -> NoOp) meh) ts)
-
-
 update : Msg -> Model -> ( Model, Command )
 update msg model =
     case msg of

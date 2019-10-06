@@ -71,7 +71,7 @@ update msg model =
         JsonMsg s ->
             case JD.decodeString jsMessage s of
                 Ok (JmSpec spec) ->
-                    ( init model.mahrect spec, None )
+                    init model.mahrect spec
 
                 Ok (JmUpdate jmact) ->
                     update jmact model
@@ -118,22 +118,23 @@ resize newSize model =
 init :
     SvgThings.Rect
     -> Spec
-    -> Model
+    -> ( Model, Command )
 init rect spec =
     let
         ( conmod, cmd ) =
             SvgControl.init rect [] spec.rootControl
 
-        -- throwing away commands!
         ( updmod, cmds ) =
             SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
     in
-    Model spec.title
+    ( Model spec.title
         rect
         (SvgThings.toSRect rect)
         spec
         updmod
         (RectSize 0 0)
+    , Debug.log "init bactch" <| Batch (cmd :: cmds)
+    )
 
 
 view : Model -> Html.Html Msg

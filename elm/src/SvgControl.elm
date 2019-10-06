@@ -431,8 +431,7 @@ szresize model rect =
         nm =
             { model | rect = rect, controls = cdict }
     in
-    -- TODO batch cmds
-    ( nm, None )
+    ( nm, Batch cmds )
 
 
 mkRlist : SvgThings.Orientation -> SvgThings.Rect -> Int -> Maybe (List Float) -> List SvgThings.Rect
@@ -485,8 +484,7 @@ szinit rect cid szspec =
         model =
             SzModel cid rect (Dict.fromList controlz) szspec.orientation szspec.proportions
     in
-    -- TODO batch cmds
-    ( model, None )
+    ( model, Batch cmds )
 
 
 

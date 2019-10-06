@@ -1,12 +1,23 @@
-module SvgTextSize exposing (Metrics, TextSizeReply, TextSizeRequest, calcText, calcTextSvg, computeFontScaling, decodeMetrics, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth)
+module SvgTextSize exposing (Metrics, TextSizeReply, calcText, calcTextSvg, calcTextSvgM, computeFontScaling, controlFontFamily, decodeMetrics, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth, resizeCommand, sizingFont)
 
 import Json.Decode as JD
 import Json.Encode as JE
 import Svg exposing (Attribute, Svg, g, rect, svg, text, text_)
 import Svg.Attributes exposing (..)
+import SvgCommand exposing (Command(..), TextSizeRequest)
 import SvgThings exposing (ControlId, Rect, decodeControlId, encodeControlId)
 import Template exposing (render, template, withString, withValue)
 import Util exposing (andMap)
+
+
+controlFontFamily : String
+controlFontFamily =
+    "sans-serif"
+
+
+sizingFont : String
+sizingFont =
+    "20px " ++ controlFontFamily
 
 
 estimateTextWidth : String -> String -> Int
@@ -30,13 +41,6 @@ type alias Metrics =
     -- , hangingBaseline : Float
     -- , alphabeticBaseline : Float
     -- , ideographicBaseline : Float
-    }
-
-
-type alias TextSizeRequest =
-    { string : String
-    , font : String
-    , controlId : ControlId
     }
 
 
@@ -83,19 +87,49 @@ decodeMetrics =
 --
 
 
-calcTextSvg : String -> String -> Rect -> List (Svg ())
-calcTextSvg fontFam textString rect =
+resizeCommand :
+    { m
+        | label : String
+        , cid : SvgThings.ControlId
+        , stringWidth : Maybe Float
+    }
+    -> Command
+resizeCommand model =
+    case model.stringWidth of
+        Nothing ->
+            RequestTextWidth <| SvgCommand.TextSizeRequest model.label sizingFont model.cid
+
+        Just _ ->
+            None
+
+
+calcTextSvgM :
+    { m
+        | stringWidth : Maybe Float
+        , label : String
+        , rect : Rect
+    }
+    -> List (Svg ())
+calcTextSvgM model =
+    model.stringWidth
+        |> Maybe.map
+            (\sw ->
+                calcTextSvg model.label sw model.rect
+             -- |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
+            )
+        |> Maybe.withDefault []
+
+
+calcTextSvg : String -> Float -> Rect -> List (Svg ())
+calcTextSvg textString width20px rect =
     let
-        w =
-            estimateTextWidth textString ("20px " ++ fontFam)
-
         fs =
-            computeFontScaling (toFloat w) 20.0 (toFloat rect.w) (toFloat rect.h)
+            computeFontScaling width20px 20.0 (toFloat rect.w) (toFloat rect.h)
     in
-    calcText fontFam textString w fs rect
+    calcText controlFontFamily textString width20px fs rect
 
 
-calcText : String -> String -> Int -> Float -> Rect -> List (Svg ())
+calcText : String -> String -> Float -> Float -> Rect -> List (Svg ())
 calcText fontFam lbtext labelMeasuredWidth fontScaling rect =
     let
         width =
@@ -111,7 +145,7 @@ calcText fontFam lbtext labelMeasuredWidth fontScaling rect =
             toFloat rect.y + toFloat rect.h / 2
 
         xt =
-            xc - (toFloat width * scale * 0.5)
+            xc - (width * scale * 0.5)
 
         yt =
             yc + 20.0 * scale * 0.5

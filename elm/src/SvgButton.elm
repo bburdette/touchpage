@@ -8,7 +8,7 @@ import Json.Encode as JE
 import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
 import SvgCommand exposing (Command(..))
-import SvgTextSize exposing (calcTextSvg)
+import SvgTextSize exposing (calcTextSvg, resizeCommand)
 import SvgThings
 import SvgTouch as ST
 import Task
@@ -31,6 +31,7 @@ jsSpec =
 type alias Model =
     { name : String
     , label : String
+    , stringWidth : Maybe Float
     , cid : SvgThings.ControlId
     , rect : SvgThings.Rect
     , srect : SvgThings.SRect
@@ -44,29 +45,25 @@ init :
     SvgThings.Rect
     -> SvgThings.ControlId
     -> Spec
-    -> Model
+    -> ( Model, Command )
 init rect cid spec =
     let
-        ts =
-            case spec.label of
-                Just lbtext ->
-                    calcTextSvg SvgThings.ff lbtext rect
-
-                Nothing ->
-                    []
+        model =
+            Model spec.name
+                (Maybe.withDefault "" spec.label)
+                Nothing
+                cid
+                rect
+                (SvgThings.SRect (String.fromInt rect.x)
+                    (String.fromInt rect.y)
+                    (String.fromInt rect.w)
+                    (String.fromInt rect.h)
+                )
+                False
+                []
+                False
     in
-    Model spec.name
-        (Maybe.withDefault "" spec.label)
-        cid
-        rect
-        (SvgThings.SRect (String.fromInt rect.x)
-            (String.fromInt rect.y)
-            (String.fromInt rect.w)
-            (String.fromInt rect.h)
-        )
-        False
-        ts
-        False
+    ( model, resizeCommand model )
 
 
 pressedColor : Bool -> String
@@ -179,34 +176,44 @@ update msg model =
 
         SvgUpdate um ->
             -- sanity check for ids?  or don't.
-            ( { model
-                | pressed =
-                    case um.updateType of
-                        Just Press ->
-                            True
+            let
+                newmodel =
+                    { model
+                        | pressed =
+                            case um.updateType of
+                                Just Press ->
+                                    True
 
-                        Just Unpress ->
-                            False
+                                Just Unpress ->
+                                    False
 
-                        _ ->
-                            model.pressed
-                , label =
-                    case um.label of
-                        Just txt ->
-                            txt
+                                _ ->
+                                    model.pressed
+                        , label =
+                            case um.label of
+                                Just txt ->
+                                    txt
 
-                        Nothing ->
-                            model.label
-                , textSvg =
-                    case um.label of
-                        Just txt ->
-                            calcTextSvg SvgThings.ff txt model.rect
+                                Nothing ->
+                                    model.label
+                        , stringWidth =
+                            case um.label of
+                                Just txt ->
+                                    Nothing
 
-                        Nothing ->
-                            model.textSvg
-              }
-            , None
-            )
+                                Nothing ->
+                                    model.stringWidth
+                        , textSvg =
+                            case um.label of
+                                Just txt ->
+                                    []
+
+                                -- reset when text changes.
+                                Nothing ->
+                                    model.textSvg
+                    }
+            in
+            ( newmodel, resizeCommand newmodel )
 
         SvgTouch stm ->
             case ST.extractFirstTouchSE stm of
@@ -239,21 +246,23 @@ pressup model ut =
     )
 
 
-resize : Model -> SvgThings.Rect -> Model
+resize : Model -> SvgThings.Rect -> ( Model, Command )
 resize model rect =
     let
-        ts =
-            calcTextSvg SvgThings.ff model.label rect
+        -- ts = calcTextSvg SvgThings.ff model.label rect
+        newmodel =
+            { model
+                | rect = rect
+                , srect =
+                    SvgThings.SRect (String.fromInt rect.x)
+                        (String.fromInt rect.y)
+                        (String.fromInt rect.w)
+                        (String.fromInt rect.h)
+                , textSvg = []
+                , stringWidth = Nothing
+            }
     in
-    { model
-        | rect = rect
-        , srect =
-            SvgThings.SRect (String.fromInt rect.x)
-                (String.fromInt rect.y)
-                (String.fromInt rect.w)
-                (String.fromInt rect.h)
-        , textSvg = ts
-    }
+    ( newmodel, resizeCommand newmodel )
 
 
 buttonEvt : String -> (JD.Value -> Msg) -> VD.Attribute Msg

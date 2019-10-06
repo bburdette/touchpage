@@ -1,4 +1,4 @@
-module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, containsXY, decodeControlId, encodeControlId, ff, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
+module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, containsXY, decodeControlId, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
 
 -- import SvgTextSize
 
@@ -13,11 +13,6 @@ import Tuple
 
 
 -- font family
-
-
-ff : String
-ff =
-    "sans-serif"
 
 
 type Orientation

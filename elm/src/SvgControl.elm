@@ -10,6 +10,7 @@ import SvgButton
 import SvgCommand exposing (Command(..))
 import SvgLabel
 import SvgSlider
+import SvgTextSize exposing (calcTextSvg, resizeCommand)
 import SvgThings
 import Task
 import VirtualDom as VD
@@ -106,20 +107,24 @@ tupMap2 fa ab =
     ( fa (Tuple.first ab), Tuple.second ab )
 
 
-resize : Model -> SvgThings.Rect -> Model
+resize : Model -> SvgThings.Rect -> ( Model, Command )
 resize model rect =
+    let
+        aptg =
+            \f ( m, c ) -> ( f m, c )
+    in
     case model of
         CmButton mod ->
-            CmButton <| SvgButton.resize mod (SvgThings.shrinkRect border rect)
+            aptg CmButton <| SvgButton.resize mod (SvgThings.shrinkRect border rect)
 
         CmSlider mod ->
-            CmSlider <| SvgSlider.resize mod (SvgThings.shrinkRect border rect)
+            aptg CmSlider <| SvgSlider.resize mod (SvgThings.shrinkRect border rect)
 
         CmLabel mod ->
-            CmLabel <| SvgLabel.resize mod (SvgThings.shrinkRect border rect)
+            aptg CmLabel <| SvgLabel.resize mod (SvgThings.shrinkRect border rect)
 
         CmSizer mod ->
-            CmSizer <| szresize mod rect
+            aptg CmSizer <| szresize mod rect
 
 
 jsSpec : JD.Decoder Spec
@@ -215,7 +220,11 @@ update msg model =
             ( CmSlider a, b )
 
         ( CaLabel ms, CmLabel m ) ->
-            ( CmLabel <| SvgLabel.update ms m, None )
+            let
+                ( md, c ) =
+                    SvgLabel.update ms m
+            in
+            ( CmLabel md, c )
 
         ( CaSizer ms, CmSizer m ) ->
             let
@@ -250,20 +259,24 @@ init :
     SvgThings.Rect
     -> SvgThings.ControlId
     -> Spec
-    -> Model
+    -> ( Model, Command )
 init rect cid spec =
+    let
+        aptg =
+            \f ( m, c ) -> ( f m, c )
+    in
     case spec of
         CsButton s ->
-            CmButton <| SvgButton.init (SvgThings.shrinkRect border rect) cid s
+            aptg CmButton <| SvgButton.init (SvgThings.shrinkRect border rect) cid s
 
         CsSlider s ->
-            CmSlider <| SvgSlider.init (SvgThings.shrinkRect border rect) cid s
+            aptg CmSlider <| SvgSlider.init (SvgThings.shrinkRect border rect) cid s
 
         CsLabel s ->
-            CmLabel <| SvgLabel.init (SvgThings.shrinkRect border rect) cid s
+            aptg CmLabel <| SvgLabel.init (SvgThings.shrinkRect border rect) cid s
 
         CsSizer s ->
-            CmSizer <| szinit rect cid s
+            aptg CmSizer <| szinit rect cid s
 
 
 view : Model -> Svg Msg
@@ -394,7 +407,7 @@ szupdate msg model =
                     ( model, None )
 
 
-szresize : SzModel -> SvgThings.Rect -> SzModel
+szresize : SzModel -> SvgThings.Rect -> ( SzModel, Command )
 szresize model rect =
     let
         clist =
@@ -403,13 +416,23 @@ szresize model rect =
         rlist =
             mkRlist model.orientation rect (List.length clist) model.proportions
 
-        controls =
+        rlist2 =
             List.map (\( ( i, c ), r ) -> ( i, resize c r )) (zip clist rlist)
+
+        controls =
+            List.map (\( i, ( m, c ) ) -> ( i, m )) rlist2
+
+        cmds =
+            List.map (\( i, ( m, c ) ) -> c) rlist2
 
         cdict =
             Dict.fromList controls
+
+        nm =
+            { model | rect = rect, controls = cdict }
     in
-    { model | rect = rect, controls = cdict }
+    -- TODO batch cmds
+    ( nm, None )
 
 
 mkRlist : SvgThings.Orientation -> SvgThings.Rect -> Int -> Maybe (List Float) -> List SvgThings.Rect
@@ -436,7 +459,7 @@ szinit :
     SvgThings.Rect
     -> SvgThings.ControlId
     -> SzSpec
-    -> SzModel
+    -> ( SzModel, Command )
 szinit rect cid szspec =
     let
         rlist =
@@ -447,13 +470,23 @@ szinit rect cid szspec =
                 (\( spec, rect_, idx ) -> init rect_ (cid ++ [ idx ]) spec)
                 (map3 (\a b c -> ( a, b, c )) szspec.controls rlist idxs)
 
+        mods =
+            List.map Tuple.first blist
+
+        cmds =
+            List.map Tuple.second blist
+
         idxs =
             List.range 0 (length szspec.controls)
 
         controlz =
-            zip idxs blist
+            zip idxs mods
+
+        model =
+            SzModel cid rect (Dict.fromList controlz) szspec.orientation szspec.proportions
     in
-    SzModel cid rect (Dict.fromList controlz) szspec.orientation szspec.proportions
+    -- TODO batch cmds
+    ( model, None )
 
 
 

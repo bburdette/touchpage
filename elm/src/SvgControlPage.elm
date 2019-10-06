@@ -90,24 +90,29 @@ update msg model =
             ( newmod, Tuple.second wha )
 
         Resize newSize ->
-            let
-                nr =
-                    SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
-
-                ctrl =
-                    SvgControl.resize model.control nr
-            in
-            ( { model
-                | mahrect = nr
-                , srect = SvgThings.toSRect nr
-                , windowSize = newSize
-                , control = ctrl
-              }
-            , None
-            )
+            resize newSize model
 
         NoOp ->
             ( model, None )
+
+
+resize : RectSize -> Model -> ( Model, Command )
+resize newSize model =
+    let
+        nr =
+            SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
+
+        ( ctrl, cmd ) =
+            SvgControl.resize model.control nr
+    in
+    ( { model
+        | mahrect = nr
+        , srect = SvgThings.toSRect nr
+        , windowSize = newSize
+        , control = ctrl
+      }
+    , cmd
+    )
 
 
 init :
@@ -116,7 +121,7 @@ init :
     -> Model
 init rect spec =
     let
-        conmod =
+        ( conmod, cmd ) =
             SvgControl.init rect [] spec.rootControl
 
         -- throwing away commands!

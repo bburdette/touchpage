@@ -5,11 +5,11 @@ import Browser.Events as BE
 import Html
 import Json.Decode as JD
 import Json.Encode as JE
-import SvgCommand exposing (Command(..))
+import SvgCommand exposing (Command(..), TextSizeRequest)
 import SvgControl
 import SvgControlPage
 import SvgSlider
-import SvgTextSize exposing (TextSizeReply, TextSizeRequest, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth)
+import SvgTextSize exposing (TextSizeReply, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth)
 import SvgThings
 import Util exposing (RectSize)
 import WebSocket

@@ -9,7 +9,7 @@ import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick, onMouseDown, onMouseOut, onMouseUp)
 import SvgCommand exposing (Command(..))
-import SvgTextSize exposing (calcTextSvg)
+import SvgTextSize exposing (calcTextSvg, calcTextSvgM, resizeCommand)
 import SvgThings exposing (Orientation(..))
 import SvgTouch as ST
 import Toop
@@ -34,6 +34,7 @@ jsSpec =
 type alias Model =
     { name : String
     , label : String
+    , stringWidth : Maybe Float
     , cid : SvgThings.ControlId
     , rect : SvgThings.Rect
     , srect : SvgThings.SRect
@@ -72,31 +73,27 @@ init :
     SvgThings.Rect
     -> SvgThings.ControlId
     -> Spec
-    -> Model
+    -> ( Model, Command )
 init rect cid spec =
     let
-        ts =
-            case spec.label of
-                Just lbtext ->
-                    calcTextSvg SvgThings.ff lbtext rect
-
-                Nothing ->
-                    []
+        model =
+            Model spec.name
+                (Maybe.withDefault "" spec.label)
+                Nothing
+                cid
+                rect
+                (SvgThings.SRect (String.fromInt rect.x)
+                    (String.fromInt rect.y)
+                    (String.fromInt rect.w)
+                    (String.fromInt rect.h)
+                )
+                spec.orientation
+                False
+                0.5
+                []
+                False
     in
-    Model spec.name
-        (Maybe.withDefault "" spec.label)
-        cid
-        rect
-        (SvgThings.SRect (String.fromInt rect.x)
-            (String.fromInt rect.y)
-            (String.fromInt rect.w)
-            (String.fromInt rect.h)
-        )
-        spec.orientation
-        False
-        0.5
-        ts
-        False
+    ( model, resizeCommand model )
 
 
 pressedColor : Bool -> String
@@ -289,23 +286,21 @@ update msg model =
 
                                 Nothing ->
                                     model.location
-                        , label =
-                            case um.label of
-                                Just txt ->
-                                    txt
-
-                                Nothing ->
-                                    model.label
-                        , textSvg =
-                            case um.label of
-                                Just txt ->
-                                    calcTextSvg SvgThings.ff txt model.rect
-
-                                Nothing ->
-                                    model.textSvg
                     }
+
+                mod2 =
+                    case um.label of
+                        Just txt ->
+                            { mod
+                                | label = txt
+                                , textSvg = []
+                                , stringWidth = Nothing
+                            }
+
+                        Nothing ->
+                            mod
             in
-            ( mod, None )
+            ( mod2, resizeCommand mod2 )
 
         SvgTouch stm ->
             case ST.extractFirstRectTouchSE stm model.rect of
@@ -376,21 +371,25 @@ updsend model mbut loc =
         )
 
 
-resize : Model -> SvgThings.Rect -> Model
+resize : Model -> SvgThings.Rect -> ( Model, Command )
 resize model rect =
     let
         ts =
-            calcTextSvg SvgThings.ff model.label rect
+            calcTextSvgM model
+
+        -- |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
+        newmodel =
+            { model
+                | rect = rect
+                , srect =
+                    SvgThings.SRect (String.fromInt rect.x)
+                        (String.fromInt rect.y)
+                        (String.fromInt rect.w)
+                        (String.fromInt rect.h)
+                , textSvg = ts
+            }
     in
-    { model
-        | rect = rect
-        , srect =
-            SvgThings.SRect (String.fromInt rect.x)
-                (String.fromInt rect.y)
-                (String.fromInt rect.w)
-                (String.fromInt rect.h)
-        , textSvg = ts
-    }
+    ( newmodel, resizeCommand newmodel )
 
 
 

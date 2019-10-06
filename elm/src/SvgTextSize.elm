@@ -86,22 +86,19 @@ decodeMetrics =
 -- |> andMap (JD.field "ideographicBaseline" JD.float)
 
 
+type alias TsrModel m =
+    { m
+        | label : String
+        , rect : Rect
+        , stringWidth : Maybe Float
+        , textSvg : List (Svg ())
+    }
+
+
 onTextSizeReply :
     TextSizeReply
-    ->
-        { m
-            | label : String
-            , rect : Rect
-            , stringWidth : Maybe Float
-            , textSvg : List (Svg ())
-        }
-    ->
-        { m
-            | label : String
-            , rect : Rect
-            , stringWidth : Maybe Float
-            , textSvg : List (Svg ())
-        }
+    -> TsrModel m
+    -> TsrModel m
 onTextSizeReply tsr model =
     let
         _ =

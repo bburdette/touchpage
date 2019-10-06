@@ -35,7 +35,10 @@ fn main() {
 
   let gooey = match rootv {
     Ok(s) => s,
-    Err(_) => GUI.to_string(),
+    Err(e) => {
+      println!("gooey problem! {}", e);
+      GUI.to_string()
+      },
   };
 
   match startserver(gooey.as_str(), Box::new(meh), "localhost", "9001", false) {
@@ -50,11 +53,16 @@ fn build_gui() -> Result<G::Gui, FError> {
   gui
     .add_sizer(Vertical)?
     .add_label("lb3".to_string(), "blah".to_string())?
+    .add_label("lb0".to_string(), "blah1".to_string())?
+    .add_label("lb1".to_string(), "blah2".to_string())?
+    .add_label("lb2".to_string(), "blah4444".to_string())?
+    .add_sizer(Horizontal)?
     .add_button("b1".to_string(), None)?
     .add_slider("hs1".to_string(), None, Horizontal)?
     .add_slider("hs2".to_string(), None, Horizontal)?
     .add_slider("hs3".to_string(), None, Horizontal)?
     .add_slider("hs4".to_string(), None, Horizontal)?
+    .end_sizer()?
     .end_sizer()?;
   Ok(gui)
 }
@@ -69,14 +77,7 @@ const GUI: &'static str = r##"
       "controls": [
        { "type": "label"
        , "name": "lb3"
-       , "label": "blah"
-       }
-      ,{ "type": "button"
-       , "name": "b1"
-       }
-      ,{ "type": "slider"
-       , "orientation": "horizontal"
-       , "name": "hs2"
+       , "label": "error loading controls!"
        }
       ]
     }

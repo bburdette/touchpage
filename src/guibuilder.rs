@@ -70,6 +70,7 @@ impl Gui {
         match self.sizerstack.last() {
           None => Err(err_msg("no active sizer, can't add new element!")),
           Some(id) => {
+            println!("before getcontrolmut: {:?}", id);
             match get_control_mut(id, &mut **rootcontrol) {
               Some(c) => c.add_control(control),
               None => (),
@@ -124,8 +125,10 @@ impl Gui {
       controls: Vec::new(),
       orientation: orientation,
     });
+    println!("newsizer {:?}", newsizer);
+    self.add_control(newsizer);
     self.sizerstack.push(id);
-    self.add_control(newsizer)
+    Ok(self)
   }
 
   pub fn end_sizer(&mut self) -> Result<&mut Gui, FError> {
@@ -163,11 +166,13 @@ fn get_control<'a>(id: &Vec<i32>, control: &'a dyn Control) -> Option<&'a dyn Co
 
 fn get_control_mut<'a>(id: &Vec<i32>, control: &'a mut dyn Control) -> Option<&'a mut dyn Control> {
   // iterate through all controls, looking for our id.
+  println!("if {:?} == {:?} ", *id, *control.control_id());
   if *id == *control.control_id() {
     Some(control)
   } else {
     match control.mut_sub_controls() {
       Some(cs) => {
+        println!("subcontrosl");
         let mut ret = None;
         for c in cs.iter_mut() {
           match get_control_mut(id, &mut **c) {
@@ -177,7 +182,10 @@ fn get_control_mut<'a>(id: &Vec<i32>, control: &'a mut dyn Control) -> Option<&'
         }
         ret
       }
-      None => None,
+      None => {
+        println!("no subcontrosl");
+        None
+      }
     }
   }
 }

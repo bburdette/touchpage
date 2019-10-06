@@ -139,7 +139,7 @@ init rect spec =
         spec
         updmod
         (RectSize 0 0)
-    , Debug.log "init bactch" <| Batch (cmd :: cmds)
+    , Batch (cmd :: cmds)
     )
 
 

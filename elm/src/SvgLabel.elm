@@ -151,9 +151,6 @@ view model =
                 ]
                 []
 
-        _ =
-            Debug.log "label view : " model.textSvg
-
         svgl =
             lbrect :: model.textSvg
     in

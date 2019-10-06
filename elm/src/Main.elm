@@ -57,10 +57,6 @@ type alias Model =
 
 commandToCmd : SvgCommand.Command -> Cmd Msg
 commandToCmd scmd =
-    let
-        _ =
-            Debug.log "scmd: " scmd
-    in
     case scmd of
         Send dta ->
             wssend <|
@@ -92,9 +88,6 @@ main =
                 let
                     ( mod, cmd ) =
                         init flags
-
-                    _ =
-                        Debug.log "init cmd: " cmd
                 in
                 ( mod
                 , Cmd.batch
@@ -129,9 +122,6 @@ main =
                         let
                             ( umod, cmd ) =
                                 SvgControlPage.update sm mod.scpModel
-
-                            _ =
-                                Debug.log "cmd: " cmd
                         in
                         -- ( umod, Cmd.map ScpMsg cmd )
                         ( { mod | scpModel = umod }
@@ -139,10 +129,6 @@ main =
                         )
 
                     WsMsg x ->
-                        let
-                            _ =
-                                Debug.log "wsmsg: " x
-                        in
                         case x of
                             Ok (WebSocket.Data wsd) ->
                                 let
@@ -158,13 +144,9 @@ main =
                                 ( mod, Cmd.none )
 
                     TextSize ts ->
-                        let
-                            _ =
-                                Debug.log "textsize: " ts
-                        in
                         case ts of
                             Ok tsr ->
-                                ( { mod | scpModel = Debug.log "scpModel: " <| SvgControlPage.onTextSize tsr mod.scpModel }
+                                ( { mod | scpModel = SvgControlPage.onTextSize tsr mod.scpModel }
                                 , Cmd.none
                                 )
 

@@ -190,10 +190,6 @@ jsUpdateType ut =
 
 getLocation : Model -> JD.Value -> Result String Float
 getLocation model v =
-    let
-        _ =
-            Debug.log "getLocation: " model.rect
-    in
     case model.orientation of
         SvgThings.Horizontal ->
             case JD.decodeValue getX v of
@@ -222,10 +218,6 @@ update : Msg -> Model -> ( Model, Command )
 update msg model =
     case msg of
         SvgPress v ->
-            let
-                _ =
-                    Debug.log "SvgPress: " <| getLocation model v
-            in
             case getLocation model v of
                 Ok l ->
                     updsend model (Just Press) l
@@ -250,10 +242,6 @@ update msg model =
         SvgMoved v ->
             case model.pressed of
                 True ->
-                    let
-                        _ =
-                            Debug.log "SvgMoved: " <| getLocation model v
-                    in
                     case getLocation model v of
                         Ok l ->
                             updsend model Nothing l
@@ -377,7 +365,6 @@ resize model rect =
         ts =
             calcTextSvgM model
 
-        -- |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
         newmodel =
             { model
                 | rect = rect

@@ -214,7 +214,7 @@ onTextSize tsr model =
                 SvgTextSize.onTextSizeReply tsr m
 
         CmLabel m ->
-            CmLabel <| Debug.log "updlabel" <| SvgTextSize.onTextSizeReply tsr m
+            CmLabel <| SvgTextSize.onTextSizeReply tsr m
 
         CmSizer m ->
             CmSizer <| szOnTextSize tsr m

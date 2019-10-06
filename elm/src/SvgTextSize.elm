@@ -100,10 +100,6 @@ onTextSizeReply :
     -> TsrModel m
     -> TsrModel m
 onTextSizeReply tsr model =
-    let
-        _ =
-            Debug.log "onTextSizeReply tsr model = " ( tsr, model )
-    in
     { model
         | stringWidth = Just tsr.width
         , textSvg =
@@ -126,8 +122,7 @@ resizeCommand model =
 
             else
                 RequestTextWidth <|
-                    Debug.log "resizeCommand RequestTextWidth" <|
-                        SvgCommand.TextSizeRequest model.label sizingFont model.cid
+                    SvgCommand.TextSizeRequest model.label sizingFont model.cid
 
         Just _ ->
             None
@@ -155,12 +150,8 @@ calcTextSvg textString width20px rect =
     let
         fs =
             computeFontScaling width20px 20.0 (toFloat rect.w) (toFloat rect.h)
-
-        _ =
-            Debug.log "calcText controlFontFamily textString width20px fs rect : "
-                ( controlFontFamily, textString, ( width20px, fs, rect ) )
     in
-    Debug.log "calcText: " <| calcText controlFontFamily textString width20px fs rect
+    calcText controlFontFamily textString width20px fs rect
 
 
 calcText : String -> String -> Float -> Float -> Rect -> List (Svg ())

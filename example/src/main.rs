@@ -31,12 +31,10 @@ fn main() {
     .and_then(|rootv| serde_json::to_string_pretty(&rootv).map_err(|_| err_msg("uh oh")));
     // .and_then(|st| write_string(st.as_str(), "json.out"));
 
-  println!("rootv result: {:?}", rootv);
-
   let gooey = match rootv {
     Ok(s) => s,
     Err(e) => {
-      println!("gooey problem! {}", e);
+      println!("error loading controls! {}", e);
       GUI.to_string()
       },
   };

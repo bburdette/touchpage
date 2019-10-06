@@ -162,7 +162,14 @@ main =
                             _ =
                                 Debug.log "textsize: " ts
                         in
-                        ( mod, Cmd.none )
+                        case ts of
+                            Ok tsr ->
+                                ( { mod | scpModel = Debug.log "scpModel: " <| SvgControlPage.onTextSize tsr mod.scpModel }
+                                , Cmd.none
+                                )
+
+                            Err _ ->
+                                ( mod, Cmd.none )
         , view =
             \model ->
                 Browser.Document "svg control"

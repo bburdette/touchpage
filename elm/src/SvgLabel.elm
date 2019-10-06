@@ -36,7 +36,7 @@ type alias Model =
     , cid : SvgThings.ControlId
     , rect : SvgThings.Rect
     , srect : SvgThings.SRect
-    , textSvg : List (Svg Msg)
+    , textSvg : List (Svg ())
     }
 
 
@@ -112,8 +112,8 @@ resize model rect =
     let
         ts =
             calcTextSvgM model
-                |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
 
+        -- |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
         {- model.stringWidth
            |> Maybe.map
                (\sw ->
@@ -150,6 +150,9 @@ view model =
                 , style "fill: #A1A1A1;"
                 ]
                 []
+
+        _ =
+            Debug.log "label view : " model.textSvg
 
         svgl =
             lbrect :: model.textSvg

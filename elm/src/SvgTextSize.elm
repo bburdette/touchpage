@@ -1,4 +1,4 @@
-module SvgTextSize exposing (Metrics, TextSizeReply, calcText, calcTextSvg, calcTextSvgM, computeFontScaling, controlFontFamily, decodeMetrics, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth, resizeCommand, sizingFont)
+module SvgTextSize exposing (Metrics, TextSizeReply, calcText, calcTextSvg, calcTextSvgM, computeFontScaling, controlFontFamily, decodeMetrics, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth, onTextSizeReply, resizeCommand, sizingFont)
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -86,6 +86,34 @@ decodeMetrics =
 -- |> andMap (JD.field "ideographicBaseline" JD.float)
 
 
+onTextSizeReply :
+    TextSizeReply
+    ->
+        { m
+            | label : String
+            , rect : Rect
+            , stringWidth : Maybe Float
+            , textSvg : List (Svg ())
+        }
+    ->
+        { m
+            | label : String
+            , rect : Rect
+            , stringWidth : Maybe Float
+            , textSvg : List (Svg ())
+        }
+onTextSizeReply tsr model =
+    let
+        _ =
+            Debug.log "onTextSizeReply tsr model = " ( tsr, model )
+    in
+    { model
+        | stringWidth = Just tsr.width
+        , textSvg =
+            calcTextSvg model.label tsr.width model.rect
+    }
+
+
 resizeCommand :
     { m
         | label : String
@@ -130,8 +158,12 @@ calcTextSvg textString width20px rect =
     let
         fs =
             computeFontScaling width20px 20.0 (toFloat rect.w) (toFloat rect.h)
+
+        _ =
+            Debug.log "calcText controlFontFamily textString width20px fs rect : "
+                ( controlFontFamily, textString, ( width20px, fs, rect ) )
     in
-    calcText controlFontFamily textString width20px fs rect
+    Debug.log "calcText: " <| calcText controlFontFamily textString width20px fs rect
 
 
 calcText : String -> String -> Float -> Float -> Rect -> List (Svg ())

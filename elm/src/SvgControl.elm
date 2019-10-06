@@ -1,4 +1,4 @@
-module SvgControl exposing (ID, Model(..), Msg(..), Spec(..), SzModel, SzMsg(..), SzSpec, border, controlId, controlName, findControl, firstJust, init, jsCs, jsSpec, jsSzSpec, jsUmType, jsUpdateMessage, mkRlist, myTail, processProps, resize, szFindControl, szinit, szresize, szupdate, szview, toCtrlMsg, tupMap2, update, update_list, view, viewSvgControls, zip)
+module SvgControl exposing (ID, Model(..), Msg(..), Spec(..), SzModel, SzMsg(..), SzSpec, border, controlId, controlName, findControl, firstJust, init, jsCs, jsSpec, jsSzSpec, jsUmType, jsUpdateMessage, mkRlist, myTail, onTextSize, processProps, resize, szFindControl, szOnTextSize, szinit, szresize, szupdate, szview, toCtrlMsg, tupMap2, update, update_list, view, viewSvgControls, zip)
 
 import Dict exposing (..)
 import Html
@@ -10,7 +10,7 @@ import SvgButton
 import SvgCommand exposing (Command(..))
 import SvgLabel
 import SvgSlider
-import SvgTextSize exposing (calcTextSvg, resizeCommand)
+import SvgTextSize exposing (TextSizeReply, calcTextSvg, resizeCommand)
 import SvgThings
 import Task
 import VirtualDom as VD
@@ -200,6 +200,24 @@ toCtrlMsg id msg =
 
         Just x ->
             CaSizer (SzCMsg x (toCtrlMsg (myTail id) msg))
+
+
+onTextSize : TextSizeReply -> Model -> Model
+onTextSize tsr model =
+    case model of
+        CmButton m ->
+            CmButton <|
+                SvgTextSize.onTextSizeReply tsr m
+
+        CmSlider m ->
+            CmSlider <|
+                SvgTextSize.onTextSizeReply tsr m
+
+        CmLabel m ->
+            CmLabel <| Debug.log "updlabel" <| SvgTextSize.onTextSizeReply tsr m
+
+        CmSizer m ->
+            CmSizer <| szOnTextSize tsr m
 
 
 update : Msg -> Model -> ( Model, Command )
@@ -405,6 +423,25 @@ szupdate msg model =
 
                 Nothing ->
                     ( model, None )
+
+
+szOnTextSize : TextSizeReply -> SzModel -> SzModel
+szOnTextSize tsr model =
+    case tsr.controlId of
+        idx :: rst ->
+            case Dict.get idx model.controls of
+                Just control ->
+                    let
+                        nc =
+                            onTextSize { tsr | controlId = rst } control
+                    in
+                    { model | controls = Dict.insert idx nc model.controls }
+
+                Nothing ->
+                    model
+
+        [] ->
+            model
 
 
 szresize : SzModel -> SvgThings.Rect -> ( SzModel, Command )

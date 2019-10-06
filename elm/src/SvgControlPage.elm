@@ -1,4 +1,4 @@
-module SvgControlPage exposing (ID, JsMessage(..), Model, Msg(..), Spec, init, jsMessage, jsSpec, update, view, viewSvgControl)
+module SvgControlPage exposing (ID, JsMessage(..), Model, Msg(..), Spec, init, jsMessage, jsSpec, onTextSize, resize, update, view, viewSvgControl)
 
 import Dict exposing (..)
 import Html
@@ -9,6 +9,7 @@ import Svg
 import Svg.Attributes as SA
 import SvgCommand exposing (Command(..))
 import SvgControl
+import SvgTextSize exposing (TextSizeReply)
 import SvgThings
 import Util exposing (RectSize)
 import VirtualDom as VD
@@ -113,6 +114,11 @@ resize newSize model =
       }
     , cmd
     )
+
+
+onTextSize : TextSizeReply -> Model -> Model
+onTextSize tsr model =
+    { model | control = SvgControl.onTextSize tsr model.control }
 
 
 init :

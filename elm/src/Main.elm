@@ -94,9 +94,6 @@ main =
                             , address = mod.wsUrl
                             , protocol = "rust-websocket"
                             }
-                    , requestTextSize <|
-                        encodeTextSizeRequest <|
-                            TextSizeRequest "blah" "20px sans-serif" []
                     , commandToCmd cmd
                     ]
                 )

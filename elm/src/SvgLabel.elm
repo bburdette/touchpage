@@ -64,10 +64,6 @@ init :
     -> Spec
     -> ( Model, Command )
 init rect cid spec =
-    -- let
-    --     ts =
-    --         calcTextSvg SvgThings.ff spec.label rect
-    -- in
     let
         model =
             Model spec.name
@@ -89,14 +85,6 @@ update : Msg -> Model -> ( Model, Command )
 update msg model =
     case msg of
         SvgUpdate um ->
-            {- let
-                   tswk =
-                       calcTextSvg SvgThings.ff um.label model.rect
-
-                   ts =
-                       List.map (\meh -> VD.map (\_ -> NoOp) meh) tswk
-               in
-            -}
             let
                 newmodel =
                     { model | label = um.label, textSvg = [] }
@@ -113,15 +101,6 @@ resize model rect =
         ts =
             calcTextSvgM model
 
-        -- |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
-        {- model.stringWidth
-           |> Maybe.map
-               (\sw ->
-                   calcTextSvg SvgThings.ff model.label sw rect
-                       |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
-               )
-           |> Maybe.withDefault []
-        -}
         newmodel =
             { model
                 | rect = rect

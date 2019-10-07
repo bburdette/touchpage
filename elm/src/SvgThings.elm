@@ -1,7 +1,5 @@
 module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, containsXY, decodeControlId, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
 
--- import SvgTextSize
-
 import Json.Decode as JD
 import Json.Encode as JE
 import List exposing (..)
@@ -9,10 +7,6 @@ import Svg exposing (Attribute, Svg, g, rect, svg, text, text_)
 import Svg.Attributes exposing (..)
 import Template exposing (render, template, withString, withValue)
 import Tuple
-
-
-
--- font family
 
 
 type Orientation

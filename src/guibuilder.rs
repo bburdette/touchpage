@@ -124,8 +124,9 @@ impl Gui {
       controls: Vec::new(),
       orientation: orientation,
     });
+    self.add_control(newsizer);
     self.sizerstack.push(id);
-    self.add_control(newsizer)
+    Ok(self)
   }
 
   pub fn end_sizer(&mut self) -> Result<&mut Gui, FError> {

@@ -32,10 +32,11 @@ jsSpec =
 type alias Model =
     { name : String
     , label : String
+    , stringWidth : Maybe Float
     , cid : SvgThings.ControlId
     , rect : SvgThings.Rect
     , srect : SvgThings.SRect
-    , textSvg : List (Svg Msg)
+    , textSvg : List (Svg ())
     }
 
 
@@ -61,56 +62,57 @@ init :
     SvgThings.Rect
     -> SvgThings.ControlId
     -> Spec
-    -> Model
+    -> ( Model, Command )
 init rect cid spec =
     let
-        ts =
-            SvgThings.calcTextSvg SvgThings.ff spec.label rect
+        model =
+            Model spec.name
+                spec.label
+                Nothing
+                cid
+                rect
+                (SvgThings.SRect (String.fromInt rect.x)
+                    (String.fromInt rect.y)
+                    (String.fromInt rect.w)
+                    (String.fromInt rect.h)
+                )
+                []
     in
-    Model spec.name
-        spec.label
-        cid
-        rect
-        (SvgThings.SRect (String.fromInt rect.x)
-            (String.fromInt rect.y)
-            (String.fromInt rect.w)
-            (String.fromInt rect.h)
-        )
-        (List.map (\meh -> VD.map (\_ -> NoOp) meh) ts)
+    ( model, resizeCommand model )
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Command )
 update msg model =
     case msg of
         SvgUpdate um ->
             let
-                tswk =
-                    SvgThings.calcTextSvg SvgThings.ff um.label model.rect
-
-                ts =
-                    List.map (\meh -> VD.map (\_ -> NoOp) meh) tswk
+                newmodel =
+                    { model | label = um.label, textSvg = [] }
             in
-            { model | label = um.label, textSvg = ts }
+            ( newmodel, resizeCommand newmodel )
 
         NoOp ->
-            model
+            ( model, None )
 
 
-resize : Model -> SvgThings.Rect -> Model
+resize : Model -> SvgThings.Rect -> ( Model, Command )
 resize model rect =
     let
         ts =
-            SvgThings.calcTextSvg SvgThings.ff model.label rect
+            calcTextSvgM model
+
+        newmodel =
+            { model
+                | rect = rect
+                , srect =
+                    SvgThings.SRect (String.fromInt rect.x)
+                        (String.fromInt rect.y)
+                        (String.fromInt rect.w)
+                        (String.fromInt rect.h)
+                , textSvg = ts
+            }
     in
-    { model
-        | rect = rect
-        , srect =
-            SvgThings.SRect (String.fromInt rect.x)
-                (String.fromInt rect.y)
-                (String.fromInt rect.w)
-                (String.fromInt rect.h)
-        , textSvg = List.map (\meh -> VD.map (\_ -> NoOp) meh) ts
-    }
+    ( newmodel, resizeCommand newmodel )
 
 
 view : Model -> Svg Msg

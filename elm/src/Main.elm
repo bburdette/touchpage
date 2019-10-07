@@ -5,10 +5,11 @@ import Browser.Events as BE
 import Html
 import Json.Decode as JD
 import Json.Encode as JE
-import SvgCommand exposing (Command(..))
+import SvgCommand exposing (Command(..), TextSizeRequest)
 import SvgControl
 import SvgControlPage
 import SvgSlider
+import SvgTextSize exposing (TextSizeReply, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth)
 import SvgThings
 import Util exposing (RectSize)
 import WebSocket
@@ -18,6 +19,12 @@ port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
 
 
 port sendSocketCommand : JE.Value -> Cmd msg
+
+
+port requestTextSize : JE.Value -> Cmd msg
+
+
+port receiveTextMetrics : (JD.Value -> msg) -> Sub msg
 
 
 wssend =
@@ -30,6 +37,7 @@ wsreceive =
 
 type Msg
     = WsMsg (Result JD.Error WebSocket.WebSocketMsg)
+    | TextSize (Result JD.Error TextSizeReply)
     | ScpMsg SvgControlPage.Msg
 
 
@@ -47,22 +55,47 @@ type alias Model =
     }
 
 
+commandToCmd : SvgCommand.Command -> Cmd Msg
+commandToCmd scmd =
+    case scmd of
+        Send dta ->
+            wssend <|
+                WebSocket.Send
+                    { name = "touchpage"
+                    , content = dta
+                    }
+
+        RequestTextWidth rtw ->
+            requestTextSize <|
+                encodeTextSizeRequest <|
+                    rtw
+
+        None ->
+            Cmd.none
+
+        Batch cmds ->
+            Cmd.batch (List.map commandToCmd cmds)
+
+
 main : Program Flags Model Msg
 main =
     Browser.document
         { init =
             \flags ->
                 let
-                    mod =
+                    ( mod, cmd ) =
                         init flags
                 in
                 ( mod
-                , wssend <|
-                    WebSocket.Connect
-                        { name = "touchpage"
-                        , address = mod.wsUrl
-                        , protocol = "rust-websocket"
-                        }
+                , Cmd.batch
+                    [ wssend <|
+                        WebSocket.Connect
+                            { name = "touchpage"
+                            , address = mod.wsUrl
+                            , protocol = "rust-websocket"
+                            }
+                    , commandToCmd cmd
+                    ]
                 )
         , subscriptions =
             \_ ->
@@ -74,6 +107,7 @@ main =
                                     RectSize (toFloat a) (toFloat b)
                             )
                     , wsreceive
+                    , receiveTextMetrics (TextSize << JD.decodeValue decodeTextSizeReply)
                     ]
         , update =
             \msg mod ->
@@ -82,41 +116,32 @@ main =
                         let
                             ( umod, cmd ) =
                                 SvgControlPage.update sm mod.scpModel
-
-                            _ =
-                                Debug.log "cmd: " cmd
                         in
-                        -- ( umod, Cmd.map ScpMsg cmd )
                         ( { mod | scpModel = umod }
-                        , case cmd of
-                            Send dta ->
-                                wssend <|
-                                    WebSocket.Send
-                                        { name = "touchpage"
-                                        , content = dta
-                                        }
-
-                            None ->
-                                -- test socket close.
-                                -- wssend <| WebSocket.Close { name = "touchpage" }
-                                Cmd.none
+                        , commandToCmd cmd
                         )
 
                     WsMsg x ->
-                        let
-                            _ =
-                                Debug.log "wsmsg: " x
-                        in
                         case x of
                             Ok (WebSocket.Data wsd) ->
                                 let
                                     ( scpModel, scpCommand ) =
                                         SvgControlPage.update (SvgControlPage.JsonMsg wsd.data) mod.scpModel
                                 in
-                                ( { mod | scpModel = scpModel }, Cmd.none )
+                                ( { mod | scpModel = scpModel }, commandToCmd scpCommand )
 
                             Ok (WebSocket.Error wse) ->
                                 ( mod, Cmd.none )
+
+                            Err _ ->
+                                ( mod, Cmd.none )
+
+                    TextSize ts ->
+                        case ts of
+                            Ok tsr ->
+                                ( { mod | scpModel = SvgControlPage.onTextSize tsr mod.scpModel }
+                                , Cmd.none
+                                )
 
                             Err _ ->
                                 ( mod, Cmd.none )
@@ -127,7 +152,7 @@ main =
         }
 
 
-init : Flags -> Model
+init : Flags -> ( Model, Command )
 init flags =
     let
         wsUrl =
@@ -136,10 +161,14 @@ init flags =
                 |> Maybe.andThen List.head
                 |> Maybe.map (\loc -> "ws:" ++ loc ++ ":" ++ String.fromInt flags.wsport)
                 |> Maybe.withDefault ""
+
+        ( sm, cmd ) =
+            SvgControlPage.init
+                (SvgThings.Rect 0 0 flags.width flags.height)
+                (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
     in
-    { scpModel =
-        SvgControlPage.init
-            (SvgThings.Rect 0 0 flags.width flags.height)
-            (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
-    , wsUrl = wsUrl
-    }
+    ( { scpModel = sm
+      , wsUrl = wsUrl
+      }
+    , cmd
+    )

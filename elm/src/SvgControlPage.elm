@@ -1,4 +1,4 @@
-module SvgControlPage exposing (ID, JsMessage(..), Model, Msg(..), Spec, init, jsMessage, jsSpec, update, view, viewSvgControl)
+module SvgControlPage exposing (ID, JsMessage(..), Model, Msg(..), Spec, init, jsMessage, jsSpec, onTextSize, resize, update, view, viewSvgControl)
 
 import Dict exposing (..)
 import Html
@@ -9,6 +9,7 @@ import Svg
 import Svg.Attributes as SA
 import SvgCommand exposing (Command(..))
 import SvgControl
+import SvgTextSize exposing (TextSizeReply)
 import SvgThings
 import Util exposing (RectSize)
 import VirtualDom as VD
@@ -71,7 +72,7 @@ update msg model =
         JsonMsg s ->
             case JD.decodeString jsMessage s of
                 Ok (JmSpec spec) ->
-                    ( init model.mahrect spec, None )
+                    init model.mahrect spec
 
                 Ok (JmUpdate jmact) ->
                     update jmact model
@@ -90,45 +91,56 @@ update msg model =
             ( newmod, Tuple.second wha )
 
         Resize newSize ->
-            let
-                nr =
-                    SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
-
-                ctrl =
-                    SvgControl.resize model.control nr
-            in
-            ( { model
-                | mahrect = nr
-                , srect = SvgThings.toSRect nr
-                , windowSize = newSize
-                , control = ctrl
-              }
-            , None
-            )
+            resize newSize model
 
         NoOp ->
             ( model, None )
 
 
+resize : RectSize -> Model -> ( Model, Command )
+resize newSize model =
+    let
+        nr =
+            SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
+
+        ( ctrl, cmd ) =
+            SvgControl.resize model.control nr
+    in
+    ( { model
+        | mahrect = nr
+        , srect = SvgThings.toSRect nr
+        , windowSize = newSize
+        , control = ctrl
+      }
+    , cmd
+    )
+
+
+onTextSize : TextSizeReply -> Model -> Model
+onTextSize tsr model =
+    { model | control = SvgControl.onTextSize tsr model.control }
+
+
 init :
     SvgThings.Rect
     -> Spec
-    -> Model
+    -> ( Model, Command )
 init rect spec =
     let
-        conmod =
+        ( conmod, cmd ) =
             SvgControl.init rect [] spec.rootControl
 
-        -- throwing away commands!
         ( updmod, cmds ) =
             SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
     in
-    Model spec.title
+    ( Model spec.title
         rect
         (SvgThings.toSRect rect)
         spec
         updmod
         (RectSize 0 0)
+    , Batch (cmd :: cmds)
+    )
 
 
 view : Model -> Html.Html Msg

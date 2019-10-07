@@ -70,10 +70,7 @@ commandToCmd scmd =
                 encodeTextSizeRequest <|
                     rtw
 
-        -- TextSizeRequest "blah" "20px sans-serif" []
         None ->
-            -- test socket close.
-            -- wssend <| WebSocket.Close { name = "touchpage" }
             Cmd.none
 
         Batch cmds ->
@@ -123,7 +120,6 @@ main =
                             ( umod, cmd ) =
                                 SvgControlPage.update sm mod.scpModel
                         in
-                        -- ( umod, Cmd.map ScpMsg cmd )
                         ( { mod | scpModel = umod }
                         , commandToCmd cmd
                         )

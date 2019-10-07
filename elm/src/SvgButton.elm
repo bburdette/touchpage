@@ -249,7 +249,6 @@ pressup model ut =
 resize : Model -> SvgThings.Rect -> ( Model, Command )
 resize model rect =
     let
-        -- ts = calcTextSvg SvgThings.ff model.label rect
         newmodel =
             { model
                 | rect = rect

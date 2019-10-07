@@ -917,6 +917,53 @@ var _Basics_xor = F2(function(a, b) { return a !== b; });
 
 
 
+function _Char_toCode(char)
+{
+	var code = char.charCodeAt(0);
+	if (0xD800 <= code && code <= 0xDBFF)
+	{
+		return (code - 0xD800) * 0x400 + char.charCodeAt(1) - 0xDC00 + 0x10000
+	}
+	return code;
+}
+
+function _Char_fromCode(code)
+{
+	return _Utils_chr(
+		(code < 0 || 0x10FFFF < code)
+			? '\uFFFD'
+			:
+		(code <= 0xFFFF)
+			? String.fromCharCode(code)
+			:
+		(code -= 0x10000,
+			String.fromCharCode(Math.floor(code / 0x400) + 0xD800, code % 0x400 + 0xDC00)
+		)
+	);
+}
+
+function _Char_toUpper(char)
+{
+	return _Utils_chr(char.toUpperCase());
+}
+
+function _Char_toLower(char)
+{
+	return _Utils_chr(char.toLowerCase());
+}
+
+function _Char_toLocaleUpper(char)
+{
+	return _Utils_chr(char.toLocaleUpperCase());
+}
+
+function _Char_toLocaleLower(char)
+{
+	return _Utils_chr(char.toLocaleLowerCase());
+}
+
+
+
 var _String_cons = F2(function(chr, str)
 {
 	return chr + str;
@@ -1226,53 +1273,6 @@ function _String_fromList(chars)
 	return _List_toArray(chars).join('');
 }
 
-
-
-
-function _Char_toCode(char)
-{
-	var code = char.charCodeAt(0);
-	if (0xD800 <= code && code <= 0xDBFF)
-	{
-		return (code - 0xD800) * 0x400 + char.charCodeAt(1) - 0xDC00 + 0x10000
-	}
-	return code;
-}
-
-function _Char_fromCode(code)
-{
-	return _Utils_chr(
-		(code < 0 || 0x10FFFF < code)
-			? '\uFFFD'
-			:
-		(code <= 0xFFFF)
-			? String.fromCharCode(code)
-			:
-		(code -= 0x10000,
-			String.fromCharCode(Math.floor(code / 0x400) + 0xD800, code % 0x400 + 0xDC00)
-		)
-	);
-}
-
-function _Char_toUpper(char)
-{
-	return _Utils_chr(char.toUpperCase());
-}
-
-function _Char_toLower(char)
-{
-	return _Utils_chr(char.toLowerCase());
-}
-
-function _Char_toLocaleUpper(char)
-{
-	return _Utils_chr(char.toLocaleUpperCase());
-}
-
-function _Char_toLocaleLower(char)
-{
-	return _Utils_chr(char.toLocaleLowerCase());
-}
 
 
 
@@ -4377,24 +4377,37 @@ function _Browser_load(url)
 var author$project$Main$ScpMsg = function (a) {
 	return {$: 'ScpMsg', a: a};
 };
-var author$project$SvgControl$CsSlider = function (a) {
-	return {$: 'CsSlider', a: a};
+var author$project$Main$TextSize = function (a) {
+	return {$: 'TextSize', a: a};
 };
-var author$project$SvgControlPage$Spec = F3(
-	function (title, rootControl, state) {
-		return {rootControl: rootControl, state: state, title: title};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var author$project$Main$requestTextSize = _Platform_outgoingPort('requestTextSize', elm$core$Basics$identity);
+var author$project$Main$sendSocketCommand = _Platform_outgoingPort('sendSocketCommand', elm$core$Basics$identity);
+var elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
 	});
-var author$project$SvgButton$Model = F8(
-	function (name, label, cid, rect, srect, pressed, textSvg, touchonly) {
-		return {cid: cid, label: label, name: name, pressed: pressed, rect: rect, srect: srect, textSvg: textSvg, touchonly: touchonly};
-	});
-var author$project$SvgThings$SRect = F4(
-	function (x, y, w, h) {
-		return {h: h, w: w, x: x, y: y};
-	});
-var author$project$SvgTextSize$getTextWidth = F2(
-	function (text, font) {
-		return 0;
+var elm$core$Array$branchFactor = 32;
+var elm$core$Array$Array_elm_builtin = F4(
+	function (a, b, c, d) {
+		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
 	});
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$GT = {$: 'GT'};
@@ -4476,42 +4489,13 @@ var elm$core$Array$foldr = F3(
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
 };
-var elm$core$Basics$add = _Basics_add;
-var elm$core$Basics$apR = F2(
-	function (x, f) {
-		return f(x);
-	});
-var elm$core$Basics$fdiv = _Basics_fdiv;
-var elm$core$Basics$mul = _Basics_mul;
-var elm$core$Basics$sub = _Basics_sub;
-var elm$core$Basics$toFloat = _Basics_toFloat;
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
-var elm$core$String$fromFloat = _String_fromNumber;
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$core$Basics$False = {$: 'False'};
-var elm$core$Basics$True = {$: 'True'};
-var elm$core$Result$isOk = function (result) {
-	if (result.$ === 'Ok') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var elm$core$Array$branchFactor = 32;
-var elm$core$Array$Array_elm_builtin = F4(
-	function (a, b, c, d) {
-		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
-	});
 var elm$core$Basics$ceiling = _Basics_ceiling;
+var elm$core$Basics$fdiv = _Basics_fdiv;
 var elm$core$Basics$logBase = F2(
 	function (base, number) {
 		return _Basics_log(number) / _Basics_log(base);
 	});
+var elm$core$Basics$toFloat = _Basics_toFloat;
 var elm$core$Array$shiftStep = elm$core$Basics$ceiling(
 	A2(elm$core$Basics$logBase, 2, elm$core$Array$branchFactor));
 var elm$core$Elm$JsArray$empty = _JsArray_empty;
@@ -4523,25 +4507,6 @@ var elm$core$Array$SubTree = function (a) {
 	return {$: 'SubTree', a: a};
 };
 var elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
-var elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
 var elm$core$List$reverse = function (list) {
 	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
 };
@@ -4567,6 +4532,10 @@ var elm$core$Array$compressNodes = F2(
 			}
 		}
 	});
+var elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
 var elm$core$Basics$eq = _Utils_equal;
 var elm$core$Tuple$first = function (_n0) {
 	var x = _n0.a;
@@ -4588,6 +4557,7 @@ var elm$core$Array$treeFromBuilder = F2(
 			}
 		}
 	});
+var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
@@ -4598,6 +4568,8 @@ var elm$core$Basics$max = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) > 0) ? x : y;
 	});
+var elm$core$Basics$mul = _Basics_mul;
+var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Elm$JsArray$length = _JsArray_length;
 var elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
@@ -4622,6 +4594,7 @@ var elm$core$Array$builderToArray = F2(
 				builder.tail);
 		}
 	});
+var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$idiv = _Basics_idiv;
 var elm$core$Basics$lt = _Utils_lt;
 var elm$core$Elm$JsArray$initialize = _JsArray_initialize;
@@ -4664,11 +4637,23 @@ var elm$core$Array$initialize = F2(
 			return A5(elm$core$Array$initializeHelp, fn, initialFromIndex, len, _List_Nil, tail);
 		}
 	});
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
 var elm$core$Result$Ok = function (a) {
 	return {$: 'Ok', a: a};
+};
+var elm$core$Basics$True = {$: 'True'};
+var elm$core$Result$isOk = function (result) {
+	if (result.$ === 'Ok') {
+		return true;
+	} else {
+		return false;
+	}
 };
 var elm$json$Json$Decode$Failure = F2(
 	function (a, b) {
@@ -4875,30 +4860,106 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 			}
 		}
 	});
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$WebSocket$encodeCmd = function (wsc) {
+	switch (wsc.$) {
+		case 'Connect':
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('connect')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name)),
+						_Utils_Tuple2(
+						'address',
+						elm$json$Json$Encode$string(msg.address)),
+						_Utils_Tuple2(
+						'protocol',
+						elm$json$Json$Encode$string(msg.protocol))
+					]));
+		case 'Send':
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('send')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name)),
+						_Utils_Tuple2(
+						'content',
+						elm$json$Json$Encode$string(msg.content))
+					]));
 		default:
-			return 3;
+			var msg = wsc.a;
+			return elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'cmd',
+						elm$json$Json$Encode$string('close')),
+						_Utils_Tuple2(
+						'name',
+						elm$json$Json$Encode$string(msg.name))
+					]));
 	}
 };
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$svg$Svg$text = elm$virtual_dom$VirtualDom$text;
-var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var elm$svg$Svg$text_ = elm$svg$Svg$trustedNode('text');
-var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var elm$svg$Svg$Attributes$fontFamily = _VirtualDom_attribute('font-family');
-var elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
-var elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
-var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var author$project$WebSocket$send = F2(
+	function (tocmd, wsc) {
+		return tocmd(
+			author$project$WebSocket$encodeCmd(wsc));
+	});
+var author$project$Main$wssend = author$project$WebSocket$send(author$project$Main$sendSocketCommand);
+var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var author$project$SvgThings$encodeControlId = function (cid) {
+	return A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, cid);
+};
+var author$project$SvgTextSize$encodeTextSizeRequest = function (tsr) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'string',
+				elm$json$Json$Encode$string(tsr.string)),
+				_Utils_Tuple2(
+				'font',
+				elm$json$Json$Encode$string(tsr.font)),
+				_Utils_Tuple2(
+				'controlId',
+				author$project$SvgThings$encodeControlId(tsr.controlId))
+			]));
+};
+var author$project$WebSocket$Send = function (a) {
+	return {$: 'Send', a: a};
+};
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -4954,132 +5015,78 @@ var elm$core$List$foldr = F3(
 	function (fn, acc, ls) {
 		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
 	});
-var lukewestby$elm_template$Template$renderComponent = F3(
-	function (record, component, result) {
-		if (component.$ === 'Literal') {
-			var string = component.a;
-			return _Utils_ap(result, string);
-		} else {
-			var accessor = component.a;
-			return _Utils_ap(
-				result,
-				accessor(record));
-		}
-	});
-var lukewestby$elm_template$Template$render = F2(
-	function (record, currentTemplate) {
+var elm$core$List$map = F2(
+	function (f, xs) {
 		return A3(
 			elm$core$List$foldr,
-			lukewestby$elm_template$Template$renderComponent(record),
-			'',
-			currentTemplate);
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
 	});
-var lukewestby$elm_template$Template$Literal = function (a) {
-	return {$: 'Literal', a: a};
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var author$project$Main$commandToCmd = function (scmd) {
+	switch (scmd.$) {
+		case 'Send':
+			var dta = scmd.a;
+			return author$project$Main$wssend(
+				author$project$WebSocket$Send(
+					{content: dta, name: 'touchpage'}));
+		case 'RequestTextWidth':
+			var rtw = scmd.a;
+			return author$project$Main$requestTextSize(
+				author$project$SvgTextSize$encodeTextSizeRequest(rtw));
+		case 'None':
+			return elm$core$Platform$Cmd$none;
+		default:
+			var cmds = scmd.a;
+			return elm$core$Platform$Cmd$batch(
+				A2(elm$core$List$map, author$project$Main$commandToCmd, cmds));
+	}
 };
-var lukewestby$elm_template$Template$template = function (initial) {
-	return _List_fromArray(
-		[
-			lukewestby$elm_template$Template$Literal(initial)
-		]);
+var author$project$SvgControl$CsSlider = function (a) {
+	return {$: 'CsSlider', a: a};
 };
-var lukewestby$elm_template$Template$withString = F2(
-	function (string, currentTemplate) {
-		return A2(
-			elm$core$List$cons,
-			lukewestby$elm_template$Template$Literal(string),
-			currentTemplate);
+var author$project$SvgControlPage$Spec = F3(
+	function (title, rootControl, state) {
+		return {rootControl: rootControl, state: state, title: title};
 	});
-var lukewestby$elm_template$Template$Interpolation = function (a) {
-	return {$: 'Interpolation', a: a};
+var author$project$SvgCommand$Batch = function (a) {
+	return {$: 'Batch', a: a};
 };
-var lukewestby$elm_template$Template$withValue = F2(
-	function (interpolator, currentTemplate) {
-		return A2(
-			elm$core$List$cons,
-			lukewestby$elm_template$Template$Interpolation(interpolator),
-			currentTemplate);
+var author$project$SvgButton$Model = F9(
+	function (name, label, stringWidth, cid, rect, srect, pressed, textSvg, touchonly) {
+		return {cid: cid, label: label, name: name, pressed: pressed, rect: rect, srect: srect, stringWidth: stringWidth, textSvg: textSvg, touchonly: touchonly};
 	});
-var author$project$SvgThings$calcText = F5(
-	function (fontFam, lbtext, labelMeasuredWidth, fontScaling, rect) {
-		var yc = rect.y + (rect.h / 2);
-		var xc = rect.x + (rect.w / 2);
-		var width = labelMeasuredWidth;
-		var tmpl = A2(
-			lukewestby$elm_template$Template$withString,
-			')',
-			A2(
-				lukewestby$elm_template$Template$withValue,
-				function ($) {
-					return $.yt;
-				},
-				A2(
-					lukewestby$elm_template$Template$withString,
-					', ',
-					A2(
-						lukewestby$elm_template$Template$withValue,
-						function ($) {
-							return $.xt;
-						},
-						A2(
-							lukewestby$elm_template$Template$withString,
-							', ',
-							A2(
-								lukewestby$elm_template$Template$withValue,
-								function ($) {
-									return $.scale;
-								},
-								A2(
-									lukewestby$elm_template$Template$withString,
-									', 0, 0, ',
-									A2(
-										lukewestby$elm_template$Template$withValue,
-										function ($) {
-											return $.scale;
-										},
-										lukewestby$elm_template$Template$template('matrix(')))))))));
-		var scale = fontScaling;
-		var xt = xc - ((width * scale) * 0.5);
-		var yt = yc + ((20.0 * scale) * 0.5);
-		var xf = A2(
-			lukewestby$elm_template$Template$render,
-			{
-				scale: elm$core$String$fromFloat(scale),
-				xt: elm$core$String$fromFloat(xt),
-				yt: elm$core$String$fromFloat(yt)
-			},
-			tmpl);
-		return _List_fromArray(
-			[
-				A2(
-				elm$svg$Svg$text_,
-				_List_fromArray(
-					[
-						elm$svg$Svg$Attributes$fill('black'),
-						elm$svg$Svg$Attributes$fontSize('20px'),
-						elm$svg$Svg$Attributes$fontFamily(fontFam),
-						elm$svg$Svg$Attributes$transform(xf),
-						elm$svg$Svg$Attributes$style('cursor: default; -webkit-user-select: none;  -moz-user-select: none;  -ms-user-select: none; user-select: none;')
-					]),
-				_List_fromArray(
-					[
-						elm$svg$Svg$text(lbtext)
-					]))
-			]);
+var author$project$SvgCommand$None = {$: 'None'};
+var author$project$SvgCommand$RequestTextWidth = function (a) {
+	return {$: 'RequestTextWidth', a: a};
+};
+var author$project$SvgCommand$TextSizeRequest = F3(
+	function (string, font, controlId) {
+		return {controlId: controlId, font: font, string: string};
 	});
-var author$project$SvgThings$computeFontScaling = F4(
-	function (fw, fh, rw, rh) {
-		var wr = rw / fw;
-		var hr = rh / fh;
-		return (_Utils_cmp(wr, hr) < 0) ? wr : hr;
+var author$project$SvgTextSize$controlFontFamily = 'sans-serif';
+var author$project$SvgTextSize$sizingFont = '20px ' + author$project$SvgTextSize$controlFontFamily;
+var author$project$SvgTextSize$resizeCommand = function (model) {
+	var _n0 = model.stringWidth;
+	if (_n0.$ === 'Nothing') {
+		return (model.label === '') ? author$project$SvgCommand$None : author$project$SvgCommand$RequestTextWidth(
+			A3(author$project$SvgCommand$TextSizeRequest, model.label, author$project$SvgTextSize$sizingFont, model.cid));
+	} else {
+		return author$project$SvgCommand$None;
+	}
+};
+var author$project$SvgThings$SRect = F4(
+	function (x, y, w, h) {
+		return {h: h, w: w, x: x, y: y};
 	});
-var author$project$SvgThings$calcTextSvg = F3(
-	function (fontFam, textString, rect) {
-		var w = A2(author$project$SvgTextSize$getTextWidth, textString, '20px ' + fontFam);
-		var fs = A4(author$project$SvgThings$computeFontScaling, w, 20.0, rect.w, rect.h);
-		return A5(author$project$SvgThings$calcText, fontFam, textString, w, fs, rect);
-	});
-var author$project$SvgThings$ff = 'sans-serif';
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5091,19 +5098,11 @@ var elm$core$Maybe$withDefault = F2(
 	});
 var author$project$SvgButton$init = F3(
 	function (rect, cid, spec) {
-		var ts = function () {
-			var _n0 = spec.label;
-			if (_n0.$ === 'Just') {
-				var lbtext = _n0.a;
-				return A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, lbtext, rect);
-			} else {
-				return _List_Nil;
-			}
-		}();
-		return A8(
+		var model = A9(
 			author$project$SvgButton$Model,
 			spec.name,
 			A2(elm$core$Maybe$withDefault, '', spec.label),
+			elm$core$Maybe$Nothing,
 			cid,
 			rect,
 			A4(
@@ -5113,8 +5112,11 @@ var author$project$SvgButton$init = F3(
 				elm$core$String$fromInt(rect.w),
 				elm$core$String$fromInt(rect.h)),
 			false,
-			ts,
+			_List_Nil,
 			false);
+		return _Utils_Tuple2(
+			model,
+			author$project$SvgTextSize$resizeCommand(model));
 	});
 var author$project$SvgControl$CmButton = function (a) {
 	return {$: 'CmButton', a: a};
@@ -5142,20 +5144,6 @@ var author$project$SvgThings$mekhr = F3(
 		return A4(author$project$SvgThings$Rect, br.x + (w * i), br.y, w, br.h);
 	});
 var elm$core$Basics$round = _Basics_round;
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var author$project$SvgThings$hrects = F2(
 	function (rct, count) {
 		var w = elm$core$Basics$round(rct.w / count);
@@ -5458,19 +5446,17 @@ var author$project$SvgControl$mkRlist = F4(
 		}
 	});
 var author$project$SvgControl$zip = elm$core$List$map2(elm$core$Tuple$pair);
-var author$project$SvgLabel$Model = F6(
-	function (name, label, cid, rect, srect, textSvg) {
-		return {cid: cid, label: label, name: name, rect: rect, srect: srect, textSvg: textSvg};
+var author$project$SvgLabel$Model = F7(
+	function (name, label, stringWidth, cid, rect, srect, textSvg) {
+		return {cid: cid, label: label, name: name, rect: rect, srect: srect, stringWidth: stringWidth, textSvg: textSvg};
 	});
-var author$project$SvgLabel$NoOp = {$: 'NoOp'};
-var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var author$project$SvgLabel$init = F3(
 	function (rect, cid, spec) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, spec.label, rect);
-		return A6(
+		var model = A7(
 			author$project$SvgLabel$Model,
 			spec.name,
 			spec.label,
+			elm$core$Maybe$Nothing,
 			cid,
 			rect,
 			A4(
@@ -5479,29 +5465,24 @@ var author$project$SvgLabel$init = F3(
 				elm$core$String$fromInt(rect.y),
 				elm$core$String$fromInt(rect.w),
 				elm$core$String$fromInt(rect.h)),
-			A2(
-				elm$core$List$map,
-				function (meh) {
-					return A2(
-						elm$virtual_dom$VirtualDom$map,
-						function (_n0) {
-							return author$project$SvgLabel$NoOp;
-						},
-						meh);
-				},
-				ts));
+			_List_Nil);
+		return _Utils_Tuple2(
+			model,
+			author$project$SvgTextSize$resizeCommand(model));
 	});
 var author$project$SvgSlider$Model = function (name) {
 	return function (label) {
-		return function (cid) {
-			return function (rect) {
-				return function (srect) {
-					return function (orientation) {
-						return function (pressed) {
-							return function (location) {
-								return function (textSvg) {
-									return function (touchonly) {
-										return {cid: cid, label: label, location: location, name: name, orientation: orientation, pressed: pressed, rect: rect, srect: srect, textSvg: textSvg, touchonly: touchonly};
+		return function (stringWidth) {
+			return function (cid) {
+				return function (rect) {
+					return function (srect) {
+						return function (orientation) {
+							return function (pressed) {
+								return function (location) {
+									return function (textSvg) {
+										return function (touchonly) {
+											return {cid: cid, label: label, location: location, name: name, orientation: orientation, pressed: pressed, rect: rect, srect: srect, stringWidth: stringWidth, textSvg: textSvg, touchonly: touchonly};
+										};
 									};
 								};
 							};
@@ -5514,23 +5495,17 @@ var author$project$SvgSlider$Model = function (name) {
 };
 var author$project$SvgSlider$init = F3(
 	function (rect, cid, spec) {
-		var ts = function () {
-			var _n0 = spec.label;
-			if (_n0.$ === 'Just') {
-				var lbtext = _n0.a;
-				return A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, lbtext, rect);
-			} else {
-				return _List_Nil;
-			}
-		}();
-		return author$project$SvgSlider$Model(spec.name)(
-			A2(elm$core$Maybe$withDefault, '', spec.label))(cid)(rect)(
+		var model = author$project$SvgSlider$Model(spec.name)(
+			A2(elm$core$Maybe$withDefault, '', spec.label))(elm$core$Maybe$Nothing)(cid)(rect)(
 			A4(
 				author$project$SvgThings$SRect,
 				elm$core$String$fromInt(rect.x),
 				elm$core$String$fromInt(rect.y),
 				elm$core$String$fromInt(rect.w),
-				elm$core$String$fromInt(rect.h)))(spec.orientation)(false)(0.5)(ts)(false);
+				elm$core$String$fromInt(rect.h)))(spec.orientation)(false)(0.5)(_List_Nil)(false);
+		return _Utils_Tuple2(
+			model,
+			author$project$SvgTextSize$resizeCommand(model));
 	});
 var author$project$SvgThings$shrinkRect = F2(
 	function (border, rect) {
@@ -5660,12 +5635,26 @@ var elm$core$Dict$fromList = function (assocs) {
 		assocs);
 };
 var elm$core$List$map3 = _List_map3;
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
 var author$project$SvgControl$init = F3(
 	function (rect, cid, spec) {
+		var aptg = F2(
+			function (f, _n2) {
+				var m = _n2.a;
+				var c = _n2.b;
+				return _Utils_Tuple2(
+					f(m),
+					c);
+			});
 		switch (spec.$) {
 			case 'CsButton':
 				var s = spec.a;
-				return author$project$SvgControl$CmButton(
+				return A2(
+					aptg,
+					author$project$SvgControl$CmButton,
 					A3(
 						author$project$SvgButton$init,
 						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
@@ -5673,7 +5662,9 @@ var author$project$SvgControl$init = F3(
 						s));
 			case 'CsSlider':
 				var s = spec.a;
-				return author$project$SvgControl$CmSlider(
+				return A2(
+					aptg,
+					author$project$SvgControl$CmSlider,
 					A3(
 						author$project$SvgSlider$init,
 						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
@@ -5681,7 +5672,9 @@ var author$project$SvgControl$init = F3(
 						s));
 			case 'CsLabel':
 				var s = spec.a;
-				return author$project$SvgControl$CmLabel(
+				return A2(
+					aptg,
+					author$project$SvgControl$CmLabel,
 					A3(
 						author$project$SvgLabel$init,
 						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect),
@@ -5689,7 +5682,9 @@ var author$project$SvgControl$init = F3(
 						s));
 			default:
 				var s = spec.a;
-				return author$project$SvgControl$CmSizer(
+				return A2(
+					aptg,
+					author$project$SvgControl$CmSizer,
 					A3(author$project$SvgControl$szinit, rect, cid, s));
 		}
 	});
@@ -5729,14 +5724,19 @@ var author$project$SvgControl$szinit = F3(
 				szspec.controls,
 				rlist,
 				idxs));
-		var controlz = A2(author$project$SvgControl$zip, idxs, blist);
-		return A5(
+		var cmds = A2(elm$core$List$map, elm$core$Tuple$second, blist);
+		var mods = A2(elm$core$List$map, elm$core$Tuple$first, blist);
+		var controlz = A2(author$project$SvgControl$zip, idxs, mods);
+		var model = A5(
 			author$project$SvgControl$SzModel,
 			cid,
 			rect,
 			elm$core$Dict$fromList(controlz),
 			szspec.orientation,
 			szspec.proportions);
+		return _Utils_Tuple2(
+			model,
+			author$project$SvgCommand$Batch(cmds));
 	});
 var author$project$SvgButton$Press = {$: 'Press'};
 var author$project$SvgButton$Unpress = {$: 'Unpress'};
@@ -5744,39 +5744,12 @@ var author$project$SvgButton$UpdateMessage = F3(
 	function (controlId, updateType, label) {
 		return {controlId: controlId, label: label, updateType: updateType};
 	});
-var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$SvgButton$encodeUpdateType = function (ut) {
 	if (ut.$ === 'Press') {
 		return elm$json$Json$Encode$string('Press');
 	} else {
 		return elm$json$Json$Encode$string('Unpress');
 	}
-};
-var elm$json$Json$Encode$int = _Json_wrap;
-var elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
-var author$project$SvgThings$encodeControlId = function (cid) {
-	return A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, cid);
-};
-var elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n0, obj) {
-					var k = _n0.a;
-					var v = _n0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
 };
 var author$project$SvgButton$encodeUpdateMessage = function (um) {
 	var outlist1 = _List_fromArray(
@@ -5846,7 +5819,6 @@ var author$project$SvgButton$pressup = F2(
 				}),
 			author$project$SvgCommand$Send(um));
 	});
-var author$project$SvgCommand$None = {$: 'None'};
 var author$project$SvgTouch$Touch = F3(
 	function (x, y, id) {
 		return {id: id, x: x, y: y};
@@ -5924,48 +5896,58 @@ var author$project$SvgButton$update = F2(
 					author$project$SvgCommand$None);
 			case 'SvgUpdate':
 				var um = msg.a;
+				var newmodel = _Utils_update(
+					model,
+					{
+						label: function () {
+							var _n1 = um.label;
+							if (_n1.$ === 'Just') {
+								var txt = _n1.a;
+								return txt;
+							} else {
+								return model.label;
+							}
+						}(),
+						pressed: function () {
+							var _n2 = um.updateType;
+							if (_n2.$ === 'Just') {
+								if (_n2.a.$ === 'Press') {
+									var _n3 = _n2.a;
+									return true;
+								} else {
+									var _n4 = _n2.a;
+									return false;
+								}
+							} else {
+								return model.pressed;
+							}
+						}(),
+						stringWidth: function () {
+							var _n5 = um.label;
+							if (_n5.$ === 'Just') {
+								var txt = _n5.a;
+								return elm$core$Maybe$Nothing;
+							} else {
+								return model.stringWidth;
+							}
+						}(),
+						textSvg: function () {
+							var _n6 = um.label;
+							if (_n6.$ === 'Just') {
+								var txt = _n6.a;
+								return _List_Nil;
+							} else {
+								return model.textSvg;
+							}
+						}()
+					});
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							label: function () {
-								var _n1 = um.label;
-								if (_n1.$ === 'Just') {
-									var txt = _n1.a;
-									return txt;
-								} else {
-									return model.label;
-								}
-							}(),
-							pressed: function () {
-								var _n2 = um.updateType;
-								if (_n2.$ === 'Just') {
-									if (_n2.a.$ === 'Press') {
-										var _n3 = _n2.a;
-										return true;
-									} else {
-										var _n4 = _n2.a;
-										return false;
-									}
-								} else {
-									return model.pressed;
-								}
-							}(),
-							textSvg: function () {
-								var _n5 = um.label;
-								if (_n5.$ === 'Just') {
-									var txt = _n5.a;
-									return A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, txt, model.rect);
-								} else {
-									return model.textSvg;
-								}
-							}()
-						}),
-					author$project$SvgCommand$None);
+					newmodel,
+					author$project$SvgTextSize$resizeCommand(newmodel));
 			default:
 				var stm = msg.a;
-				var _n6 = author$project$SvgTouch$extractFirstTouchSE(stm);
-				if (_n6.$ === 'Nothing') {
+				var _n7 = author$project$SvgTouch$extractFirstTouchSE(stm);
+				if (_n7.$ === 'Nothing') {
 					return model.pressed ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Unpress) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 				} else {
 					return (!model.pressed) ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Press) : _Utils_Tuple2(model, author$project$SvgCommand$None);
@@ -5976,23 +5958,14 @@ var author$project$SvgLabel$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'SvgUpdate') {
 			var um = msg.a;
-			var tswk = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, um.label, model.rect);
-			var ts = A2(
-				elm$core$List$map,
-				function (meh) {
-					return A2(
-						elm$virtual_dom$VirtualDom$map,
-						function (_n1) {
-							return author$project$SvgLabel$NoOp;
-						},
-						meh);
-				},
-				tswk);
-			return _Utils_update(
+			var newmodel = _Utils_update(
 				model,
-				{label: um.label, textSvg: ts});
+				{label: um.label, textSvg: _List_Nil});
+			return _Utils_Tuple2(
+				newmodel,
+				author$project$SvgTextSize$resizeCommand(newmodel));
 		} else {
-			return model;
+			return _Utils_Tuple2(model, author$project$SvgCommand$None);
 		}
 	});
 var author$project$SvgSlider$Press = {$: 'Press'};
@@ -6001,25 +5974,24 @@ var author$project$SvgSlider$getX = A2(elm$json$Json$Decode$field, 'pageX', elm$
 var author$project$SvgSlider$getY = A2(elm$json$Json$Decode$field, 'pageY', elm$json$Json$Decode$int);
 var author$project$SvgSlider$getLocation = F2(
 	function (model, v) {
-		var _n0 = A2(elm$core$Debug$log, 'getLocation: ', model.rect);
-		var _n1 = model.orientation;
-		if (_n1.$ === 'Horizontal') {
-			var _n2 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getX, v);
-			if (_n2.$ === 'Ok') {
-				var i = _n2.a;
+		var _n0 = model.orientation;
+		if (_n0.$ === 'Horizontal') {
+			var _n1 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getX, v);
+			if (_n1.$ === 'Ok') {
+				var i = _n1.a;
 				return elm$core$Result$Ok((i - model.rect.x) / model.rect.w);
 			} else {
-				var e = _n2.a;
+				var e = _n1.a;
 				return elm$core$Result$Err(
 					elm$json$Json$Decode$errorToString(e));
 			}
 		} else {
-			var _n3 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getY, v);
-			if (_n3.$ === 'Ok') {
-				var i = _n3.a;
+			var _n2 = A2(elm$json$Json$Decode$decodeValue, author$project$SvgSlider$getY, v);
+			if (_n2.$ === 'Ok') {
+				var i = _n2.a;
 				return elm$core$Result$Ok((i - model.rect.y) / model.rect.h);
 			} else {
-				var e = _n3.a;
+				var e = _n2.a;
 				return elm$core$Result$Err(
 					elm$json$Json$Decode$errorToString(e));
 			}
@@ -6231,13 +6203,9 @@ var author$project$SvgSlider$update = F2(
 		switch (msg.$) {
 			case 'SvgPress':
 				var v = msg.a;
-				var _n1 = A2(
-					elm$core$Debug$log,
-					'SvgPress: ',
-					A2(author$project$SvgSlider$getLocation, model, v));
-				var _n2 = A2(author$project$SvgSlider$getLocation, model, v);
-				if (_n2.$ === 'Ok') {
-					var l = _n2.a;
+				var _n1 = A2(author$project$SvgSlider$getLocation, model, v);
+				if (_n1.$ === 'Ok') {
+					var l = _n1.a;
 					return A3(
 						author$project$SvgSlider$updsend,
 						model,
@@ -6248,8 +6216,8 @@ var author$project$SvgSlider$update = F2(
 				}
 			case 'SvgUnpress':
 				var v = msg.a;
-				var _n3 = model.pressed;
-				if (_n3) {
+				var _n2 = model.pressed;
+				if (_n2) {
 					return A3(
 						author$project$SvgSlider$updsend,
 						model,
@@ -6269,15 +6237,11 @@ var author$project$SvgSlider$update = F2(
 					author$project$SvgCommand$None);
 			case 'SvgMoved':
 				var v = msg.a;
-				var _n4 = model.pressed;
-				if (_n4) {
-					var _n5 = A2(
-						elm$core$Debug$log,
-						'SvgMoved: ',
-						A2(author$project$SvgSlider$getLocation, model, v));
-					var _n6 = A2(author$project$SvgSlider$getLocation, model, v);
-					if (_n6.$ === 'Ok') {
-						var l = _n6.a;
+				var _n3 = model.pressed;
+				if (_n3) {
+					var _n4 = A2(author$project$SvgSlider$getLocation, model, v);
+					if (_n4.$ === 'Ok') {
+						var l = _n4.a;
 						return A3(author$project$SvgSlider$updsend, model, elm$core$Maybe$Nothing, l);
 					} else {
 						return _Utils_Tuple2(model, author$project$SvgCommand$None);
@@ -6290,62 +6254,57 @@ var author$project$SvgSlider$update = F2(
 				var mod = _Utils_update(
 					model,
 					{
-						label: function () {
-							var _n7 = um.label;
-							if (_n7.$ === 'Just') {
-								var txt = _n7.a;
-								return txt;
-							} else {
-								return model.label;
-							}
-						}(),
 						location: function () {
-							var _n8 = um.location;
-							if (_n8.$ === 'Just') {
-								var loc = _n8.a;
+							var _n6 = um.location;
+							if (_n6.$ === 'Just') {
+								var loc = _n6.a;
 								return loc;
 							} else {
 								return model.location;
 							}
 						}(),
 						pressed: function () {
-							var _n9 = um.updateType;
-							if (_n9.$ === 'Just') {
-								if (_n9.a.$ === 'Press') {
-									var _n10 = _n9.a;
+							var _n7 = um.updateType;
+							if (_n7.$ === 'Just') {
+								if (_n7.a.$ === 'Press') {
+									var _n8 = _n7.a;
 									return true;
 								} else {
-									var _n11 = _n9.a;
+									var _n9 = _n7.a;
 									return false;
 								}
 							} else {
 								return model.pressed;
 							}
-						}(),
-						textSvg: function () {
-							var _n12 = um.label;
-							if (_n12.$ === 'Just') {
-								var txt = _n12.a;
-								return A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, txt, model.rect);
-							} else {
-								return model.textSvg;
-							}
 						}()
 					});
-				return _Utils_Tuple2(mod, author$project$SvgCommand$None);
+				var mod2 = function () {
+					var _n5 = um.label;
+					if (_n5.$ === 'Just') {
+						var txt = _n5.a;
+						return _Utils_update(
+							mod,
+							{label: txt, stringWidth: elm$core$Maybe$Nothing, textSvg: _List_Nil});
+					} else {
+						return mod;
+					}
+				}();
+				return _Utils_Tuple2(
+					mod2,
+					author$project$SvgTextSize$resizeCommand(mod2));
 			default:
 				var stm = msg.a;
-				var _n13 = A2(author$project$SvgTouch$extractFirstRectTouchSE, stm, model.rect);
-				if (_n13.$ === 'Nothing') {
+				var _n10 = A2(author$project$SvgTouch$extractFirstRectTouchSE, stm, model.rect);
+				if (_n10.$ === 'Nothing') {
 					return model.pressed ? A3(
 						author$project$SvgSlider$updsend,
 						model,
 						elm$core$Maybe$Just(author$project$SvgSlider$Unpress),
 						model.location) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 				} else {
-					var touch = _n13.a;
-					var _n14 = model.orientation;
-					if (_n14.$ === 'Horizontal') {
+					var touch = _n10.a;
+					var _n11 = model.orientation;
+					if (_n11.$ === 'Horizontal') {
 						var loc = (touch.x - model.rect.x) / model.rect.w;
 						return model.pressed ? A3(
 							author$project$SvgSlider$updsend,
@@ -6394,10 +6353,6 @@ var elm$core$Dict$get = F2(
 			}
 		}
 	});
-var elm$core$Tuple$second = function (_n0) {
-	var y = _n0.b;
-	return y;
-};
 var author$project$SvgControl$szupdate = F2(
 	function (msg, model) {
 		var id = msg.a;
@@ -6451,10 +6406,12 @@ var author$project$SvgControl$update = F2(
 					if (_n0.b.$ === 'CmLabel') {
 						var ms = _n0.a.a;
 						var m = _n0.b.a;
+						var _n3 = A2(author$project$SvgLabel$update, ms, m);
+						var md = _n3.a;
+						var c = _n3.b;
 						return _Utils_Tuple2(
-							author$project$SvgControl$CmLabel(
-								A2(author$project$SvgLabel$update, ms, m)),
-							author$project$SvgCommand$None);
+							author$project$SvgControl$CmLabel(md),
+							c);
 					} else {
 						break _n0$4;
 					}
@@ -6462,9 +6419,9 @@ var author$project$SvgControl$update = F2(
 					if (_n0.b.$ === 'CmSizer') {
 						var ms = _n0.a.a;
 						var m = _n0.b.a;
-						var _n3 = A2(author$project$SvgControl$szupdate, ms, m);
-						var a = _n3.a;
-						var b = _n3.b;
+						var _n4 = A2(author$project$SvgControl$szupdate, ms, m);
+						var a = _n4.a;
+						var b = _n4.b;
 						return _Utils_Tuple2(
 							author$project$SvgControl$CmSizer(a),
 							b);
@@ -6511,21 +6468,26 @@ var author$project$Util$RectSize = F2(
 	});
 var author$project$SvgControlPage$init = F2(
 	function (rect, spec) {
-		var conmod = A3(author$project$SvgControl$init, rect, _List_Nil, spec.rootControl);
-		var _n0 = A2(
+		var _n0 = A3(author$project$SvgControl$init, rect, _List_Nil, spec.rootControl);
+		var conmod = _n0.a;
+		var cmd = _n0.b;
+		var _n1 = A2(
 			author$project$SvgControl$update_list,
 			A2(elm$core$Maybe$withDefault, _List_Nil, spec.state),
 			conmod);
-		var updmod = _n0.a;
-		var cmds = _n0.b;
-		return A6(
-			author$project$SvgControlPage$Model,
-			spec.title,
-			rect,
-			author$project$SvgThings$toSRect(rect),
-			spec,
-			updmod,
-			A2(author$project$Util$RectSize, 0, 0));
+		var updmod = _n1.a;
+		var cmds = _n1.b;
+		return _Utils_Tuple2(
+			A6(
+				author$project$SvgControlPage$Model,
+				spec.title,
+				rect,
+				author$project$SvgThings$toSRect(rect),
+				spec,
+				updmod,
+				A2(author$project$Util$RectSize, 0, 0)),
+			author$project$SvgCommand$Batch(
+				A2(elm$core$List$cons, cmd, cmds)));
 	});
 var author$project$SvgSlider$Spec = F3(
 	function (name, label, orientation) {
@@ -6565,23 +6527,26 @@ var author$project$Main$init = function (flags) {
 				elm$core$List$head,
 				elm$core$List$tail(
 					A2(elm$core$String$split, ':', flags.location)))));
-	return {
-		scpModel: A2(
-			author$project$SvgControlPage$init,
-			A4(author$project$SvgThings$Rect, 0, 0, flags.width, flags.height),
-			A3(
-				author$project$SvgControlPage$Spec,
-				wsUrl,
-				author$project$SvgControl$CsSlider(
-					A3(author$project$SvgSlider$Spec, 'blah', elm$core$Maybe$Nothing, author$project$SvgThings$Vertical)),
-				elm$core$Maybe$Nothing)),
-		wsUrl: wsUrl
-	};
+	var _n0 = A2(
+		author$project$SvgControlPage$init,
+		A4(author$project$SvgThings$Rect, 0, 0, flags.width, flags.height),
+		A3(
+			author$project$SvgControlPage$Spec,
+			wsUrl,
+			author$project$SvgControl$CsSlider(
+				A3(author$project$SvgSlider$Spec, 'blah', elm$core$Maybe$Nothing, author$project$SvgThings$Vertical)),
+			elm$core$Maybe$Nothing));
+	var sm = _n0.a;
+	var cmd = _n0.b;
+	return _Utils_Tuple2(
+		{scpModel: sm, wsUrl: wsUrl},
+		cmd);
 };
+var elm$json$Json$Decode$value = _Json_decodeValue;
+var author$project$Main$receiveTextMetrics = _Platform_incomingPort('receiveTextMetrics', elm$json$Json$Decode$value);
 var author$project$Main$WsMsg = function (a) {
 	return {$: 'WsMsg', a: a};
 };
-var elm$json$Json$Decode$value = _Json_decodeValue;
 var author$project$Main$receiveSocketMsg = _Platform_incomingPort('receiveSocketMsg', elm$json$Json$Decode$value);
 var author$project$WebSocket$Data = function (a) {
 	return {$: 'Data', a: a};
@@ -6591,6 +6556,7 @@ var author$project$WebSocket$Error = function (a) {
 };
 var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$WebSocket$decodeMsg = A2(
 	elm$json$Json$Decode$andThen,
@@ -6630,181 +6596,224 @@ var author$project$WebSocket$receive = function (wsmMsg) {
 };
 var author$project$Main$wsreceive = author$project$Main$receiveSocketMsg(
 	author$project$WebSocket$receive(author$project$Main$WsMsg));
-var author$project$Main$sendSocketCommand = _Platform_outgoingPort('sendSocketCommand', elm$core$Basics$identity);
-var author$project$WebSocket$encodeCmd = function (wsc) {
-	switch (wsc.$) {
-		case 'Connect':
-			var msg = wsc.a;
-			return elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'cmd',
-						elm$json$Json$Encode$string('connect')),
-						_Utils_Tuple2(
-						'name',
-						elm$json$Json$Encode$string(msg.name)),
-						_Utils_Tuple2(
-						'address',
-						elm$json$Json$Encode$string(msg.address)),
-						_Utils_Tuple2(
-						'protocol',
-						elm$json$Json$Encode$string(msg.protocol))
-					]));
-		case 'Send':
-			var msg = wsc.a;
-			return elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'cmd',
-						elm$json$Json$Encode$string('send')),
-						_Utils_Tuple2(
-						'name',
-						elm$json$Json$Encode$string(msg.name)),
-						_Utils_Tuple2(
-						'content',
-						elm$json$Json$Encode$string(msg.content))
-					]));
-		default:
-			var msg = wsc.a;
-			return elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'cmd',
-						elm$json$Json$Encode$string('close')),
-						_Utils_Tuple2(
-						'name',
-						elm$json$Json$Encode$string(msg.name))
-					]));
-	}
-};
-var author$project$WebSocket$send = F2(
-	function (tocmd, wsc) {
-		return tocmd(
-			author$project$WebSocket$encodeCmd(wsc));
-	});
-var author$project$Main$wssend = author$project$WebSocket$send(author$project$Main$sendSocketCommand);
 var author$project$SvgControlPage$JsonMsg = function (a) {
 	return {$: 'JsonMsg', a: a};
 };
 var author$project$SvgControlPage$Resize = function (a) {
 	return {$: 'Resize', a: a};
 };
-var author$project$SvgButton$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_update(
-			model,
-			{
-				rect: rect,
-				srect: A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				textSvg: ts
-			});
-	});
-var author$project$SvgLabel$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_update(
-			model,
-			{
-				rect: rect,
-				srect: A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				textSvg: A2(
-					elm$core$List$map,
-					function (meh) {
-						return A2(
-							elm$virtual_dom$VirtualDom$map,
-							function (_n0) {
-								return author$project$SvgLabel$NoOp;
-							},
-							meh);
-					},
-					ts)
-			});
-	});
-var author$project$SvgSlider$resize = F2(
-	function (model, rect) {
-		var ts = A3(author$project$SvgThings$calcTextSvg, author$project$SvgThings$ff, model.label, rect);
-		return _Utils_update(
-			model,
-			{
-				rect: rect,
-				srect: A4(
-					author$project$SvgThings$SRect,
-					elm$core$String$fromInt(rect.x),
-					elm$core$String$fromInt(rect.y),
-					elm$core$String$fromInt(rect.w),
-					elm$core$String$fromInt(rect.h)),
-				textSvg: ts
-			});
-	});
-var author$project$SvgControl$resize = F2(
-	function (model, rect) {
-		switch (model.$) {
-			case 'CmButton':
-				var mod = model.a;
-				return author$project$SvgControl$CmButton(
-					A2(
-						author$project$SvgButton$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			case 'CmSlider':
-				var mod = model.a;
-				return author$project$SvgControl$CmSlider(
-					A2(
-						author$project$SvgSlider$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			case 'CmLabel':
-				var mod = model.a;
-				return author$project$SvgControl$CmLabel(
-					A2(
-						author$project$SvgLabel$resize,
-						mod,
-						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
-			default:
-				var mod = model.a;
-				return author$project$SvgControl$CmSizer(
-					A2(author$project$SvgControl$szresize, mod, rect));
+var elm$core$String$fromFloat = _String_fromNumber;
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$svg$Svg$text = elm$virtual_dom$VirtualDom$text;
+var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var elm$svg$Svg$text_ = elm$svg$Svg$trustedNode('text');
+var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var elm$svg$Svg$Attributes$fontFamily = _VirtualDom_attribute('font-family');
+var elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
+var elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
+var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var lukewestby$elm_template$Template$renderComponent = F3(
+	function (record, component, result) {
+		if (component.$ === 'Literal') {
+			var string = component.a;
+			return _Utils_ap(result, string);
+		} else {
+			var accessor = component.a;
+			return _Utils_ap(
+				result,
+				accessor(record));
 		}
 	});
-var author$project$SvgControl$szresize = F2(
-	function (model, rect) {
-		var clist = elm$core$Dict$toList(model.controls);
-		var rlist = A4(
-			author$project$SvgControl$mkRlist,
-			model.orientation,
-			rect,
-			elm$core$List$length(clist),
-			model.proportions);
-		var controls = A2(
-			elm$core$List$map,
-			function (_n0) {
-				var _n1 = _n0.a;
-				var i = _n1.a;
-				var c = _n1.b;
-				var r = _n0.b;
-				return _Utils_Tuple2(
-					i,
-					A2(author$project$SvgControl$resize, c, r));
+var lukewestby$elm_template$Template$render = F2(
+	function (record, currentTemplate) {
+		return A3(
+			elm$core$List$foldr,
+			lukewestby$elm_template$Template$renderComponent(record),
+			'',
+			currentTemplate);
+	});
+var lukewestby$elm_template$Template$Literal = function (a) {
+	return {$: 'Literal', a: a};
+};
+var lukewestby$elm_template$Template$template = function (initial) {
+	return _List_fromArray(
+		[
+			lukewestby$elm_template$Template$Literal(initial)
+		]);
+};
+var lukewestby$elm_template$Template$withString = F2(
+	function (string, currentTemplate) {
+		return A2(
+			elm$core$List$cons,
+			lukewestby$elm_template$Template$Literal(string),
+			currentTemplate);
+	});
+var lukewestby$elm_template$Template$Interpolation = function (a) {
+	return {$: 'Interpolation', a: a};
+};
+var lukewestby$elm_template$Template$withValue = F2(
+	function (interpolator, currentTemplate) {
+		return A2(
+			elm$core$List$cons,
+			lukewestby$elm_template$Template$Interpolation(interpolator),
+			currentTemplate);
+	});
+var author$project$SvgTextSize$calcText = F5(
+	function (fontFam, lbtext, labelMeasuredWidth, fontScaling, rect) {
+		var yc = rect.y + (rect.h / 2);
+		var xc = rect.x + (rect.w / 2);
+		var width = labelMeasuredWidth;
+		var tmpl = A2(
+			lukewestby$elm_template$Template$withString,
+			')',
+			A2(
+				lukewestby$elm_template$Template$withValue,
+				function ($) {
+					return $.yt;
+				},
+				A2(
+					lukewestby$elm_template$Template$withString,
+					', ',
+					A2(
+						lukewestby$elm_template$Template$withValue,
+						function ($) {
+							return $.xt;
+						},
+						A2(
+							lukewestby$elm_template$Template$withString,
+							', ',
+							A2(
+								lukewestby$elm_template$Template$withValue,
+								function ($) {
+									return $.scale;
+								},
+								A2(
+									lukewestby$elm_template$Template$withString,
+									', 0, 0, ',
+									A2(
+										lukewestby$elm_template$Template$withValue,
+										function ($) {
+											return $.scale;
+										},
+										lukewestby$elm_template$Template$template('matrix(')))))))));
+		var scale = fontScaling;
+		var xt = xc - ((width * scale) * 0.5);
+		var yt = yc + ((20.0 * scale) * 0.5);
+		var xf = A2(
+			lukewestby$elm_template$Template$render,
+			{
+				scale: elm$core$String$fromFloat(scale),
+				xt: elm$core$String$fromFloat(xt),
+				yt: elm$core$String$fromFloat(yt)
 			},
-			A2(author$project$SvgControl$zip, clist, rlist));
-		var cdict = elm$core$Dict$fromList(controls);
+			tmpl);
+		return _List_fromArray(
+			[
+				A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$fill('black'),
+						elm$svg$Svg$Attributes$fontSize('20px'),
+						elm$svg$Svg$Attributes$fontFamily(fontFam),
+						elm$svg$Svg$Attributes$transform(xf),
+						elm$svg$Svg$Attributes$style('cursor: default; -webkit-user-select: none;  -moz-user-select: none;  -ms-user-select: none; user-select: none;')
+					]),
+				_List_fromArray(
+					[
+						elm$svg$Svg$text(lbtext)
+					]))
+			]);
+	});
+var author$project$SvgTextSize$computeFontScaling = F4(
+	function (fw, fh, rw, rh) {
+		var wr = rw / fw;
+		var hr = rh / fh;
+		return (_Utils_cmp(wr, hr) < 0) ? wr : hr;
+	});
+var author$project$SvgTextSize$calcTextSvg = F3(
+	function (textString, width20px, rect) {
+		var fs = A4(author$project$SvgTextSize$computeFontScaling, width20px, 20.0, rect.w, rect.h);
+		return A5(author$project$SvgTextSize$calcText, author$project$SvgTextSize$controlFontFamily, textString, width20px, fs, rect);
+	});
+var author$project$SvgTextSize$onTextSizeReply = F2(
+	function (tsr, model) {
 		return _Utils_update(
 			model,
-			{controls: cdict, rect: rect});
+			{
+				stringWidth: elm$core$Maybe$Just(tsr.width),
+				textSvg: A3(author$project$SvgTextSize$calcTextSvg, model.label, tsr.width, model.rect)
+			});
+	});
+var author$project$SvgControl$onTextSize = F2(
+	function (tsr, model) {
+		switch (model.$) {
+			case 'CmButton':
+				var m = model.a;
+				return author$project$SvgControl$CmButton(
+					A2(author$project$SvgTextSize$onTextSizeReply, tsr, m));
+			case 'CmSlider':
+				var m = model.a;
+				return author$project$SvgControl$CmSlider(
+					A2(author$project$SvgTextSize$onTextSizeReply, tsr, m));
+			case 'CmLabel':
+				var m = model.a;
+				return author$project$SvgControl$CmLabel(
+					A2(author$project$SvgTextSize$onTextSizeReply, tsr, m));
+			default:
+				var m = model.a;
+				return author$project$SvgControl$CmSizer(
+					A2(author$project$SvgControl$szOnTextSize, tsr, m));
+		}
+	});
+var author$project$SvgControl$szOnTextSize = F2(
+	function (tsr, model) {
+		var _n0 = tsr.controlId;
+		if (_n0.b) {
+			var idx = _n0.a;
+			var rst = _n0.b;
+			var _n1 = A2(elm$core$Dict$get, idx, model.controls);
+			if (_n1.$ === 'Just') {
+				var control = _n1.a;
+				var nc = A2(
+					author$project$SvgControl$onTextSize,
+					_Utils_update(
+						tsr,
+						{controlId: rst}),
+					control);
+				return _Utils_update(
+					model,
+					{
+						controls: A3(elm$core$Dict$insert, idx, nc, model.controls)
+					});
+			} else {
+				return model;
+			}
+		} else {
+			return model;
+		}
+	});
+var author$project$SvgControlPage$onTextSize = F2(
+	function (tsr, model) {
+		return _Utils_update(
+			model,
+			{
+				control: A2(author$project$SvgControl$onTextSize, tsr, model.control)
+			});
 	});
 var author$project$SvgButton$SvgUpdate = function (a) {
 	return {$: 'SvgUpdate', a: a};
@@ -7157,6 +7166,191 @@ var author$project$SvgControlPage$jsMessage = elm$json$Json$Decode$oneOf(
 			},
 			author$project$SvgControl$jsUpdateMessage)
 		]));
+var author$project$SvgButton$resize = F2(
+	function (model, rect) {
+		var newmodel = _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				stringWidth: elm$core$Maybe$Nothing,
+				textSvg: _List_Nil
+			});
+		return _Utils_Tuple2(
+			newmodel,
+			author$project$SvgTextSize$resizeCommand(newmodel));
+	});
+var author$project$SvgTextSize$calcTextSvgM = function (model) {
+	return A2(
+		elm$core$Maybe$withDefault,
+		_List_Nil,
+		A2(
+			elm$core$Maybe$map,
+			function (sw) {
+				return A3(author$project$SvgTextSize$calcTextSvg, model.label, sw, model.rect);
+			},
+			model.stringWidth));
+};
+var author$project$SvgLabel$resize = F2(
+	function (model, rect) {
+		var ts = author$project$SvgTextSize$calcTextSvgM(model);
+		var newmodel = _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: ts
+			});
+		return _Utils_Tuple2(
+			newmodel,
+			author$project$SvgTextSize$resizeCommand(newmodel));
+	});
+var author$project$SvgSlider$resize = F2(
+	function (model, rect) {
+		var ts = author$project$SvgTextSize$calcTextSvgM(model);
+		var newmodel = _Utils_update(
+			model,
+			{
+				rect: rect,
+				srect: A4(
+					author$project$SvgThings$SRect,
+					elm$core$String$fromInt(rect.x),
+					elm$core$String$fromInt(rect.y),
+					elm$core$String$fromInt(rect.w),
+					elm$core$String$fromInt(rect.h)),
+				textSvg: ts
+			});
+		return _Utils_Tuple2(
+			newmodel,
+			author$project$SvgTextSize$resizeCommand(newmodel));
+	});
+var author$project$SvgControl$resize = F2(
+	function (model, rect) {
+		var aptg = F2(
+			function (f, _n7) {
+				var m = _n7.a;
+				var c = _n7.b;
+				return _Utils_Tuple2(
+					f(m),
+					c);
+			});
+		switch (model.$) {
+			case 'CmButton':
+				var mod = model.a;
+				return A2(
+					aptg,
+					author$project$SvgControl$CmButton,
+					A2(
+						author$project$SvgButton$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			case 'CmSlider':
+				var mod = model.a;
+				return A2(
+					aptg,
+					author$project$SvgControl$CmSlider,
+					A2(
+						author$project$SvgSlider$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			case 'CmLabel':
+				var mod = model.a;
+				return A2(
+					aptg,
+					author$project$SvgControl$CmLabel,
+					A2(
+						author$project$SvgLabel$resize,
+						mod,
+						A2(author$project$SvgThings$shrinkRect, author$project$SvgControl$border, rect)));
+			default:
+				var mod = model.a;
+				return A2(
+					aptg,
+					author$project$SvgControl$CmSizer,
+					A2(author$project$SvgControl$szresize, mod, rect));
+		}
+	});
+var author$project$SvgControl$szresize = F2(
+	function (model, rect) {
+		var clist = elm$core$Dict$toList(model.controls);
+		var rlist = A4(
+			author$project$SvgControl$mkRlist,
+			model.orientation,
+			rect,
+			elm$core$List$length(clist),
+			model.proportions);
+		var rlist2 = A2(
+			elm$core$List$map,
+			function (_n4) {
+				var _n5 = _n4.a;
+				var i = _n5.a;
+				var c = _n5.b;
+				var r = _n4.b;
+				return _Utils_Tuple2(
+					i,
+					A2(author$project$SvgControl$resize, c, r));
+			},
+			A2(author$project$SvgControl$zip, clist, rlist));
+		var cmds = A2(
+			elm$core$List$map,
+			function (_n2) {
+				var i = _n2.a;
+				var _n3 = _n2.b;
+				var m = _n3.a;
+				var c = _n3.b;
+				return c;
+			},
+			rlist2);
+		var controls = A2(
+			elm$core$List$map,
+			function (_n0) {
+				var i = _n0.a;
+				var _n1 = _n0.b;
+				var m = _n1.a;
+				var c = _n1.b;
+				return _Utils_Tuple2(i, m);
+			},
+			rlist2);
+		var cdict = elm$core$Dict$fromList(controls);
+		var nm = _Utils_update(
+			model,
+			{controls: cdict, rect: rect});
+		return _Utils_Tuple2(
+			nm,
+			author$project$SvgCommand$Batch(cmds));
+	});
+var author$project$SvgControlPage$resize = F2(
+	function (newSize, model) {
+		var nr = A4(
+			author$project$SvgThings$Rect,
+			0,
+			0,
+			elm$core$Basics$round(newSize.width - 1),
+			elm$core$Basics$round(newSize.height - 4));
+		var _n0 = A2(author$project$SvgControl$resize, model.control, nr);
+		var ctrl = _n0.a;
+		var cmd = _n0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					control: ctrl,
+					mahrect: nr,
+					srect: author$project$SvgThings$toSRect(nr),
+					windowSize: newSize
+				}),
+			cmd);
+	});
 var elm$json$Json$Decode$decodeString = _Json_runOnString;
 var author$project$SvgControlPage$update = F2(
 	function (msg, model) {
@@ -7169,9 +7363,7 @@ var author$project$SvgControlPage$update = F2(
 					if (_n1.$ === 'Ok') {
 						if (_n1.a.$ === 'JmSpec') {
 							var spec = _n1.a.a;
-							return _Utils_Tuple2(
-								A2(author$project$SvgControlPage$init, model.mahrect, spec),
-								author$project$SvgCommand$None);
+							return A2(author$project$SvgControlPage$init, model.mahrect, spec);
 						} else {
 							var jmact = _n1.a.a;
 							var $temp$msg = jmact,
@@ -7199,23 +7391,7 @@ var author$project$SvgControlPage$update = F2(
 					return _Utils_Tuple2(newmod, wha.b);
 				case 'Resize':
 					var newSize = msg.a;
-					var nr = A4(
-						author$project$SvgThings$Rect,
-						0,
-						0,
-						elm$core$Basics$round(newSize.width - 1),
-						elm$core$Basics$round(newSize.height - 4));
-					var ctrl = A2(author$project$SvgControl$resize, model.control, nr);
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								control: ctrl,
-								mahrect: nr,
-								srect: author$project$SvgThings$toSRect(nr),
-								windowSize: newSize
-							}),
-						author$project$SvgCommand$None);
+					return A2(author$project$SvgControlPage$resize, newSize, model);
 				default:
 					return _Utils_Tuple2(model, author$project$SvgCommand$None);
 			}
@@ -7352,6 +7528,7 @@ var elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var author$project$SvgButton$view = function (model) {
 	return A2(
 		elm$svg$Svg$g,
@@ -7380,6 +7557,7 @@ var author$project$SvgButton$view = function (model) {
 				A2(elm$svg$Svg$g, _List_Nil, model.textSvg))
 			]));
 };
+var author$project$SvgLabel$NoOp = {$: 'NoOp'};
 var author$project$SvgLabel$view = function (model) {
 	var lbrect = A2(
 		elm$svg$Svg$rect,
@@ -7632,11 +7810,30 @@ var author$project$SvgControlPage$view = function (model) {
 					]))
 			]));
 };
+var author$project$SvgTextSize$TextSizeReply = F2(
+	function (width, controlId) {
+		return {controlId: controlId, width: width};
+	});
+var author$project$Util$andMap = F2(
+	function (dca, dcab) {
+		return A3(
+			elm$json$Json$Decode$map2,
+			F2(
+				function (l, r) {
+					return l(r);
+				}),
+			dcab,
+			dca);
+	});
+var author$project$SvgTextSize$decodeTextSizeReply = A2(
+	author$project$Util$andMap,
+	A2(elm$json$Json$Decode$field, 'controlId', author$project$SvgThings$decodeControlId),
+	A2(
+		author$project$Util$andMap,
+		A2(elm$json$Json$Decode$field, 'width', elm$json$Json$Decode$float),
+		elm$json$Json$Decode$succeed(author$project$SvgTextSize$TextSizeReply)));
 var author$project$WebSocket$Connect = function (a) {
 	return {$: 'Connect', a: a};
-};
-var author$project$WebSocket$Send = function (a) {
-	return {$: 'Send', a: a};
 };
 var elm$browser$Browser$Document = F2(
 	function (title, body) {
@@ -8160,22 +8357,32 @@ var elm$browser$Browser$Events$onResize = function (func) {
 				A2(elm$json$Json$Decode$field, 'innerWidth', elm$json$Json$Decode$int),
 				A2(elm$json$Json$Decode$field, 'innerHeight', elm$json$Json$Decode$int))));
 };
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$map = _Platform_map;
 var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
 var author$project$Main$main = elm$browser$Browser$document(
 	{
 		init: function (flags) {
-			var mod = author$project$Main$init(flags);
+			var _n0 = author$project$Main$init(flags);
+			var mod = _n0.a;
+			var cmd = _n0.b;
 			return _Utils_Tuple2(
 				mod,
-				author$project$Main$wssend(
-					author$project$WebSocket$Connect(
-						{address: mod.wsUrl, name: 'touchpage', protocol: 'rust-websocket'})));
+				elm$core$Platform$Cmd$batch(
+					_List_fromArray(
+						[
+							author$project$Main$wssend(
+							author$project$WebSocket$Connect(
+								{address: mod.wsUrl, name: 'touchpage', protocol: 'rust-websocket'})),
+							author$project$Main$commandToCmd(cmd)
+						])));
 		},
-		subscriptions: function (_n0) {
+		subscriptions: function (_n1) {
 			return elm$core$Platform$Sub$batch(
 				_List_fromArray(
 					[
@@ -8188,55 +8395,64 @@ var author$project$Main$main = elm$browser$Browser$document(
 									return author$project$SvgControlPage$Resize(
 										A2(author$project$Util$RectSize, a, b));
 								}))),
-						author$project$Main$wsreceive
+						author$project$Main$wsreceive,
+						author$project$Main$receiveTextMetrics(
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Main$TextSize,
+							elm$json$Json$Decode$decodeValue(author$project$SvgTextSize$decodeTextSizeReply)))
 					]));
 		},
 		update: F2(
 			function (msg, mod) {
-				if (msg.$ === 'ScpMsg') {
-					var sm = msg.a;
-					var _n2 = A2(author$project$SvgControlPage$update, sm, mod.scpModel);
-					var umod = _n2.a;
-					var cmd = _n2.b;
-					var _n3 = A2(elm$core$Debug$log, 'cmd: ', cmd);
-					return _Utils_Tuple2(
-						_Utils_update(
-							mod,
-							{scpModel: umod}),
-						function () {
-							if (cmd.$ === 'Send') {
-								var dta = cmd.a;
-								return author$project$Main$wssend(
-									author$project$WebSocket$Send(
-										{content: dta, name: 'touchpage'}));
+				switch (msg.$) {
+					case 'ScpMsg':
+						var sm = msg.a;
+						var _n3 = A2(author$project$SvgControlPage$update, sm, mod.scpModel);
+						var umod = _n3.a;
+						var cmd = _n3.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								mod,
+								{scpModel: umod}),
+							author$project$Main$commandToCmd(cmd));
+					case 'WsMsg':
+						var x = msg.a;
+						if (x.$ === 'Ok') {
+							if (x.a.$ === 'Data') {
+								var wsd = x.a.a;
+								var _n5 = A2(
+									author$project$SvgControlPage$update,
+									author$project$SvgControlPage$JsonMsg(wsd.data),
+									mod.scpModel);
+								var scpModel = _n5.a;
+								var scpCommand = _n5.b;
+								return _Utils_Tuple2(
+									_Utils_update(
+										mod,
+										{scpModel: scpModel}),
+									author$project$Main$commandToCmd(scpCommand));
 							} else {
-								return elm$core$Platform$Cmd$none;
+								var wse = x.a.a;
+								return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
 							}
-						}());
-				} else {
-					var x = msg.a;
-					var _n5 = A2(elm$core$Debug$log, 'wsmsg: ', x);
-					if (x.$ === 'Ok') {
-						if (x.a.$ === 'Data') {
-							var wsd = x.a.a;
-							var _n7 = A2(
-								author$project$SvgControlPage$update,
-								author$project$SvgControlPage$JsonMsg(wsd.data),
-								mod.scpModel);
-							var scpModel = _n7.a;
-							var scpCommand = _n7.b;
+						} else {
+							return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
+						}
+					default:
+						var ts = msg.a;
+						if (ts.$ === 'Ok') {
+							var tsr = ts.a;
 							return _Utils_Tuple2(
 								_Utils_update(
 									mod,
-									{scpModel: scpModel}),
+									{
+										scpModel: A2(author$project$SvgControlPage$onTextSize, tsr, mod.scpModel)
+									}),
 								elm$core$Platform$Cmd$none);
 						} else {
-							var wse = x.a.a;
 							return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
 						}
-					} else {
-						return _Utils_Tuple2(mod, elm$core$Platform$Cmd$none);
-					}
 				}
 			}),
 		view: function (model) {
@@ -8276,16 +8492,42 @@ _Platform_export({'Main':{'init':author$project$Main$main(
 		},
 		A2(elm$json$Json$Decode$field, 'wsport', elm$json$Json$Decode$int)))(0)}});}(this));</script>
 <script>
+  
+  function getTextWidth (t, f) {
+    var blah = getTextMetrics(t, f);
+    return blah.width; 
+  };
+
+  function getTextMetrics (text, font) {
+     // re-use canvas object for better performance
+     var canvas = getTextMetrics.canvas || (getTextMetrics.canvas = document.createElement("canvas"));
+     var context = canvas.getContext("2d");
+     context.font = font;
+     var metrics = context.measureText(text);
+     return metrics;
+    };
+
+  function requestTextSize (rts) {
+    // console.log (" rts: " + JSON.stringify(rts, null, 4)); 
+    metrics = getTextMetrics(rts.string, rts.font);
+    // console.log( "getTextMetricssss: " + metrics.width);
+    var reply = { width : metrics.width, controlId : rts.controlId };
+    // console.log (" reply: " + JSON.stringify(reply, null, 4));
+    app.ports.receiveTextMetrics.send(reply);
+  }
+ 
+</script>
+<script>
   var mySockets = {};
 
   function sendSocketCommand(wat) {
-    console.log( "ssc: " +  JSON.stringify(wat, null, 4));
+    // console.log( "ssc: " +  JSON.stringify(wat, null, 4));
     if (wat.cmd == "connect") 
     {
-      console.log("connecting!");
+      // console.log("connecting!");
       socket = new WebSocket(wat.address, wat.protocol);
       socket.onmessage = function (event) {
-        console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
+        // console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
         app.ports.receiveSocketMsg.send({ name : wat.name
                                         , msg : "data"
                                         , data : event.data} );
@@ -8294,12 +8536,12 @@ _Platform_export({'Main':{'init':author$project$Main$main(
     }
     else if (wat.cmd == "send")
     {
-      console.log("sending to socket: " + wat.name );
+      // console.log("sending to socket: " + wat.name );
       mySockets[wat.name].send(wat.content); 
     }
     else if (wat.cmd == "close")
     {
-      console.log("closing socket: " + wat.name);
+      // console.log("closing socket: " + wat.name);
       mySockets[wat.name].close();
       delete mySockets[wat.name];
     }
@@ -8320,6 +8562,7 @@ _Platform_export({'Main':{'init':author$project$Main$main(
       document.getElementById("elm").innerText = 'This is a headless program, meaning there is nothing to show here.\n\nI started the program anyway though, and you can access it as `app` in the developer console.';
     }
     app.ports.sendSocketCommand.subscribe(sendSocketCommand);
+    app.ports.requestTextSize.subscribe(requestTextSize);
 </script>
 </body>
 </html>

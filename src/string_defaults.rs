@@ -5896,18 +5896,9 @@ var author$project$SvgButton$update = F2(
 					author$project$SvgCommand$None);
 			case 'SvgUpdate':
 				var um = msg.a;
-				var newmodel = _Utils_update(
+				var nm1 = _Utils_update(
 					model,
 					{
-						label: function () {
-							var _n1 = um.label;
-							if (_n1.$ === 'Just') {
-								var txt = _n1.a;
-								return txt;
-							} else {
-								return model.label;
-							}
-						}(),
 						pressed: function () {
 							var _n2 = um.updateType;
 							if (_n2.$ === 'Just') {
@@ -5921,33 +5912,26 @@ var author$project$SvgButton$update = F2(
 							} else {
 								return model.pressed;
 							}
-						}(),
-						stringWidth: function () {
-							var _n5 = um.label;
-							if (_n5.$ === 'Just') {
-								var txt = _n5.a;
-								return elm$core$Maybe$Nothing;
-							} else {
-								return model.stringWidth;
-							}
-						}(),
-						textSvg: function () {
-							var _n6 = um.label;
-							if (_n6.$ === 'Just') {
-								var txt = _n6.a;
-								return _List_Nil;
-							} else {
-								return model.textSvg;
-							}
 						}()
 					});
+				var nm2 = function () {
+					var _n1 = um.label;
+					if (_n1.$ === 'Just') {
+						var txt = _n1.a;
+						return _Utils_update(
+							nm1,
+							{label: txt, stringWidth: elm$core$Maybe$Nothing, textSvg: _List_Nil});
+					} else {
+						return nm1;
+					}
+				}();
 				return _Utils_Tuple2(
-					newmodel,
-					author$project$SvgTextSize$resizeCommand(newmodel));
+					nm2,
+					author$project$SvgTextSize$resizeCommand(nm2));
 			default:
 				var stm = msg.a;
-				var _n7 = author$project$SvgTouch$extractFirstTouchSE(stm);
-				if (_n7.$ === 'Nothing') {
+				var _n5 = author$project$SvgTouch$extractFirstTouchSE(stm);
+				if (_n5.$ === 'Nothing') {
 					return model.pressed ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Unpress) : _Utils_Tuple2(model, author$project$SvgCommand$None);
 				} else {
 					return (!model.pressed) ? A2(author$project$SvgButton$pressup, model, author$project$SvgButton$Press) : _Utils_Tuple2(model, author$project$SvgCommand$None);
@@ -5960,7 +5944,7 @@ var author$project$SvgLabel$update = F2(
 			var um = msg.a;
 			var newmodel = _Utils_update(
 				model,
-				{label: um.label, textSvg: _List_Nil});
+				{label: um.label, stringWidth: elm$core$Maybe$Nothing, textSvg: _List_Nil});
 			return _Utils_Tuple2(
 				newmodel,
 				author$project$SvgTextSize$resizeCommand(newmodel));

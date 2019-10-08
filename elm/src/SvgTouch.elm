@@ -17,6 +17,12 @@ import SvgThings
 -}
 
 
+stDebugLog : a -> b -> b
+stDebugLog a b =
+    -- Debug.log a b
+    b
+
+
 type Msg
     = SvgTouchStart JD.Value
     | SvgTouchMove JD.Value
@@ -106,7 +112,7 @@ extractTouches evt =
                                     touch :: tl
 
                                 Err e ->
-                                    Debug.log (JD.errorToString e) tl
+                                    stDebugLog (JD.errorToString e) tl
                         )
                         []
                         touchresults
@@ -114,7 +120,7 @@ extractTouches evt =
             touches
 
         Err str_msg ->
-            Debug.log (JD.errorToString str_msg) []
+            stDebugLog (JD.errorToString str_msg) []
 
 
 extractFirstTouchInRect : JD.Value -> SvgThings.Rect -> Maybe Touch
@@ -150,7 +156,7 @@ extractTouchDict evt =
                                     touch :: tl
 
                                 Err e ->
-                                    Debug.log (JD.errorToString e) tl
+                                    stDebugLog (JD.errorToString e) tl
                         )
                         []
                         touchresults
@@ -158,7 +164,7 @@ extractTouchDict evt =
             makeTd touches
 
         Err str_msg ->
-            Debug.log (JD.errorToString str_msg) Dict.empty
+            stDebugLog (JD.errorToString str_msg) Dict.empty
 
 
 extractFirstTouch : JD.Value -> Maybe Touch
@@ -168,4 +174,4 @@ extractFirstTouch evt =
             Just touch
 
         Err e ->
-            Debug.log (JD.errorToString e) Nothing
+            stDebugLog (JD.errorToString e) Nothing

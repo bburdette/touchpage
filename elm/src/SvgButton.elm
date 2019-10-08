@@ -177,7 +177,7 @@ update msg model =
         SvgUpdate um ->
             -- sanity check for ids?  or don't.
             let
-                newmodel =
+                nm1 =
                     { model
                         | pressed =
                             case um.updateType of
@@ -189,31 +189,21 @@ update msg model =
 
                                 _ ->
                                     model.pressed
-                        , label =
-                            case um.label of
-                                Just txt ->
-                                    txt
-
-                                Nothing ->
-                                    model.label
-                        , stringWidth =
-                            case um.label of
-                                Just txt ->
-                                    Nothing
-
-                                Nothing ->
-                                    model.stringWidth
-                        , textSvg =
-                            case um.label of
-                                Just txt ->
-                                    []
-
-                                -- reset when text changes.
-                                Nothing ->
-                                    model.textSvg
                     }
+
+                nm2 =
+                    case um.label of
+                        Just txt ->
+                            { nm1
+                                | label = txt
+                                , stringWidth = Nothing
+                                , textSvg = []
+                            }
+
+                        Nothing ->
+                            nm1
             in
-            ( newmodel, resizeCommand newmodel )
+            ( nm2, resizeCommand nm2 )
 
         SvgTouch stm ->
             case ST.extractFirstTouchSE stm of

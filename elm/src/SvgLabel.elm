@@ -87,7 +87,7 @@ update msg model =
         SvgUpdate um ->
             let
                 newmodel =
-                    { model | label = um.label, textSvg = [] }
+                    { model | label = um.label, textSvg = [], stringWidth = Nothing }
             in
             ( newmodel, resizeCommand newmodel )
 

@@ -95,8 +95,8 @@ update msg model =
             ( model, None )
 
 
-resize : UiTheme -> Model -> SvgThings.Rect -> ( Model, Command )
-resize theme model rect =
+resize : Model -> SvgThings.Rect -> ( Model, Command )
+resize model rect =
     let
         -- ts = calcTextSvgM theme model
         newmodel =

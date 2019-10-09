@@ -105,7 +105,7 @@ resize newSize model =
             SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
 
         ( ctrl, cmd ) =
-            SvgControl.resize SvgThings.defaultTheme model.control nr
+            SvgControl.resize model.control nr
     in
     ( { model
         | mahrect = nr

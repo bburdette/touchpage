@@ -349,12 +349,9 @@ updsend model mbut loc =
         )
 
 
-resize : UiTheme -> Model -> SvgThings.Rect -> ( Model, Command )
-resize theme model rect =
+resize : Model -> SvgThings.Rect -> ( Model, Command )
+resize model rect =
     let
-        ts =
-            calcTextSvgM theme model
-
         newmodel =
             { model
                 | rect = rect
@@ -363,7 +360,8 @@ resize theme model rect =
                         (String.fromInt rect.y)
                         (String.fromInt rect.w)
                         (String.fromInt rect.h)
-                , textSvg = ts
+                , textSvg = []
+                , stringWidth = Nothing
             }
     in
     ( newmodel, resizeCommand newmodel )

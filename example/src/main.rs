@@ -39,11 +39,11 @@ fn main() {
       },
   };
 
-  match startserver(gooey.as_str(), Box::new(meh), "localhost", "9001", false) {
+  match startserver(gooey.as_str(), Box::new(meh), "0.0.0.0", "9001", false) {
     Ok(_) => (),
     Err(e) => println!("error starting websocket server: {},", e),
   }
-  startwebserver("localhost", "8000", "9001", mbhtml);
+  startwebserver("0.0.0.0", "8000", "9001", mbhtml, true);
 }
 
 fn build_gui() -> Result<G::Gui, FError> {
@@ -51,15 +51,16 @@ fn build_gui() -> Result<G::Gui, FError> {
   gui
     .add_sizer(Vertical)?
     .add_label("lb3".to_string(), "blah".to_string())?
-    .add_label("lb0".to_string(), "blah1".to_string())?
-    .add_label("lb1".to_string(), "blah2".to_string())?
-    .add_label("lb2".to_string(), "blah4444".to_string())?
     .add_sizer(Horizontal)?
     .add_button("b1".to_string(), None)?
-    .add_slider("hs1".to_string(), None, Horizontal)?
-    .add_slider("hs2".to_string(), None, Horizontal)?
-    .add_slider("hs3".to_string(), None, Horizontal)?
-    .add_slider("hs4".to_string(), None, Horizontal)?
+    .add_slider("hs1".to_string(), None, Vertical)?
+    .add_slider("hs2".to_string(), None, Vertical)?
+    .add_slider("hs3".to_string(), None, Vertical)?
+    .add_slider("hs4".to_string(), None, Vertical)?
+    .end_sizer()?
+    .add_sizer(Horizontal)?
+    .add_xy("xyleft".to_string(), Some("xy1".to_string()))?
+    .add_xy("xyright".to_string(), Some("xy2".to_string()))?
     .end_sizer()?
     .end_sizer()?;
   Ok(gui)

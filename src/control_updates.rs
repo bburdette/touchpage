@@ -18,14 +18,9 @@
 
 */
 
-#[derive(Debug, Clone)]
-pub enum ButtonState {
-  Pressed,
-  Unpressed,
-}
 
 #[derive(Debug, Clone)]
-pub enum SliderState {
+pub enum PressState {
   Pressed,
   Unpressed,
 }
@@ -34,13 +29,19 @@ pub enum SliderState {
 pub enum UpdateMsg {
   Button {
     control_id: Vec<i32>,
-    state: Option<ButtonState>,
+    state: Option<PressState>,
     label: Option<String>,
   },
   Slider {
     control_id: Vec<i32>,
-    state: Option<SliderState>,
+    state: Option<PressState>,
     location: Option<f64>,
+    label: Option<String>,
+  },
+  XY {
+    control_id: Vec<i32>,
+    state: Option<PressState>,
+    location: Option<(f32,f32)>,
     label: Option<String>,
   },
   Label {

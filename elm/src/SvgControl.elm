@@ -12,6 +12,7 @@ import SvgLabel
 import SvgSlider
 import SvgTextSize exposing (TextSizeReply, calcTextSvg, resizeCommand)
 import SvgThings
+import SvgXY
 import Task
 import VirtualDom as VD
 
@@ -28,6 +29,7 @@ import VirtualDom as VD
 type Spec
     = CsButton SvgButton.Spec
     | CsSlider SvgSlider.Spec
+    | CsXY SvgXY.Spec
     | CsLabel SvgLabel.Spec
     | CsSizer SzSpec
 
@@ -35,6 +37,7 @@ type Spec
 type Model
     = CmButton SvgButton.Model
     | CmSlider SvgSlider.Model
+    | CmXY SvgXY.Model
     | CmLabel SvgLabel.Model
     | CmSizer SzModel
 
@@ -42,6 +45,7 @@ type Model
 type Msg
     = CaButton SvgButton.Msg
     | CaSlider SvgSlider.Msg
+    | CaXY SvgXY.Msg
     | CaLabel SvgLabel.Msg
     | CaSizer SzMsg
 
@@ -57,6 +61,13 @@ findControl x y mod =
                 Nothing
 
         CmSlider smod ->
+            if SvgThings.containsXY smod.rect x y then
+                Just mod
+
+            else
+                Nothing
+
+        CmXY smod ->
             if SvgThings.containsXY smod.rect x y then
                 Just mod
 
@@ -79,6 +90,9 @@ controlId mod =
         CmSlider smod ->
             smod.cid
 
+        CmXY smod ->
+            smod.cid
+
         CmLabel smod ->
             smod.cid
 
@@ -93,6 +107,9 @@ controlName mod =
             Just bmod.name
 
         CmSlider smod ->
+            Just smod.name
+
+        CmXY smod ->
             Just smod.name
 
         CmLabel smod ->
@@ -120,6 +137,9 @@ resize model rect =
         CmSlider mod ->
             aptg CmSlider <| SvgSlider.resize mod (SvgThings.shrinkRect border rect)
 
+        CmXY mod ->
+            aptg CmXY <| SvgXY.resize mod (SvgThings.shrinkRect border rect)
+
         CmLabel mod ->
             aptg CmLabel <| SvgLabel.resize mod (SvgThings.shrinkRect border rect)
 
@@ -140,6 +160,9 @@ jsCs t =
 
         "slider" ->
             SvgSlider.jsSpec |> JD.andThen (\a -> JD.succeed (CsSlider a))
+
+        "xy" ->
+            SvgXY.jsSpec |> JD.andThen (\a -> JD.succeed (CsXY a))
 
         "label" ->
             SvgLabel.jsSpec |> JD.andThen (\a -> JD.succeed (CsLabel a))
@@ -168,6 +191,11 @@ jsUmType wat =
             SvgSlider.jsUpdateMessage
                 |> JD.andThen
                     (\x -> JD.succeed (toCtrlMsg x.controlId (CaSlider (SvgSlider.SvgUpdate x))))
+
+        "xy" ->
+            SvgXY.jsUpdateMessage
+                |> JD.andThen
+                    (\x -> JD.succeed (toCtrlMsg x.controlId (CaXY (SvgXY.SvgUpdate x))))
 
         "label" ->
             SvgLabel.jsUpdateMessage
@@ -213,6 +241,10 @@ onTextSize tsr model =
             CmSlider <|
                 SvgTextSize.onTextSizeReply tsr m
 
+        CmXY m ->
+            CmXY <|
+                SvgTextSize.onTextSizeReply tsr m
+
         CmLabel m ->
             CmLabel <| SvgTextSize.onTextSizeReply tsr m
 
@@ -236,6 +268,13 @@ update msg model =
                     SvgSlider.update ms m
             in
             ( CmSlider a, b )
+
+        ( CaXY ms, CmXY m ) ->
+            let
+                ( a, b ) =
+                    SvgXY.update ms m
+            in
+            ( CmXY a, b )
 
         ( CaLabel ms, CmLabel m ) ->
             let
@@ -290,6 +329,9 @@ init rect cid spec =
         CsSlider s ->
             aptg CmSlider <| SvgSlider.init (SvgThings.shrinkRect border rect) cid s
 
+        CsXY s ->
+            aptg CmXY <| SvgXY.init (SvgThings.shrinkRect border rect) cid s
+
         CsLabel s ->
             aptg CmLabel <| SvgLabel.init (SvgThings.shrinkRect border rect) cid s
 
@@ -305,6 +347,9 @@ view model =
 
         CmSlider m ->
             VD.map CaSlider (SvgSlider.view m)
+
+        CmXY m ->
+            VD.map CaXY (SvgXY.view m)
 
         CmLabel m ->
             VD.map CaLabel (SvgLabel.view m)

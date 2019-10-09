@@ -107,8 +107,8 @@ impl Control for Slider {
       } => {
         if let &Some(ref st) = opt_state {
           self.pressed = match st {
-            &cu::SliderState::Pressed => true,
-            &cu::SliderState::Unpressed => false,
+            &cu::PressState::Pressed => true,
+            &cu::PressState::Unpressed => false,
           };
         };
         if let &Some(ref loc) = opt_loc {
@@ -132,14 +132,107 @@ impl Control for Slider {
   }
   fn to_update(&self) -> Option<cu::UpdateMsg> {
     let state = if self.pressed {
-      cu::SliderState::Pressed
+      cu::PressState::Pressed
     } else {
-      cu::SliderState::Unpressed
+      cu::PressState::Unpressed
     };
     Some(cu::UpdateMsg::Slider {
       control_id: self.control_id.clone(),
       state: Some(state),
       location: Some(self.location as f64),
+      label: self.label.clone(),
+    })
+  }
+  fn name(&self) -> &str {
+    &self.name[..]
+  }
+}
+
+#[derive(Debug)]
+pub struct XY {
+  pub control_id: Vec<i32>,
+  pub name: String,
+  pub label: Option<String>,
+  pub pressed: bool,
+  pub location: (f32,f32),
+}
+
+impl Control for XY {
+  fn as_json(&self) -> Value {
+    let mut btv = BTreeMap::new();
+    btv.insert(String::from("type"), Value::String("xy".to_string()));
+    btv.insert(String::from("name"), Value::String(self.name.to_string()));
+    if let Some(lb) = &self.label {
+      btv.insert(String::from("label"), Value::String(lb.to_string()));
+    };
+    Value::Object(btv)
+  }
+  fn control_type(&self) -> &'static str {
+    "slider"
+  }
+  fn control_id(&self) -> &Vec<i32> {
+    &self.control_id
+  }
+  fn clone_trol(&self) -> Box<dyn Control> {
+    Box::new(XY {
+      control_id: self.control_id.clone(),
+      name: self.name.clone(),
+      label: self.label.clone(),
+      pressed: self.pressed.clone(),
+      location: self.location.clone(),
+    })
+  }
+  fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
+    None
+  }
+  fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
+    None
+  }
+  fn add_control(&mut self, _control: Box<dyn Control>) {}
+
+  fn update(&mut self, um: &cu::UpdateMsg) {
+    match um {
+      &cu::UpdateMsg::XY {
+        control_id: _,
+        state: ref opt_state,
+        location: ref opt_loc,
+        label: ref opt_label,
+      } => {
+        if let &Some(ref st) = opt_state {
+          self.pressed = match st {
+            &cu::PressState::Pressed => true,
+            &cu::PressState::Unpressed => false,
+          };
+        };
+        if let &Some(ref loc) = opt_loc {
+          self.location = *loc;
+        };
+        if let &Some(ref t) = opt_label {
+          self.label = Some(t.clone());
+        };
+        ()
+      }
+      _ => (),
+    }
+  }
+  fn empty_update(&self) -> Option<cu::UpdateMsg> {
+    Some(cu::UpdateMsg::XY {
+      control_id: self.control_id.clone(),
+      state: None,
+      location: None,
+      label: None,
+    })
+  }
+  fn to_update(&self) -> Option<cu::UpdateMsg> {
+    let state = if self.pressed {
+      cu::PressState::Pressed
+    } else {
+      cu::PressState::Unpressed
+    };
+    Some(cu::UpdateMsg::XY {
+      control_id: self.control_id.clone(),
+      state: Some(state),
+      location: Some(self.location ),
       label: self.label.clone(),
     })
   }
@@ -199,8 +292,8 @@ impl Control for Button {
       } => {
         if let &Some(ref st) = opt_state {
           self.pressed = match st {
-            &cu::ButtonState::Pressed => true,
-            &cu::ButtonState::Unpressed => false,
+            &cu::PressState::Pressed => true,
+            &cu::PressState::Unpressed => false,
           };
         };
         if let &Some(ref t) = opt_label {
@@ -220,9 +313,9 @@ impl Control for Button {
   }
   fn to_update(&self) -> Option<cu::UpdateMsg> {
     let ut = if self.pressed {
-      cu::ButtonState::Pressed
+      cu::PressState::Pressed
     } else {
-      cu::ButtonState::Unpressed
+      cu::PressState::Unpressed
     };
     Some(cu::UpdateMsg::Button {
       control_id: self.control_id.clone(),
@@ -375,6 +468,12 @@ pub fn get_um_id(um: &cu::UpdateMsg) -> &Vec<i32> {
       label: _,
     } => &cid,
     &cu::UpdateMsg::Slider {
+      control_id: ref cid,
+      state: _,
+      label: _,
+      location: _,
+    } => &cid,
+     &cu::UpdateMsg::XY {
       control_id: ref cid,
       state: _,
       label: _,

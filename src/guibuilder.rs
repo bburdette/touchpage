@@ -1,4 +1,4 @@
-use controls::{Button, Control, Label, Orientation, Root, Sizer, Slider};
+use controls::{Button, Control, Label, Orientation, Root, Sizer, Slider, XY};
 use failure::err_msg;
 use failure::Error as FError;
 use std::convert::TryInto;
@@ -106,6 +106,20 @@ impl Gui {
       orientation: orientation,
     });
     self.add_control(newslider)
+  }
+  pub fn add_xy(
+    &mut self,
+    name: String,
+    label: Option<String>,
+  ) -> Result<&mut Gui, FError> {
+    let newxy = Box::new(XY {
+      control_id: self.next_id()?,
+      name: String::from(name),
+      label: label,
+      location: (0.5,0.5),
+      pressed: false,
+    });
+    self.add_control(newxy)
   }
 
   pub fn add_label(&mut self, name: String, label: String) -> Result<&mut Gui, FError> {

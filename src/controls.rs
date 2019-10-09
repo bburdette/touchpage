@@ -149,6 +149,99 @@ impl Control for Slider {
 }
 
 #[derive(Debug)]
+pub struct XY {
+  pub control_id: Vec<i32>,
+  pub name: String,
+  pub label: Option<String>,
+  pub pressed: bool,
+  pub location: (f32,f32),
+}
+
+impl Control for XY {
+  fn as_json(&self) -> Value {
+    let mut btv = BTreeMap::new();
+    btv.insert(String::from("type"), Value::String("slider".to_string()));
+    btv.insert(String::from("name"), Value::String(self.name.to_string()));
+    if let Some(lb) = &self.label {
+      btv.insert(String::from("label"), Value::String(lb.to_string()));
+    };
+    Value::Object(btv)
+  }
+  fn control_type(&self) -> &'static str {
+    "slider"
+  }
+  fn control_id(&self) -> &Vec<i32> {
+    &self.control_id
+  }
+  fn clone_trol(&self) -> Box<dyn Control> {
+    Box::new(XY {
+      control_id: self.control_id.clone(),
+      name: self.name.clone(),
+      label: self.label.clone(),
+      pressed: self.pressed.clone(),
+      location: self.location.clone(),
+    })
+  }
+  fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {
+    None
+  }
+  fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>> {
+    None
+  }
+  fn add_control(&mut self, _control: Box<dyn Control>) {}
+
+  fn update(&mut self, um: &cu::UpdateMsg) {
+    match um {
+      &cu::UpdateMsg::XY {
+        control_id: _,
+        state: ref opt_state,
+        location: ref opt_loc,
+        label: ref opt_label,
+      } => {
+        if let &Some(ref st) = opt_state {
+          self.pressed = match st {
+            &cu::XYState::Pressed => true,
+            &cu::XYState::Unpressed => false,
+          };
+        };
+        if let &Some(ref loc) = opt_loc {
+          self.location = *loc as f32;
+        };
+        if let &Some(ref t) = opt_label {
+          self.label = Some(t.clone());
+        };
+        ()
+      }
+      _ => (),
+    }
+  }
+  fn empty_update(&self) -> Option<cu::UpdateMsg> {
+    Some(cu::UpdateMsg::XY {
+      control_id: self.control_id.clone(),
+      state: None,
+      location: None,
+      label: None,
+    })
+  }
+  fn to_update(&self) -> Option<cu::UpdateMsg> {
+    let state = if self.pressed {
+      cu::XYState::Pressed
+    } else {
+      cu::XYState::Unpressed
+    };
+    Some(cu::UpdateMsg::XY {
+      control_id: self.control_id.clone(),
+      state: Some(state),
+      location: Some(self.location as f64),
+      label: self.label.clone(),
+    })
+  }
+  fn name(&self) -> &str {
+    &self.name[..]
+  }
+}
+
+#[derive(Debug)]
 pub struct Button {
   pub control_id: Vec<i32>,
   pub name: String,

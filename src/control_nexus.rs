@@ -113,7 +113,7 @@ impl ControlNexus {
       None => (),
     }
   }
-  pub fn update_button(&self, name: &str, state: Option<cu::ButtonState>, label: Option<String>) {
+  pub fn update_button(&self, name: &str, state: Option<cu::PressState>, label: Option<String>) {
     match self.get_cid_by_name(name) {
       Some(cid) => self.update(&cu::UpdateMsg::Button {
         control_id: cid,
@@ -126,7 +126,7 @@ impl ControlNexus {
   pub fn update_slider(
     &self,
     name: &str,
-    state: Option<cu::SliderState>,
+    state: Option<cu::PressState>,
     location: Option<f64>,
     label: Option<String>,
   ) {

@@ -5,11 +5,11 @@ use control_updates as cu;
 use controls::{
   Button, Control, Label,
   Orientation::{Horizontal, Vertical},
-  Root, Sizer, Slider,
+  Root, Sizer, Slider, XY,
 };
 use failure::err_msg;
 use failure::Error as FError;
-use serde_json::Value;
+use serde_json::value::Value;
 use std::collections::BTreeMap;
 use string_defaults;
 
@@ -95,6 +95,23 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
         orientation: orientation,
       }))
     }
+    "xy" => {
+      let name = get_string(obj, "name")?;
+      let label = match obj.get("label") {
+        Some(x) => {
+          let s = x.as_string().ok_or(err_msg("'label' is not a string!"))?;
+          Some(String::from(s))
+        }
+        None => None,
+      };
+      Ok(Box::new(XY {
+        control_id: id.clone(),
+        name: String::from(name),
+        label: label,
+        pressed: false,
+        location: (0.5, 0.5),
+      }))
+    }
     "label" => {
       let name = get_string(obj, "name")?;
       let label = get_string(obj, "label")?;
@@ -148,13 +165,10 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
 
   match contype {
     "slider" => {
-      let location = match obj.get("location").map(|l| l.as_f64()) {
-        Some(Some(loc)) => Some(loc),
-        _ => None,
-      };
+      let location = obj.get("location").and_then(|l| l.as_f64());
       let optst = match mbst {
-        Some(Some("Press")) => Some(cu::SliderState::Pressed),
-        Some(Some("Unpress")) => Some(cu::SliderState::Unpressed),
+        Some(Some("Press")) => Some(cu::PressState::Pressed),
+        Some(Some("Unpress")) => Some(cu::PressState::Unpressed),
         _ => None,
       };
       let lab = obj
@@ -168,10 +182,43 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
         label: lab,
       })
     }
+    "xy" => {
+      let location: Option<(f32, f32)> =
+        obj
+          .get("location")
+          .and_then(|l| l.as_array())
+          .and_then(|a| {
+            a.get(0).and_then(|e1| {
+              a.get(1).and_then(|e2| {
+                serde_json::from_value(e1.clone()).ok().and_then(|e1i| {
+                  serde_json::from_value(e2.clone())
+                    .ok()
+                    .map(|e2i| (e1i, e2i))
+                })
+              })
+            })
+          });
+
+      let optst = match mbst {
+        Some(Some("Press")) => Some(cu::PressState::Pressed),
+        Some(Some("Unpress")) => Some(cu::PressState::Unpressed),
+        _ => None,
+      };
+      let lab = obj
+        .get("label")
+        .and_then(|s| s.as_string())
+        .map(|s| String::from(s));
+      Some(cu::UpdateMsg::XY {
+        control_id: conid,
+        state: optst,
+        location: location,
+        label: lab,
+      })
+    }
     "button" => {
       let optst = match mbst {
-        Some(Some("Press")) => Some(cu::ButtonState::Pressed),
-        Some(Some("Unpress")) => Some(cu::ButtonState::Unpressed),
+        Some(Some("Press")) => Some(cu::PressState::Pressed),
+        Some(Some("Unpress")) => Some(cu::PressState::Unpressed),
         _ => None,
       };
       let lab = obj
@@ -217,8 +264,8 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
         btv.insert(
           String::from("state"),
           Value::String(String::from(match st {
-            &cu::ButtonState::Pressed => "Press",
-            &cu::ButtonState::Unpressed => "Unpress",
+            &cu::PressState::Pressed => "Press",
+            &cu::PressState::Unpressed => "Unpress",
           })),
         );
       };
@@ -244,13 +291,49 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
         btv.insert(
           String::from("state"),
           Value::String(String::from(match st {
-            &cu::SliderState::Pressed => "Press",
-            &cu::SliderState::Unpressed => "Unpress",
+            &cu::PressState::Pressed => "Press",
+            &cu::PressState::Unpressed => "Unpress",
           })),
         );
       };
       if let &Some(loc) = opt_loc {
         btv.insert(String::from("location"), Value::F64(loc));
+      };
+      if let &Some(ref lb) = opt_label {
+        btv.insert(String::from("label"), Value::String(lb.clone()));
+      };
+
+      Value::Object(btv)
+    }
+    &cu::UpdateMsg::XY {
+      control_id: ref cid,
+      state: ref opt_state,
+      label: ref opt_label,
+      location: ref opt_loc,
+    } => {
+      let mut btv = BTreeMap::new();
+      btv.insert(
+        String::from("controlType"),
+        Value::String(String::from("xy")),
+      );
+      btv.insert(String::from("controlId"), Value::Array(convi32array(cid)));
+      if let &Some(ref st) = opt_state {
+        btv.insert(
+          String::from("state"),
+          Value::String(String::from(match st {
+            &cu::PressState::Pressed => "Press",
+            &cu::PressState::Unpressed => "Unpress",
+          })),
+        );
+      };
+      if let &Some((locx, locy)) = opt_loc {
+        btv.insert(
+          String::from("location"),
+          Value::Array(vec![
+            serde_json::to_value(&locx),
+            serde_json::to_value(&locy),
+          ]),
+        );
       };
       if let &Some(ref lb) = opt_label {
         btv.insert(String::from("label"), Value::String(lb.clone()));

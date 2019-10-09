@@ -43,7 +43,7 @@ fn main() {
     Ok(_) => (),
     Err(e) => println!("error starting websocket server: {},", e),
   }
-  startwebserver("localhost", "8000", "9001", mbhtml);
+  startwebserver("localhost", "8000", "9001", mbhtml, true);
 }
 
 fn build_gui() -> Result<G::Gui, FError> {
@@ -61,6 +61,7 @@ fn build_gui() -> Result<G::Gui, FError> {
     .add_slider("hs3".to_string(), None, Horizontal)?
     .add_slider("hs4".to_string(), None, Horizontal)?
     .end_sizer()?
+    .add_xy("xy".to_string(), Some("xycontrol".to_string()))?
     .end_sizer()?;
   Ok(gui)
 }

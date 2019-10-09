@@ -1,4 +1,4 @@
-module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, containsXY, decodeControlId, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
+module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, UiColor(..), UiTheme, containsXY, decodeControlId, defaultColors, defaultTheme, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -7,6 +7,47 @@ import Svg exposing (Attribute, Svg, g, rect, svg, text, text_)
 import Svg.Attributes exposing (..)
 import Template exposing (render, template, withString, withValue)
 import Tuple
+
+
+type UiColor
+    = Fill
+    | Pressed
+    | Unpressed
+
+
+defaultColors : UiColor -> String
+defaultColors uc =
+    case uc of
+        Fill ->
+            "F1F1F1"
+
+        Pressed ->
+            "f000f0"
+
+        Unpressed ->
+            "60B5CC"
+
+
+darkColors : UiColor -> String
+darkColors uc =
+    case uc of
+        Fill ->
+            "000000"
+
+        Pressed ->
+            "b0f0b0"
+
+        Unpressed ->
+            "a0a0a0"
+
+
+type alias UiTheme =
+    { colorString : UiColor -> String
+    }
+
+
+defaultTheme =
+    { colorString = darkColors }
 
 
 type Orientation

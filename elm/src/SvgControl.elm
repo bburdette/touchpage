@@ -11,7 +11,7 @@ import SvgCommand exposing (Command(..))
 import SvgLabel
 import SvgSlider
 import SvgTextSize exposing (TextSizeReply, calcTextSvg, resizeCommand)
-import SvgThings
+import SvgThings exposing (Orientation(..), UiColor(..), UiTheme)
 import SvgXY
 import Task
 import VirtualDom as VD
@@ -339,23 +339,23 @@ init rect cid spec =
             aptg CmSizer <| szinit rect cid s
 
 
-view : Model -> Svg Msg
-view model =
+view : UiTheme -> Model -> Svg Msg
+view theme model =
     case model of
         CmButton m ->
-            VD.map CaButton (SvgButton.view m)
+            VD.map CaButton (SvgButton.view theme m)
 
         CmSlider m ->
-            VD.map CaSlider (SvgSlider.view m)
+            VD.map CaSlider (SvgSlider.view theme m)
 
         CmXY m ->
-            VD.map CaXY (SvgXY.view m)
+            VD.map CaXY (SvgXY.view theme m)
 
         CmLabel m ->
-            VD.map CaLabel (SvgLabel.view m)
+            VD.map CaLabel (SvgLabel.view theme m)
 
         CmSizer m ->
-            VD.map CaSizer (szview m)
+            VD.map CaSizer (szview m theme)
 
 
 
@@ -573,18 +573,18 @@ szinit rect cid szspec =
 -- VIEW
 
 
-szview : SzModel -> Svg SzMsg
-szview model =
+szview : SzModel -> UiTheme -> Svg SzMsg
+szview model theme =
     let
         controllst =
             Dict.toList model.controls
     in
-    Svg.g [] (List.map viewSvgControls controllst)
+    Svg.g [] (List.map (viewSvgControls theme) controllst)
 
 
-viewSvgControls : ( ID, Model ) -> Svg.Svg SzMsg
-viewSvgControls ( id, model ) =
-    VD.map (SzCMsg id) (view model)
+viewSvgControls : UiTheme -> ( ID, Model ) -> Svg.Svg SzMsg
+viewSvgControls theme ( id, model ) =
+    VD.map (SzCMsg id) (view theme model)
 
 
 border : Int

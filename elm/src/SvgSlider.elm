@@ -1,4 +1,4 @@
-module SvgSlider exposing (Model, Msg(..), Spec, UpdateMessage, UpdateType(..), buildEvtHandlerList, encodeUpdateMessage, encodeUpdateType, getLocation, getX, getY, init, jsSpec, jsUpdateMessage, jsUpdateType, onMouseDown, onMouseLeave, onMouseMove, onMouseUp, onTouchCancel, onTouchEnd, onTouchLeave, onTouchMove, onTouchStart, pressedColor, resize, sliderEvt, update, updsend, view)
+module SvgSlider exposing (Model, Msg(..), Spec, UpdateMessage, UpdateType(..), buildEvtHandlerList, encodeUpdateMessage, encodeUpdateType, getLocation, getX, getY, init, jsSpec, jsUpdateMessage, jsUpdateType, onMouseDown, onMouseLeave, onMouseMove, onMouseUp, onTouchCancel, onTouchEnd, onTouchLeave, onTouchMove, onTouchStart, resize, sliderEvt, update, updsend, view)
 
 -- import NoDragEvents exposing (onClick, onMouseUp, onMouseMove, onMouseDown, onMouseOut)
 
@@ -10,7 +10,7 @@ import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick, onMouseDown, onMouseOut, onMouseUp)
 import SvgCommand exposing (Command(..))
 import SvgTextSize exposing (calcTextSvg, calcTextSvgM, resizeCommand)
-import SvgThings exposing (Orientation(..))
+import SvgThings exposing (Orientation(..), UiColor(..), UiTheme)
 import SvgTouch as ST
 import Toop
 import VirtualDom as VD
@@ -94,16 +94,6 @@ init rect cid spec =
                 False
     in
     ( model, resizeCommand model )
-
-
-pressedColor : Bool -> String
-pressedColor pressed =
-    case pressed of
-        True ->
-            "#f000f0"
-
-        False ->
-            "#60B5CC"
 
 
 getX : JD.Decoder Int
@@ -459,8 +449,8 @@ buildEvtHandlerList touchonly =
         List.append me te
 
 
-view : Model -> Svg Msg
-view model =
+view : UiTheme -> Model -> Svg Msg
+view theme model =
     let
         (Toop.T4 sx sy sw sh) =
             case model.orientation of
@@ -487,7 +477,7 @@ view model =
             , height model.srect.h
             , rx "2"
             , ry "2"
-            , style "fill: #F1F1F1;"
+            , style ("fill: #" ++ theme.colorString Fill ++ ";")
             ]
             []
         , rect
@@ -497,7 +487,17 @@ view model =
             , height sh
             , rx "2"
             , ry "2"
-            , style ("fill: " ++ pressedColor model.pressed ++ ";")
+            , style
+                ("fill: #"
+                    ++ theme.colorString
+                        (if model.pressed then
+                            Pressed
+
+                         else
+                            Unpressed
+                        )
+                    ++ ";"
+                )
             ]
             []
         , VD.map (\_ -> NoOp) (g [] model.textSvg)

@@ -10,7 +10,7 @@ import Svg.Attributes as SA
 import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgTextSize exposing (TextSizeReply)
-import SvgThings
+import SvgThings exposing (Orientation(..), UiColor(..), UiTheme)
 import Util exposing (RectSize)
 import VirtualDom as VD
 
@@ -37,6 +37,7 @@ type alias Model =
     , spec : Spec
     , control : SvgControl.Model
     , windowSize : RectSize
+    , uiTheme : UiTheme
     }
 
 
@@ -139,6 +140,7 @@ init rect spec =
         spec
         updmod
         (RectSize 0 0)
+        SvgThings.defaultTheme
     , Batch (cmd :: cmds)
     )
 
@@ -159,10 +161,10 @@ view model =
                     ++ model.srect.h
                 )
             ]
-            [ VD.map CMsg (viewSvgControl model.control) ]
+            [ VD.map CMsg (viewSvgControl model.uiTheme model.control) ]
         ]
 
 
-viewSvgControl : SvgControl.Model -> Svg.Svg SvgControl.Msg
-viewSvgControl conmodel =
-    SvgControl.view conmodel
+viewSvgControl : UiTheme -> SvgControl.Model -> Svg.Svg SvgControl.Msg
+viewSvgControl theme conmodel =
+    SvgControl.view theme conmodel

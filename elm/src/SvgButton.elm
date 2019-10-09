@@ -9,7 +9,7 @@ import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
 import SvgCommand exposing (Command(..))
 import SvgTextSize exposing (calcTextSvg, resizeCommand)
-import SvgThings
+import SvgThings exposing (UiColor(..), UiTheme)
 import SvgTouch as ST
 import Task
 import VirtualDom as VD
@@ -310,8 +310,8 @@ buildEvtHandlerList touchonly =
         List.append me te
 
 
-view : Model -> Svg Msg
-view model =
+view : UiTheme -> Model -> Svg Msg
+view theme model =
     g (buildEvtHandlerList model.touchonly)
         [ rect
             [ x model.srect.x
@@ -320,7 +320,17 @@ view model =
             , height model.srect.h
             , rx "15"
             , ry "15"
-            , style ("fill: " ++ pressedColor model.pressed ++ ";")
+            , style
+                ("fill: #"
+                    ++ theme.colorString
+                        (if model.pressed then
+                            Pressed
+
+                         else
+                            Unpressed
+                        )
+                    ++ ";"
+                )
             ]
             []
         , VD.map (\_ -> NoOp) (g [] model.textSvg)

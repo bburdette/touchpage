@@ -11,6 +11,7 @@ import Tuple
 
 type UiColor
     = Fill
+    | Text
     | Pressed
     | Unpressed
 
@@ -20,6 +21,9 @@ defaultColors uc =
     case uc of
         Fill ->
             "F1F1F1"
+
+        Text ->
+            "000000"
 
         Pressed ->
             "f000f0"
@@ -34,11 +38,14 @@ darkColors uc =
         Fill ->
             "000000"
 
+        Text ->
+            "FFFFFF"
+
         Pressed ->
-            "b0f0b0"
+            "0db00d"
 
         Unpressed ->
-            "a0a0a0"
+            "c0e4c0"
 
 
 type alias UiTheme =

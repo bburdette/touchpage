@@ -349,11 +349,11 @@ updsend model mbut loc =
         )
 
 
-resize : Model -> SvgThings.Rect -> ( Model, Command )
-resize model rect =
+resize : UiTheme -> Model -> SvgThings.Rect -> ( Model, Command )
+resize theme model rect =
     let
         ts =
-            calcTextSvgM model
+            calcTextSvgM theme model
 
         newmodel =
             { model

@@ -105,7 +105,7 @@ resize newSize model =
             SvgThings.Rect 0 0 (round (newSize.width - 1)) (round (newSize.height - 4))
 
         ( ctrl, cmd ) =
-            SvgControl.resize model.control nr
+            SvgControl.resize SvgThings.defaultTheme model.control nr
     in
     ( { model
         | mahrect = nr
@@ -119,7 +119,7 @@ resize newSize model =
 
 onTextSize : TextSizeReply -> Model -> Model
 onTextSize tsr model =
-    { model | control = SvgControl.onTextSize tsr model.control }
+    { model | control = SvgControl.onTextSize model.uiTheme tsr model.control }
 
 
 init :

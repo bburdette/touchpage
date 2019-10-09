@@ -124,8 +124,8 @@ tupMap2 fa ab =
     ( fa (Tuple.first ab), Tuple.second ab )
 
 
-resize : Model -> SvgThings.Rect -> ( Model, Command )
-resize model rect =
+resize : UiTheme -> Model -> SvgThings.Rect -> ( Model, Command )
+resize theme model rect =
     let
         aptg =
             \f ( m, c ) -> ( f m, c )
@@ -135,16 +135,16 @@ resize model rect =
             aptg CmButton <| SvgButton.resize mod (SvgThings.shrinkRect border rect)
 
         CmSlider mod ->
-            aptg CmSlider <| SvgSlider.resize mod (SvgThings.shrinkRect border rect)
+            aptg CmSlider <| SvgSlider.resize theme mod (SvgThings.shrinkRect border rect)
 
         CmXY mod ->
-            aptg CmXY <| SvgXY.resize mod (SvgThings.shrinkRect border rect)
+            aptg CmXY <| SvgXY.resize theme mod (SvgThings.shrinkRect border rect)
 
         CmLabel mod ->
-            aptg CmLabel <| SvgLabel.resize mod (SvgThings.shrinkRect border rect)
+            aptg CmLabel <| SvgLabel.resize theme mod (SvgThings.shrinkRect border rect)
 
         CmSizer mod ->
-            aptg CmSizer <| szresize mod rect
+            aptg CmSizer <| szresize theme mod rect
 
 
 jsSpec : JD.Decoder Spec
@@ -230,26 +230,26 @@ toCtrlMsg id msg =
             CaSizer (SzCMsg x (toCtrlMsg (myTail id) msg))
 
 
-onTextSize : TextSizeReply -> Model -> Model
-onTextSize tsr model =
+onTextSize : UiTheme -> TextSizeReply -> Model -> Model
+onTextSize theme tsr model =
     case model of
         CmButton m ->
             CmButton <|
-                SvgTextSize.onTextSizeReply tsr m
+                SvgTextSize.onTextSizeReply theme tsr m
 
         CmSlider m ->
             CmSlider <|
-                SvgTextSize.onTextSizeReply tsr m
+                SvgTextSize.onTextSizeReply theme tsr m
 
         CmXY m ->
             CmXY <|
-                SvgTextSize.onTextSizeReply tsr m
+                SvgTextSize.onTextSizeReply theme tsr m
 
         CmLabel m ->
-            CmLabel <| SvgTextSize.onTextSizeReply tsr m
+            CmLabel <| SvgTextSize.onTextSizeReply theme tsr m
 
         CmSizer m ->
-            CmSizer <| szOnTextSize tsr m
+            CmSizer <| szOnTextSize theme tsr m
 
 
 update : Msg -> Model -> ( Model, Command )
@@ -470,15 +470,15 @@ szupdate msg model =
                     ( model, None )
 
 
-szOnTextSize : TextSizeReply -> SzModel -> SzModel
-szOnTextSize tsr model =
+szOnTextSize : UiTheme -> TextSizeReply -> SzModel -> SzModel
+szOnTextSize theme tsr model =
     case tsr.controlId of
         idx :: rst ->
             case Dict.get idx model.controls of
                 Just control ->
                     let
                         nc =
-                            onTextSize { tsr | controlId = rst } control
+                            onTextSize theme { tsr | controlId = rst } control
                     in
                     { model | controls = Dict.insert idx nc model.controls }
 
@@ -489,8 +489,8 @@ szOnTextSize tsr model =
             model
 
 
-szresize : SzModel -> SvgThings.Rect -> ( SzModel, Command )
-szresize model rect =
+szresize : UiTheme -> SzModel -> SvgThings.Rect -> ( SzModel, Command )
+szresize theme model rect =
     let
         clist =
             Dict.toList model.controls
@@ -499,7 +499,7 @@ szresize model rect =
             mkRlist model.orientation rect (List.length clist) model.proportions
 
         rlist2 =
-            List.map (\( ( i, c ), r ) -> ( i, resize c r )) (zip clist rlist)
+            List.map (\( ( i, c ), r ) -> ( i, resize theme c r )) (zip clist rlist)
 
         controls =
             List.map (\( i, ( m, c ) ) -> ( i, m )) rlist2

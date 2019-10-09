@@ -39,11 +39,11 @@ fn main() {
       },
   };
 
-  match startserver(gooey.as_str(), Box::new(meh), "localhost", "9001", false) {
+  match startserver(gooey.as_str(), Box::new(meh), "0.0.0.0", "9001", false) {
     Ok(_) => (),
     Err(e) => println!("error starting websocket server: {},", e),
   }
-  startwebserver("localhost", "8000", "9001", mbhtml, true);
+  startwebserver("0.0.0.0", "8000", "9001", mbhtml, true);
 }
 
 fn build_gui() -> Result<G::Gui, FError> {

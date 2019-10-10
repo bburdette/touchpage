@@ -9,14 +9,14 @@ use websocket::message::Message;
 // Implement a ControlUpdateProcessor if you want the controls to actually do something
 // on the server.
 pub trait ControlUpdateProcessor: Send {
-  fn on_update_received(&mut self, &cu::UpdateMsg, ci: &ControlInfo) -> ();
+  fn on_update_received(&mut self, &cu::UpdateMsg, cn: &mut ControlNexus) -> ();
 }
 
 // A basic ControlUpdateProcessor that just prints out the update messages.
 pub struct PrintUpdateMsg {}
 
 impl ControlUpdateProcessor for PrintUpdateMsg {
-  fn on_update_received(&mut self, update: &cu::UpdateMsg, _ci: &ControlInfo) -> () {
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, _cn: &mut ControlNexus) -> () {
     println!("control update: {:?}", update);
   }
 }
@@ -38,6 +38,7 @@ impl ControlInfo {
 }
 
 // The control nexus contains all the controls and the broadcaster.
+#[derive(Clone)]
 pub struct ControlNexus {
   pub ci: Arc<Mutex<ControlInfo>>,
   pub bc: broadcaster::Broadcaster,
@@ -98,6 +99,7 @@ impl ControlNexus {
       None => (),
     }
   }
+  
   pub fn update_label(&self, name: &str, label: &str) {
     match self.get_cid_by_name(name) {
       Some(cid) => self.update(&cu::UpdateMsg::Label {
@@ -138,9 +140,7 @@ impl ControlNexus {
     let guival = serde_json::from_str(guistring)?;
 
     let controltree = json::deserialize_root(&guival)?;
-    println!("new control layout recieved! title: {} ",
-      controltree.title
-    );
+    println!("new control layout recieved! title: {} ", controltree.title);
     println!("controls: {:?}", controltree.root_control);
 
     let mut guard = match self.ci.lock() {

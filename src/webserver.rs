@@ -63,6 +63,8 @@ fn startwebserver_impl<'a>(
   .expect(format!("Can not bind to port {}", http_port).as_str())
   .start();
 
+  println!("running web server at {}:{}", ip, http_port);
+
   sys.run();
 }
 

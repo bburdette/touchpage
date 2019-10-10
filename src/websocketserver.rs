@@ -38,37 +38,34 @@ pub fn start<'a>(
   };
 
   let cmshare = Arc::new(Mutex::new(ci));
-  let wscmshare = cmshare.clone();
-  // for sending, bind to this.  if we bind to localhost, we can't
-  // send messages to other machines.
   let bc = broadcaster::Broadcaster::new();
-  let wsbc = bc.clone();
 
-  let cs_ret = ControlNexus {
+  let cn_ret = ControlNexus {
     ci: cmshare,
     bc: bc,
   };
+  let cn_ws = cn_ret.clone();
 
   let mut websockets_ip = String::from(ip);
   websockets_ip.push_str(":");
   websockets_ip.push_str(&websockets_port);
 
   if block {
-    match websockets_main(websockets_ip, wscmshare, wsbc, Arc::new(Mutex::new(cup))) {
+    match websockets_main(websockets_ip, cn_ws, Arc::new(Mutex::new(cup))) {
       Ok(_) => (),
       Err(e) => println!("error in websockets_main: {:?}", e),
     }
   } else {
     // Spawn a thread for the websockets handler.
-    thread::spawn(move || {
-      match websockets_main(websockets_ip, wscmshare, wsbc, Arc::new(Mutex::new(cup))) {
+    thread::spawn(
+      move || match websockets_main(websockets_ip, cn_ws, Arc::new(Mutex::new(cup))) {
         Ok(_) => (),
         Err(e) => println!("error in websockets_main: {:?}", e),
-      }
-    });
+      },
+    );
   }
 
-  Ok(cs_ret)
+  Ok(cn_ret)
 }
 
 fn sendcontrols(
@@ -105,15 +102,13 @@ fn sendcontrols(
 
 fn websockets_main(
   ipaddr: String,
-  ci: Arc<Mutex<ControlInfo>>,
-  broadcaster: broadcaster::Broadcaster,
+  acn: ControlNexus,
   cup: Arc<Mutex<Box<dyn ControlUpdateProcessor>>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
   println!("websockets address {:?}", ipaddr);
   let server = Server::bind(&ipaddr[..])?;
   for request in server.filter_map(Result::ok) {
-    let sci = ci.clone();
-    let mut broadcaster = broadcaster.clone();
+    let mut scn = acn.clone();
     let cup = cup.clone();
     // Spawn a new thread for each connection.
     thread::spawn(move || {
@@ -129,16 +124,16 @@ fn websockets_main(
       println!("Connection from {}", ip);
 
       // send up controls.
-      match sendcontrols(&sci, &mut client) {
+      match sendcontrols(&scn.ci, &mut client) {
         Err(e) => println!("error sending controls to client: {}", e),
-        Ok(_) => ()
+        Ok(_) => (),
       }
 
       //(websocket::receiver::Reader<std::net::TcpStream>, websocket::sender::Writer<std::net::TcpStream> )
       let (mut receiver, sender) = client.split().unwrap();
 
       let sendmeh = Arc::new(Mutex::new(sender));
-      broadcaster.register(sendmeh.clone());
+      scn.bc.register(sendmeh.clone());
 
       for message in receiver.incoming_messages() {
         let message = message.unwrap();
@@ -156,42 +151,34 @@ fn websockets_main(
             let mut s = sendmeh.lock().unwrap();
             s.send_message(&message).unwrap();
           }
-          OwnedMessage::Text(txt) => {
-            // let message = OwnedMessage::Pong(ping);
-            // sender.send_message(&message).unwrap();
-            match serde_json::from_str(txt.as_str()) {
-              Err(e) => println!("error {:?}", e),
-              Ok(jsonval) => {
-                let s_um = json::decode_update_message(&jsonval);
-                match s_um {
-                  Some(updmsg) => {
+          OwnedMessage::Text(txt) => match serde_json::from_str(txt.as_str()) {
+            Err(e) => println!("error {:?}", e),
+            Ok(jsonval) => {
+              let s_um = json::decode_update_message(&jsonval);
+              match s_um {
+                Some(updmsg) => {
+                  {
+                    let mut sci = scn.ci.lock().unwrap();
                     {
-                      let mut sci = sci.lock().unwrap();
-                      {
-                        let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));
-                        match mbcntrl {
-                          Some(cntrl) => {
-                            (*cntrl).update(&updmsg);
-                            broadcaster.broadcast_others(&ip, Message::text(txt.clone()));
-                            ()
-                          }
-                          None => println!("none"),
+                      let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));
+                      match mbcntrl {
+                        Some(cntrl) => {
+                          (*cntrl).update(&updmsg);
+                          scn.bc.broadcast_others(&ip, Message::text(txt.clone()));
+                          ()
                         }
+                        None => println!("none"),
                       }
                     }
-                    let mut scup = cup.lock().unwrap();
-                    let sci = match sci.lock() {
-                      Ok(sci) => sci,
-                      Err(poisoned) => poisoned.into_inner(),
-                    };
-
-                    scup.on_update_received(&updmsg, &*sci);
                   }
-                  _ => println!("decode_update_message failed on websockets msg: {:?}", txt),
+
+                  let mut scup = cup.lock().unwrap();
+                  scup.on_update_received(&updmsg, &mut scn);
                 }
+                _ => println!("decode_update_message failed on websockets msg: {:?}", txt),
               }
             }
-          }
+          },
           _ => {
             println!("unrecognized message type: {:?}", message);
           }

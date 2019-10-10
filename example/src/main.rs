@@ -73,8 +73,8 @@ fn build_gui() -> Result<G::Gui, FError> {
     .add_button("b2".to_string(), None)?
     .end_sizer()?
     .add_sizer(Horizontal)?
-    .add_xy("xyleft".to_string(), Some("XY1".to_string()))?
-    .add_xy("xyright".to_string(), Some("XY2".to_string()))?
+    .add_xy("xyleft".to_string(), Some("xy1".to_string()))?
+    .add_xy("xyright".to_string(), Some("xy2".to_string()))?
     .end_sizer()?
     .end_sizer()?
     .set_color(G::Color::Controls, "001F00")

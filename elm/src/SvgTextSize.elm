@@ -176,8 +176,9 @@ calcText theme fontFam lbtext labelMeasuredWidth fontScaling rect =
             xc - (width * scale * 0.5)
 
         yt =
-            yc + 20.0 * scale * 0.5
+            yc
 
+        -- yc + 20.0 * scale * 0.5
         tmpl =
             template "matrix("
                 |> withValue .scale
@@ -191,10 +192,16 @@ calcText theme fontFam lbtext labelMeasuredWidth fontScaling rect =
 
         -- template "matrix(" <% .scale %> ", 0, 0, " <% .scale %> ", " <% .xt %> ", " <% .yt %> ")"
         xf =
-            render { scale = String.fromFloat scale, xt = String.fromFloat xt, yt = String.fromFloat yt } tmpl
+            render
+                { scale = String.fromFloat scale
+                , xt = String.fromFloat xt
+                , yt = String.fromFloat yt
+                }
+                tmpl
     in
     [ text_
         [ fill ("#" ++ theme.colorString Text)
+        , dominantBaseline "middle"
 
         -- , textAnchor "middle"
         -- , x model.middlex
@@ -205,7 +212,7 @@ calcText theme fontFam lbtext labelMeasuredWidth fontScaling rect =
         , fontSize "20px"
         , fontFamily fontFam
         , transform xf
-        , style "cursor: default; -webkit-user-select: none;  -moz-user-select: none;  -ms-user-select: none; user-select: none;"
+        , style "cursor: default;  -webkit-user-select: none;  -moz-user-select: none;  -ms-user-select: none; user-select: none;"
         ]
         [ text lbtext ]
     ]

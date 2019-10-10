@@ -53,18 +53,16 @@ pub fn start<'a>(
   if block {
     match websockets_main(websockets_ip, cn_ws, Arc::new(Mutex::new(cup))) {
       Ok(_) => (),
-      Err(e) => println!(
-        "error in webso
-        ckets_main: {:?}", e),
+      Err(e) => println!("error in websockets_main: {:?}", e),
     }
   } else {
     // Spawn a thread for the websockets handler.
-    thread::spawn(move || {
-      match websockets_main(websockets_ip, cn_ws, Arc::new(Mutex::new(cup))) {
+    thread::spawn(
+      move || match websockets_main(websockets_ip, cn_ws, Arc::new(Mutex::new(cup))) {
         Ok(_) => (),
         Err(e) => println!("error in websockets_main: {:?}", e),
-      }
-    });
+      },
+    );
   }
 
   Ok(cn_ret)
@@ -153,45 +151,34 @@ fn websockets_main(
             let mut s = sendmeh.lock().unwrap();
             s.send_message(&message).unwrap();
           }
-          OwnedMessage::Text(txt) => {
-            // let message = OwnedMessage::Pong(ping);
-            // sender.send_message(&message).unwrap();
-            match serde_json::from_str(txt.as_str()) {
-              Err(e) => println!("error {:?}", e),
-              Ok(jsonval) => {
-                let s_um = json::decode_update_message(&jsonval);
-                match s_um {
-                  Some(updmsg) => {
+          OwnedMessage::Text(txt) => match serde_json::from_str(txt.as_str()) {
+            Err(e) => println!("error {:?}", e),
+            Ok(jsonval) => {
+              let s_um = json::decode_update_message(&jsonval);
+              match s_um {
+                Some(updmsg) => {
+                  {
+                    let mut sci = scn.ci.lock().unwrap();
                     {
-                      let mut sci = scn.ci.lock().unwrap();
-                      {
-                        let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));
-                        match mbcntrl {
-                          Some(cntrl) => {
-                            (*cntrl).update(&updmsg);
-                            scn.bc.broadcast_others(&ip, Message::text(txt.clone()));
-                            ()
-                          }
-                          None => println!("none"),
+                      let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));
+                      match mbcntrl {
+                        Some(cntrl) => {
+                          (*cntrl).update(&updmsg);
+                          scn.bc.broadcast_others(&ip, Message::text(txt.clone()));
+                          ()
                         }
+                        None => println!("none"),
                       }
                     }
-
-let mut scup = cup.lock().unwrap();
-/*                    
-                    let mut sci = match scn.ci.lock() {
-                      Ok(sci) => sci,
-                      Err(poisoned) => poisoned.into_inner(),
-                    };
-*/
-                    // scup.on_update_received(&updmsg, &mut *sci);
-                    scup.on_update_received(&updmsg, &mut scn);
                   }
-                  _ => println!("decode_update_message failed on websockets msg: {:?}", txt),
+
+                  let mut scup = cup.lock().unwrap();
+                  scup.on_update_received(&updmsg, &mut scn);
                 }
+                _ => println!("decode_update_message failed on websockets msg: {:?}", txt),
               }
             }
-          }
+          },
           _ => {
             println!("unrecognized message type: {:?}", message);
           }

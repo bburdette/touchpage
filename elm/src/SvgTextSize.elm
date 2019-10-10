@@ -148,11 +148,16 @@ calcTextSvgM theme model =
         |> Maybe.withDefault []
 
 
+textHeight : Float
+textHeight =
+    0.65
+
+
 calcTextSvg : UiTheme -> String -> Float -> Rect -> List (Svg ())
 calcTextSvg theme textString width20px rect =
     let
         fs =
-            computeFontScaling width20px 20.0 (toFloat rect.w) (toFloat rect.h)
+            computeFontScaling width20px 20.0 (toFloat rect.w) (textHeight * toFloat rect.h)
     in
     calcText theme controlFontFamily textString width20px fs rect
 

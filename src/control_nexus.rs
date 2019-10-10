@@ -1,10 +1,10 @@
+use broadcaster;
 use control_updates as cu;
 use controls;
-use broadcaster;
 use failure::Error as FError;
 use json;
-use websocket::message::Message;
 use std::sync::{Arc, Mutex};
+use websocket::message::Message;
 
 // Implement a ControlUpdateProcessor if you want the controls to actually do something
 // on the server.
@@ -12,15 +12,12 @@ pub trait ControlUpdateProcessor: Send {
   fn on_update_received(&mut self, &cu::UpdateMsg, ci: &ControlInfo) -> ();
 }
 
-
 // A basic ControlUpdateProcessor that just prints out the update messages.
-pub struct PrintUpdateMsg {
-}
+pub struct PrintUpdateMsg {}
 
-impl ControlUpdateProcessor for PrintUpdateMsg { 
-  fn on_update_received(&mut self, update: &cu::UpdateMsg, _ci: &ControlInfo) -> ()
-  {
-    println!("update callback called! {:?}", update);
+impl ControlUpdateProcessor for PrintUpdateMsg {
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, _ci: &ControlInfo) -> () {
+    println!("control update: {:?}", update);
   }
 }
 
@@ -58,7 +55,6 @@ impl ControlNexus {
       _ => None,
     }
   }
-
   pub fn get_name(&self, id: &Vec<i32>) -> Option<String> {
     let ci = match self.ci.lock() {
       Ok(guard) => guard,
@@ -70,7 +66,6 @@ impl ControlNexus {
       _ => None,
     }
   }
-
   pub fn make_update_msg(&self, name: &str) -> Option<cu::UpdateMsg> {
     let guard = match self.ci.lock() {
       Ok(guard) => guard,
@@ -103,7 +98,6 @@ impl ControlNexus {
       None => (),
     }
   }
-
   pub fn update_label(&self, name: &str, label: &str) {
     match self.get_cid_by_name(name) {
       Some(cid) => self.update(&cu::UpdateMsg::Label {
@@ -144,12 +138,8 @@ impl ControlNexus {
     let guival = serde_json::from_str(guistring)?;
 
     let controltree = json::deserialize_root(&guival)?;
-    println!("new control layout recieved!");
-
-    println!(
-      "title: {} count: {} ",
-      controltree.title,
-      controltree.root_control.control_type()
+    println!("new control layout recieved! title: {} ",
+      controltree.title
     );
     println!("controls: {:?}", controltree.root_control);
 

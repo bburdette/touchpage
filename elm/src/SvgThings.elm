@@ -1,12 +1,85 @@
-module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, containsXY, decodeControlId, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
+module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, UiColor(..), UiTheme, colorFun, containsXY, decodeControlId, defaultColors, defaultTheme, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
 
 import Json.Decode as JD
 import Json.Encode as JE
 import List exposing (..)
-import Svg exposing (Attribute, Svg, g, rect, svg, text, text_)
-import Svg.Attributes exposing (..)
-import Template exposing (render, template, withString, withValue)
 import Tuple
+
+
+type UiColor
+    = Controls
+    | Labels
+    | Text
+    | Pressed
+    | Unpressed
+
+
+colorFun : String -> String -> String -> String -> String -> UiColor -> String
+colorFun controls labels text pressed unpressed uc =
+    case uc of
+        Controls ->
+            controls
+
+        Labels ->
+            labels
+
+        Text ->
+            text
+
+        Pressed ->
+            pressed
+
+        Unpressed ->
+            unpressed
+
+
+
+{- defaultColors : UiColor -> String
+   defaultColors uc =
+       case uc of
+           Fill ->
+               "F1F1F1"
+
+           Text ->
+               "000000"
+
+           Pressed ->
+               "f000f0"
+
+           Unpressed ->
+               "60B5CC"
+
+
+-}
+
+
+defaultColors : UiColor -> String
+defaultColors uc =
+    case uc of
+        Controls ->
+            "000000"
+
+        Labels ->
+            "A5A5A5"
+
+        Text ->
+            "FFFFFF"
+
+        Pressed ->
+            "0DB00D"
+
+        Unpressed ->
+            "C0E4C0"
+
+
+type alias UiTheme =
+    { colorString : UiColor -> String
+    }
+
+
+defaultTheme : UiTheme
+defaultTheme =
+    { colorString = defaultColors }
 
 
 type Orientation

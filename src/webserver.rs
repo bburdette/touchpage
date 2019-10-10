@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::thread;
 use string_defaults;
 
-pub fn startwebserver<'a>(
+pub fn start<'a>(
   ip: &str,
   http_port: &str,
   websockets_port: &str,
@@ -29,7 +29,8 @@ pub fn startwebserver<'a>(
     });
   }
 }
-pub fn startwebserver_impl<'a>(
+
+fn startwebserver_impl<'a>(
   ip: &str,
   http_port: &str,
   websockets_port: &str,

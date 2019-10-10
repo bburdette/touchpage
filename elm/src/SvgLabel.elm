@@ -9,7 +9,7 @@ import Svg exposing (Attribute, Svg, g, rect, svg, text)
 import Svg.Attributes exposing (..)
 import SvgCommand exposing (Command(..))
 import SvgTextSize exposing (..)
-import SvgThings
+import SvgThings exposing (UiColor(..), UiTheme)
 import Task
 import Template exposing (render, template)
 import Time exposing (..)
@@ -98,9 +98,7 @@ update msg model =
 resize : Model -> SvgThings.Rect -> ( Model, Command )
 resize model rect =
     let
-        ts =
-            calcTextSvgM model
-
+        -- ts = calcTextSvgM theme model
         newmodel =
             { model
                 | rect = rect
@@ -109,14 +107,15 @@ resize model rect =
                         (String.fromInt rect.y)
                         (String.fromInt rect.w)
                         (String.fromInt rect.h)
-                , textSvg = ts
+                , textSvg = []
+                , stringWidth = Nothing
             }
     in
     ( newmodel, resizeCommand newmodel )
 
 
-view : Model -> Svg Msg
-view model =
+view : UiTheme -> Model -> Svg Msg
+view theme model =
     let
         lbrect =
             rect
@@ -126,7 +125,7 @@ view model =
                 , height model.srect.h
                 , rx "15"
                 , ry "15"
-                , style "fill: #A1A1A1;"
+                , style ("fill: #" ++ theme.colorString Labels ++ ";")
                 ]
                 []
 

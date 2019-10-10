@@ -1,6 +1,35 @@
-module SvgSlider exposing (Model, Msg(..), Spec, UpdateMessage, UpdateType(..), buildEvtHandlerList, encodeUpdateMessage, encodeUpdateType, getLocation, getX, getY, init, jsSpec, jsUpdateMessage, jsUpdateType, onMouseDown, onMouseLeave, onMouseMove, onMouseUp, onTouchCancel, onTouchEnd, onTouchLeave, onTouchMove, onTouchStart, resize, sliderEvt, update, updsend, view)
-
--- import NoDragEvents exposing (onClick, onMouseUp, onMouseMove, onMouseDown, onMouseOut)
+module SvgXY exposing
+    ( Model
+    , Msg(..)
+    , Spec
+    , UpdateMessage
+    , UpdateType(..)
+    , buildEvtHandlerList
+    , encodeUpdateMessage
+    , encodeUpdateType
+    , getLocation
+    , getX
+    , getY
+    , init
+    , jsSpec
+    , jsUpdateMessage
+    , jsUpdateType
+    , onMouseDown
+    , onMouseLeave
+    , onMouseMove
+    , onMouseUp
+    , onTouchCancel
+    , onTouchEnd
+    , onTouchLeave
+    , onTouchMove
+    , onTouchStart
+    , pressedColor
+    , resize
+    , sliderEvt
+    , update
+    , updsend
+    , view
+    )
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -19,29 +48,26 @@ import VirtualDom as VD
 type alias Spec =
     { name : String
     , label : Maybe String
-    , orientation : SvgThings.Orientation
     }
 
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.map3 Spec
+    JD.map2 Spec
         (JD.field "name" JD.string)
         (JD.maybe (JD.field "label" JD.string))
-        (JD.field "orientation" JD.string |> JD.andThen SvgThings.jsOrientation)
 
 
 type alias Model =
     { name : String
     , label : String
     , stringWidth : Maybe Float
+    , textSvg : List (Svg ())
     , cid : SvgThings.ControlId
     , rect : SvgThings.Rect
     , srect : SvgThings.SRect
-    , orientation : SvgThings.Orientation
     , pressed : Bool
-    , location : Float
-    , textSvg : List (Svg ())
+    , location : ( Float, Float )
     , touchonly : Bool
     }
 
@@ -64,7 +90,7 @@ type UpdateType
 type alias UpdateMessage =
     { controlId : SvgThings.ControlId
     , updateType : Maybe UpdateType
-    , location : Maybe Float
+    , location : Maybe ( Float, Float )
     , label : Maybe String
     }
 
@@ -80,6 +106,7 @@ init rect cid spec =
             Model spec.name
                 (Maybe.withDefault "" spec.label)
                 Nothing
+                []
                 cid
                 rect
                 (SvgThings.SRect (String.fromInt rect.x)
@@ -87,13 +114,21 @@ init rect cid spec =
                     (String.fromInt rect.w)
                     (String.fromInt rect.h)
                 )
-                spec.orientation
                 False
-                0.5
-                []
+                ( 0.5, 0.5 )
                 False
     in
     ( model, resizeCommand model )
+
+
+pressedColor : Bool -> String
+pressedColor pressed =
+    case pressed of
+        True ->
+            "#f000f0"
+
+        False ->
+            "#60B5CC"
 
 
 getX : JD.Decoder Int
@@ -110,7 +145,7 @@ encodeUpdateMessage : UpdateMessage -> JD.Value
 encodeUpdateMessage um =
     let
         outlist1 =
-            [ ( "controlType", JE.string "slider" )
+            [ ( "controlType", JE.string "xy" )
             , ( "controlId", SvgThings.encodeControlId um.controlId )
             ]
 
@@ -124,8 +159,8 @@ encodeUpdateMessage um =
 
         outlist3 =
             case um.location of
-                Just loc ->
-                    List.append outlist2 [ ( "location", JE.float loc ) ]
+                Just ( locx, locy ) ->
+                    List.append outlist2 [ ( "location", JE.list JE.float [ locx, locy ] ) ]
 
                 Nothing ->
                     outlist2
@@ -156,7 +191,21 @@ jsUpdateMessage =
     JD.map4 UpdateMessage
         (JD.field "controlId" SvgThings.decodeControlId)
         (JD.maybe (JD.field "state" JD.string |> JD.andThen jsUpdateType))
-        (JD.maybe (JD.field "location" JD.float))
+        (JD.maybe
+            (JD.field "location"
+                (JD.list JD.float
+                    |> JD.andThen
+                        (\lst ->
+                            case lst of
+                                [ a, b ] ->
+                                    JD.succeed ( a, b )
+
+                                _ ->
+                                    JD.fail "location requires exactly two elements, [x,y]"
+                        )
+                )
+            )
+        )
         (JD.maybe (JD.field "label" JD.string))
 
 
@@ -175,13 +224,13 @@ jsUpdateType ut =
 
 
 -- get mouse/whatever location from the json message,
--- compute slider location from that.
+-- compute xy location from that.
 
 
-getLocation : Model -> JD.Value -> Result String Float
+getLocation : Model -> JD.Value -> Result String ( Float, Float )
 getLocation model v =
-    case model.orientation of
-        SvgThings.Horizontal ->
+    let
+        xr =
             case JD.decodeValue getX v of
                 Ok i ->
                     Ok
@@ -192,7 +241,7 @@ getLocation model v =
                 Err e ->
                     Err (JD.errorToString e)
 
-        SvgThings.Vertical ->
+        yr =
             case JD.decodeValue getY v of
                 Ok i ->
                     Ok
@@ -202,6 +251,12 @@ getLocation model v =
 
                 Err e ->
                     Err (JD.errorToString e)
+    in
+    xr
+        |> Result.andThen
+            (\x ->
+                Result.map (\y -> ( x, y )) yr
+            )
 
 
 update : Msg -> Model -> ( Model, Command )
@@ -290,50 +345,47 @@ update msg model =
                         ( model, None )
 
                 Just touch ->
-                    case model.orientation of
-                        SvgThings.Horizontal ->
-                            let
-                                loc =
-                                    (touch.x - toFloat model.rect.x)
-                                        / toFloat model.rect.w
-                            in
-                            if model.pressed then
-                                updsend model (Just Press) loc
+                    let
+                        locx =
+                            (touch.x - toFloat model.rect.x)
+                                / toFloat model.rect.w
 
-                            else
-                                updsend model Nothing loc
+                        locy =
+                            (touch.y - toFloat model.rect.y)
+                                / toFloat model.rect.h
 
-                        SvgThings.Vertical ->
-                            let
-                                loc =
-                                    (touch.y - toFloat model.rect.y)
-                                        / toFloat model.rect.h
-                            in
-                            if model.pressed then
-                                updsend model (Just Press) loc
+                        loc =
+                            ( locx, locy )
+                    in
+                    if model.pressed then
+                        updsend model (Just Press) loc
 
-                            else
-                                updsend model Nothing loc
+                    else
+                        updsend model Nothing loc
 
 
-updsend : Model -> Maybe UpdateType -> Float -> ( Model, Command )
-updsend model mbut loc =
+updsend : Model -> Maybe UpdateType -> ( Float, Float ) -> ( Model, Command )
+updsend model mbut ( x, y ) =
     let
-        bLoc =
-            if loc > 1.0 then
-                1.0
+        lim =
+            \loc ->
+                if loc > 1.0 then
+                    1.0
 
-            else if loc < 0.0 then
-                0.0
+                else if loc < 0.0 then
+                    0.0
 
-            else
-                loc
+                else
+                    loc
+
+        limloc =
+            ( lim x, lim y )
 
         prest =
             mbut /= Just Unpress
     in
     -- if nothing changed, no message.
-    if model.location == bLoc && model.pressed == prest then
+    if model.location == limloc && model.pressed == prest then
         ( model, None )
 
     else
@@ -341,10 +393,10 @@ updsend model mbut loc =
             um =
                 JE.encode 0
                     (encodeUpdateMessage
-                        (UpdateMessage model.cid mbut (Just bLoc) Nothing)
+                        (UpdateMessage model.cid mbut (Just limloc) Nothing)
                     )
         in
-        ( { model | location = bLoc, pressed = prest }
+        ( { model | location = limloc, pressed = prest }
         , Send um
         )
 
@@ -450,19 +502,17 @@ buildEvtHandlerList touchonly =
 view : UiTheme -> Model -> Svg Msg
 view theme model =
     let
-        (Toop.T4 sx sy sw sh) =
-            case model.orientation of
-                SvgThings.Vertical ->
-                    Toop.T4 model.srect.x
-                        (String.fromInt (round (model.location * toFloat model.rect.h) + model.rect.y))
-                        model.srect.w
-                        "3"
+        size =
+            10
 
-                SvgThings.Horizontal ->
-                    Toop.T4 (String.fromInt (round (model.location * toFloat model.rect.w) + model.rect.x))
-                        model.srect.y
-                        "3"
-                        model.srect.h
+        hsize =
+            round (size * 0.5)
+
+        sx =
+            String.fromInt (round (Tuple.first model.location * toFloat model.rect.w) + model.rect.x - hsize)
+
+        sy =
+            String.fromInt (round (Tuple.second model.location * toFloat model.rect.h) + model.rect.y - hsize)
 
         evtlist =
             buildEvtHandlerList model.touchonly
@@ -478,11 +528,12 @@ view theme model =
             , style ("fill: #" ++ theme.colorString Controls ++ ";")
             ]
             []
+        , VD.map (\_ -> NoOp) (g [] model.textSvg)
         , rect
             [ x sx
             , y sy
-            , width sw
-            , height sh
+            , width "10"
+            , height "10"
             , rx "2"
             , ry "2"
             , style
@@ -498,5 +549,4 @@ view theme model =
                 )
             ]
             []
-        , VD.map (\_ -> NoOp) (g [] model.textSvg)
         ]

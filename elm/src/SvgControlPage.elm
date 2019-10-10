@@ -10,7 +10,7 @@ import Svg.Attributes as SA
 import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgTextSize exposing (TextSizeReply)
-import SvgThings
+import SvgThings exposing (Orientation(..), UiColor(..), UiTheme)
 import Util exposing (RectSize)
 import VirtualDom as VD
 
@@ -19,15 +19,25 @@ type alias Spec =
     { title : String
     , rootControl : SvgControl.Spec
     , state : Maybe (List SvgControl.Msg)
+    , controlsColor : Maybe String
+    , labelsColor : Maybe String
+    , textColor : Maybe String
+    , pressedColor : Maybe String
+    , unpressedColor : Maybe String
     }
 
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.map3 Spec
+    JD.map8 Spec
         (JD.field "title" JD.string)
         (JD.field "rootControl" SvgControl.jsSpec)
         (JD.maybe (JD.field "state" (JD.list SvgControl.jsUpdateMessage)))
+        (JD.maybe (JD.field "controlsColor" JD.string))
+        (JD.maybe (JD.field "labelsColor" JD.string))
+        (JD.maybe (JD.field "textColor" JD.string))
+        (JD.maybe (JD.field "pressedColor" JD.string))
+        (JD.maybe (JD.field "unpressedColor" JD.string))
 
 
 type alias Model =
@@ -37,6 +47,7 @@ type alias Model =
     , spec : Spec
     , control : SvgControl.Model
     , windowSize : RectSize
+    , uiTheme : UiTheme
     }
 
 
@@ -118,7 +129,7 @@ resize newSize model =
 
 onTextSize : TextSizeReply -> Model -> Model
 onTextSize tsr model =
-    { model | control = SvgControl.onTextSize tsr model.control }
+    { model | control = SvgControl.onTextSize model.uiTheme tsr model.control }
 
 
 init :
@@ -132,6 +143,14 @@ init rect spec =
 
         ( updmod, cmds ) =
             SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
+
+        colors =
+            SvgThings.colorFun
+                (spec.controlsColor |> Maybe.withDefault (SvgThings.defaultColors Controls))
+                (spec.labelsColor |> Maybe.withDefault (SvgThings.defaultColors Labels))
+                (spec.textColor |> Maybe.withDefault (SvgThings.defaultColors Text))
+                (spec.pressedColor |> Maybe.withDefault (SvgThings.defaultColors Pressed))
+                (spec.unpressedColor |> Maybe.withDefault (SvgThings.defaultColors Unpressed))
     in
     ( Model spec.title
         rect
@@ -139,6 +158,7 @@ init rect spec =
         spec
         updmod
         (RectSize 0 0)
+        { colorString = colors }
     , Batch (cmd :: cmds)
     )
 
@@ -159,10 +179,10 @@ view model =
                     ++ model.srect.h
                 )
             ]
-            [ VD.map CMsg (viewSvgControl model.control) ]
+            [ VD.map CMsg (viewSvgControl model.uiTheme model.control) ]
         ]
 
 
-viewSvgControl : SvgControl.Model -> Svg.Svg SvgControl.Msg
-viewSvgControl conmodel =
-    SvgControl.view conmodel
+viewSvgControl : UiTheme -> SvgControl.Model -> Svg.Svg SvgControl.Msg
+viewSvgControl theme conmodel =
+    SvgControl.view theme conmodel

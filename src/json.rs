@@ -26,11 +26,12 @@ pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
   Ok(Box::new(Root {
     title: String::from(title),
     root_control: rootcontrol,
+    colors: BTreeMap::new(),
   }))
 }
 
 pub fn serialize_root(root: &Root) -> Value {
-  let mut btv = BTreeMap::new();
+  let mut btv = root.colors.clone();
   btv.insert(String::from("title"), Value::String(root.title.clone()));
   btv.insert(String::from("rootControl"), root.root_control.as_json());
 

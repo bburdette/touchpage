@@ -11,7 +11,7 @@ import SvgCommand exposing (Command(..))
 import SvgLabel
 import SvgSlider
 import SvgTextSize exposing (TextSizeReply, calcTextSvg, resizeCommand)
-import SvgThings
+import SvgThings exposing (Orientation(..), UiColor(..), UiTheme)
 import SvgXY
 import Task
 import VirtualDom as VD
@@ -230,26 +230,26 @@ toCtrlMsg id msg =
             CaSizer (SzCMsg x (toCtrlMsg (myTail id) msg))
 
 
-onTextSize : TextSizeReply -> Model -> Model
-onTextSize tsr model =
+onTextSize : UiTheme -> TextSizeReply -> Model -> Model
+onTextSize theme tsr model =
     case model of
         CmButton m ->
             CmButton <|
-                SvgTextSize.onTextSizeReply tsr m
+                SvgTextSize.onTextSizeReply theme tsr m
 
         CmSlider m ->
             CmSlider <|
-                SvgTextSize.onTextSizeReply tsr m
+                SvgTextSize.onTextSizeReply theme tsr m
 
         CmXY m ->
             CmXY <|
-                SvgTextSize.onTextSizeReply tsr m
+                SvgTextSize.onTextSizeReply theme tsr m
 
         CmLabel m ->
-            CmLabel <| SvgTextSize.onTextSizeReply tsr m
+            CmLabel <| SvgTextSize.onTextSizeReply theme tsr m
 
         CmSizer m ->
-            CmSizer <| szOnTextSize tsr m
+            CmSizer <| szOnTextSize theme tsr m
 
 
 update : Msg -> Model -> ( Model, Command )
@@ -339,23 +339,23 @@ init rect cid spec =
             aptg CmSizer <| szinit rect cid s
 
 
-view : Model -> Svg Msg
-view model =
+view : UiTheme -> Model -> Svg Msg
+view theme model =
     case model of
         CmButton m ->
-            VD.map CaButton (SvgButton.view m)
+            VD.map CaButton (SvgButton.view theme m)
 
         CmSlider m ->
-            VD.map CaSlider (SvgSlider.view m)
+            VD.map CaSlider (SvgSlider.view theme m)
 
         CmXY m ->
-            VD.map CaXY (SvgXY.view m)
+            VD.map CaXY (SvgXY.view theme m)
 
         CmLabel m ->
-            VD.map CaLabel (SvgLabel.view m)
+            VD.map CaLabel (SvgLabel.view theme m)
 
         CmSizer m ->
-            VD.map CaSizer (szview m)
+            VD.map CaSizer (szview m theme)
 
 
 
@@ -470,15 +470,15 @@ szupdate msg model =
                     ( model, None )
 
 
-szOnTextSize : TextSizeReply -> SzModel -> SzModel
-szOnTextSize tsr model =
+szOnTextSize : UiTheme -> TextSizeReply -> SzModel -> SzModel
+szOnTextSize theme tsr model =
     case tsr.controlId of
         idx :: rst ->
             case Dict.get idx model.controls of
                 Just control ->
                     let
                         nc =
-                            onTextSize { tsr | controlId = rst } control
+                            onTextSize theme { tsr | controlId = rst } control
                     in
                     { model | controls = Dict.insert idx nc model.controls }
 
@@ -573,18 +573,18 @@ szinit rect cid szspec =
 -- VIEW
 
 
-szview : SzModel -> Svg SzMsg
-szview model =
+szview : SzModel -> UiTheme -> Svg SzMsg
+szview model theme =
     let
         controllst =
             Dict.toList model.controls
     in
-    Svg.g [] (List.map viewSvgControls controllst)
+    Svg.g [] (List.map (viewSvgControls theme) controllst)
 
 
-viewSvgControls : ( ID, Model ) -> Svg.Svg SzMsg
-viewSvgControls ( id, model ) =
-    VD.map (SzCMsg id) (view model)
+viewSvgControls : UiTheme -> ( ID, Model ) -> Svg.Svg SzMsg
+viewSvgControls theme ( id, model ) =
+    VD.map (SzCMsg id) (view theme model)
 
 
 border : Int

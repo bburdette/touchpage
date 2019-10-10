@@ -5,7 +5,7 @@ import Json.Encode as JE
 import Svg exposing (Attribute, Svg, g, rect, svg, text, text_)
 import Svg.Attributes exposing (..)
 import SvgCommand exposing (Command(..), TextSizeRequest)
-import SvgThings exposing (ControlId, Rect, decodeControlId, encodeControlId)
+import SvgThings exposing (ControlId, Rect, UiColor(..), UiTheme, decodeControlId, encodeControlId)
 import Template exposing (render, template, withString, withValue)
 import Util exposing (andMap)
 
@@ -96,14 +96,15 @@ type alias TsrModel m =
 
 
 onTextSizeReply :
-    TextSizeReply
+    UiTheme
+    -> TextSizeReply
     -> TsrModel m
     -> TsrModel m
-onTextSizeReply tsr model =
+onTextSizeReply theme tsr model =
     { model
         | stringWidth = Just tsr.width
         , textSvg =
-            calcTextSvg model.label tsr.width model.rect
+            calcTextSvg theme model.label tsr.width model.rect
     }
 
 
@@ -129,33 +130,35 @@ resizeCommand model =
 
 
 calcTextSvgM :
-    { m
-        | stringWidth : Maybe Float
-        , label : String
-        , rect : Rect
-    }
+    UiTheme
+    ->
+        { m
+            | stringWidth : Maybe Float
+            , label : String
+            , rect : Rect
+        }
     -> List (Svg ())
-calcTextSvgM model =
+calcTextSvgM theme model =
     model.stringWidth
         |> Maybe.map
             (\sw ->
-                calcTextSvg model.label sw model.rect
+                calcTextSvg theme model.label sw model.rect
              -- |> List.map (\meh -> VD.map (\_ -> NoOp) meh)
             )
         |> Maybe.withDefault []
 
 
-calcTextSvg : String -> Float -> Rect -> List (Svg ())
-calcTextSvg textString width20px rect =
+calcTextSvg : UiTheme -> String -> Float -> Rect -> List (Svg ())
+calcTextSvg theme textString width20px rect =
     let
         fs =
             computeFontScaling width20px 20.0 (toFloat rect.w) (toFloat rect.h)
     in
-    calcText controlFontFamily textString width20px fs rect
+    calcText theme controlFontFamily textString width20px fs rect
 
 
-calcText : String -> String -> Float -> Float -> Rect -> List (Svg ())
-calcText fontFam lbtext labelMeasuredWidth fontScaling rect =
+calcText : UiTheme -> String -> String -> Float -> Float -> Rect -> List (Svg ())
+calcText theme fontFam lbtext labelMeasuredWidth fontScaling rect =
     let
         width =
             labelMeasuredWidth
@@ -191,7 +194,7 @@ calcText fontFam lbtext labelMeasuredWidth fontScaling rect =
             render { scale = String.fromFloat scale, xt = String.fromFloat xt, yt = String.fromFloat yt } tmpl
     in
     [ text_
-        [ fill "black"
+        [ fill ("#" ++ theme.colorString Text)
 
         -- , textAnchor "middle"
         -- , x model.middlex

@@ -1,12 +1,23 @@
 use controls::{Button, Control, Label, Orientation, Root, Sizer, Slider, XY};
+use serde_json::value::Value;
 use failure::err_msg;
 use failure::Error as FError;
+use std::collections::BTreeMap;
 use std::convert::TryInto;
+
+pub enum Color {
+  Controls,
+  Labels,
+  Text,
+  Pressed,
+  Unpressed,
+}
 
 pub struct Gui {
   pub title: String,
   pub root_control: Option<Box<dyn Control>>,
   sizerstack: Vec<Vec<i32>>,
+  colors: BTreeMap<String, String>,
 }
 
 impl Gui {
@@ -15,6 +26,7 @@ impl Gui {
       title: title,
       root_control: None,
       sizerstack: Vec::new(),
+      colors: BTreeMap::new(),
     }
   }
   // one way function!
@@ -22,9 +34,15 @@ impl Gui {
     match self.root_control {
       Some(rc) => {
         if self.sizerstack.is_empty() {
+          let mut colors = BTreeMap::new();
+          for (key,value) in self.colors {
+            colors.insert(key, Value::String(value)); 
+          };
+          
           Ok(Root {
             title: self.title.clone(),
             root_control: rc,
+            colors: colors,
           })
         } else {
           Err(err_msg("there are still incomplete sizers!"))
@@ -107,16 +125,12 @@ impl Gui {
     });
     self.add_control(newslider)
   }
-  pub fn add_xy(
-    &mut self,
-    name: String,
-    label: Option<String>,
-  ) -> Result<&mut Gui, FError> {
+  pub fn add_xy(&mut self, name: String, label: Option<String>) -> Result<&mut Gui, FError> {
     let newxy = Box::new(XY {
       control_id: self.next_id()?,
       name: String::from(name),
       label: label,
-      location: (0.5,0.5),
+      location: (0.5, 0.5),
       pressed: false,
     });
     self.add_control(newxy)
@@ -152,6 +166,19 @@ impl Gui {
       self.sizerstack.pop();
       Ok(self)
     }
+  }
+
+  pub fn set_color(&mut self, color: Color, hexstring: &str) -> &mut Gui {
+    let cs = match color {
+      Color::Controls => "controlsColor",
+      Color::Labels => "labelsColor",
+      Color::Text => "textColor",
+      Color::Pressed => "pressedColor",
+      Color::Unpressed => "unpressedColor",
+    };
+
+    self.colors.insert(cs.to_string(), hexstring.to_string());
+    self
   }
 }
 

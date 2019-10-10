@@ -23,11 +23,9 @@ pub fn start<'a>(
   let root = try!(json::deserialize_root(&guival));
 
   println!(
-    "title: {} rootcontroltype: {} ",
-    root.title,
-    root.root_control.control_type()
+    "starting websocket server for control page: {} ",
+    root.title
   );
-  println!("controls: {:?}", root.root_control);
 
   // from control tree, make a map of ids->controls.
   let mapp = controls::make_control_map(&*root.root_control);
@@ -111,13 +109,12 @@ fn websockets_main(
   broadcaster: broadcaster::Broadcaster,
   cup: Arc<Mutex<Box<dyn ControlUpdateProcessor>>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-  println!("websockets_main {:?}", ipaddr);
+  println!("websockets address {:?}", ipaddr);
   let server = Server::bind(&ipaddr[..])?;
   for request in server.filter_map(Result::ok) {
     let sci = ci.clone();
     let mut broadcaster = broadcaster.clone();
     let cup = cup.clone();
-    println!("request: {:?}", request.protocols());
     // Spawn a new thread for each connection.
     thread::spawn(move || {
       if !request.protocols().contains(&"rust-websocket".to_string()) {
@@ -129,11 +126,13 @@ fn websockets_main(
         request.use_protocol("rust-websocket").accept().unwrap();
 
       let ip = client.peer_addr().unwrap();
-
       println!("Connection from {}", ip);
 
       // send up controls.
-      let sendres = sendcontrols(&sci, &mut client);
+      match sendcontrols(&sci, &mut client) {
+        Err(e) => println!("error sending controls to client: {}", e),
+        Ok(_) => ()
+      }
 
       //(websocket::receiver::Reader<std::net::TcpStream>, websocket::sender::Writer<std::net::TcpStream> )
       let (mut receiver, sender) = client.split().unwrap();
@@ -142,10 +141,7 @@ fn websockets_main(
       broadcaster.register(sendmeh.clone());
 
       for message in receiver.incoming_messages() {
-        // TODO message handler here.
         let message = message.unwrap();
-
-        println!("received msg: {:?}", message);
 
         match message {
           OwnedMessage::Close(_) => {
@@ -161,7 +157,6 @@ fn websockets_main(
             s.send_message(&message).unwrap();
           }
           OwnedMessage::Text(txt) => {
-            println!("txt {}", txt);
             // let message = OwnedMessage::Pong(ping);
             // sender.send_message(&message).unwrap();
             match serde_json::from_str(txt.as_str()) {
@@ -171,7 +166,6 @@ fn websockets_main(
                 match s_um {
                   Some(updmsg) => {
                     {
-                      println!("updmsg: {:?}", updmsg);
                       let mut sci = sci.lock().unwrap();
                       {
                         let mbcntrl = sci.cm.get_mut(controls::get_um_id(&updmsg));

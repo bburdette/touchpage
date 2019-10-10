@@ -152,7 +152,7 @@ impl Gui {
       controls: Vec::new(),
       orientation: orientation,
     });
-    self.add_control(newsizer);
+    self.add_control(newsizer)?;
     self.sizerstack.push(id);
     Ok(self)
   }

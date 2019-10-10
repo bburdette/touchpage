@@ -1,4 +1,4 @@
-module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, UiColor(..), UiTheme, colorFun, containsXY, darkColors, decodeControlId, defaultColors, defaultTheme, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
+module SvgThings exposing (ControlId, Orientation(..), Rect, SRect, UiColor(..), UiTheme, colorFun, containsXY, decodeControlId, defaultColors, defaultTheme, encodeControlId, hrects, hrectsp, jsOrientation, mekhr, mekhrp, mekvr, mekvrp, processProps, shrinkRect, somme, toSRect, vrects, vrectsp)
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -7,17 +7,21 @@ import Tuple
 
 
 type UiColor
-    = Fill
+    = Controls
+    | Labels
     | Text
     | Pressed
     | Unpressed
 
 
-colorFun : String -> String -> String -> String -> UiColor -> String
-colorFun fill text pressed unpressed uc =
+colorFun : String -> String -> String -> String -> String -> UiColor -> String
+colorFun controls labels text pressed unpressed uc =
     case uc of
-        Fill ->
-            fill
+        Controls ->
+            controls
+
+        Labels ->
+            labels
 
         Text ->
             text
@@ -29,36 +33,43 @@ colorFun fill text pressed unpressed uc =
             unpressed
 
 
+
+{- defaultColors : UiColor -> String
+   defaultColors uc =
+       case uc of
+           Fill ->
+               "F1F1F1"
+
+           Text ->
+               "000000"
+
+           Pressed ->
+               "f000f0"
+
+           Unpressed ->
+               "60B5CC"
+
+
+-}
+
+
 defaultColors : UiColor -> String
 defaultColors uc =
     case uc of
-        Fill ->
-            "F1F1F1"
-
-        Text ->
+        Controls ->
             "000000"
 
-        Pressed ->
-            "f000f0"
-
-        Unpressed ->
-            "60B5CC"
-
-
-darkColors : UiColor -> String
-darkColors uc =
-    case uc of
-        Fill ->
-            "000000"
+        Labels ->
+            "A5A5A5"
 
         Text ->
             "FFFFFF"
 
         Pressed ->
-            "0db00d"
+            "0DB00D"
 
         Unpressed ->
-            "c0e4c0"
+            "C0E4C0"
 
 
 type alias UiTheme =
@@ -68,7 +79,7 @@ type alias UiTheme =
 
 defaultTheme : UiTheme
 defaultTheme =
-    { colorString = darkColors }
+    { colorString = defaultColors }
 
 
 type Orientation

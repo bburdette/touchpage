@@ -6,7 +6,8 @@ use std::collections::BTreeMap;
 use std::convert::TryInto;
 
 pub enum Color {
-  Fill,
+  Controls,
+  Labels,
   Text,
   Pressed,
   Unpressed,
@@ -169,7 +170,8 @@ impl Gui {
 
   pub fn set_color(&mut self, color: Color, hexstring: &str) -> &mut Gui {
     let cs = match color {
-      Color::Fill => "fillColor",
+      Color::Controls => "controlsColor",
+      Color::Labels => "labelsColor",
       Color::Text => "textColor",
       Color::Pressed => "pressedColor",
       Color::Unpressed => "unpressedColor",

@@ -525,7 +525,7 @@ view theme model =
             , height model.srect.h
             , rx "2"
             , ry "2"
-            , style ("fill: #" ++ theme.colorString Fill ++ ";")
+            , style ("fill: #" ++ theme.colorString Controls ++ ";")
             ]
             []
         , VD.map (\_ -> NoOp) (g [] model.textSvg)

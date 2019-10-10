@@ -19,7 +19,8 @@ type alias Spec =
     { title : String
     , rootControl : SvgControl.Spec
     , state : Maybe (List SvgControl.Msg)
-    , fillColor : Maybe String
+    , controlsColor : Maybe String
+    , labelsColor : Maybe String
     , textColor : Maybe String
     , pressedColor : Maybe String
     , unpressedColor : Maybe String
@@ -28,11 +29,12 @@ type alias Spec =
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.map7 Spec
+    JD.map8 Spec
         (JD.field "title" JD.string)
         (JD.field "rootControl" SvgControl.jsSpec)
         (JD.maybe (JD.field "state" (JD.list SvgControl.jsUpdateMessage)))
-        (JD.maybe (JD.field "fillColor" JD.string))
+        (JD.maybe (JD.field "controlsColor" JD.string))
+        (JD.maybe (JD.field "labelsColor" JD.string))
         (JD.maybe (JD.field "textColor" JD.string))
         (JD.maybe (JD.field "pressedColor" JD.string))
         (JD.maybe (JD.field "unpressedColor" JD.string))
@@ -144,10 +146,11 @@ init rect spec =
 
         colors =
             SvgThings.colorFun
-                (spec.fillColor |> Maybe.withDefault (SvgThings.darkColors Fill))
-                (spec.textColor |> Maybe.withDefault (SvgThings.darkColors Text))
-                (spec.pressedColor |> Maybe.withDefault (SvgThings.darkColors Pressed))
-                (spec.unpressedColor |> Maybe.withDefault (SvgThings.darkColors Unpressed))
+                (spec.controlsColor |> Maybe.withDefault (SvgThings.defaultColors Controls))
+                (spec.labelsColor |> Maybe.withDefault (SvgThings.defaultColors Labels))
+                (spec.textColor |> Maybe.withDefault (SvgThings.defaultColors Text))
+                (spec.pressedColor |> Maybe.withDefault (SvgThings.defaultColors Pressed))
+                (spec.unpressedColor |> Maybe.withDefault (SvgThings.defaultColors Unpressed))
     in
     ( Model spec.title
         rect

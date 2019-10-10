@@ -125,7 +125,7 @@ view theme model =
                 , height model.srect.h
                 , rx "15"
                 , ry "15"
-                , style ("fill: #" ++ theme.colorString Fill ++ ";")
+                , style ("fill: #" ++ theme.colorString Labels ++ ";")
                 ]
                 []
 

@@ -12,6 +12,7 @@ use std::fmt::Debug;
 pub struct Root {
   pub title: String,
   pub root_control: Box<dyn Control>,
+  pub colors: BTreeMap<String, Value>,
 }
 
 // --------------------------------------------------------

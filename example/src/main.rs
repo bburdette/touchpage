@@ -14,21 +14,19 @@ use touchpage::webserver;
 use touchpage::websocketserver;
 
 fn main() {
-  // when developing elm, I like to load the page from a file.  it does require
+  // when developing the elm code, I like to load the page from a file.  It requires
   // restarting the server when the file changes.
-/*  let mbhtml = match load_string("index.html") {
+  let mbhtml = match load_string("index.html") {
     Ok(html) => Some(html),
     _ => None,  
   };
-*/
   // html == None means use the precompiled elm/html in string_defaults.rs
-  let mbhtml = None;
+  // let mbhtml = None;
 
   let rootv: Result<String, FError> = build_gui()
     .and_then(|gui| gui.to_root())
     .map(|root| J::serialize_root(&root))
     .and_then(|rootv| serde_json::to_string_pretty(&rootv).map_err(|_| err_msg("uh oh")));
-  // .and_then(|st| write_string(st.as_str(), "json.out"));
 
   let guijson = match rootv {
     Ok(s) => s,
@@ -37,6 +35,9 @@ fn main() {
       ERRORUI.to_string()
     }
   };
+
+  // see the json created above, if you want.
+  // write_string(guijson.as_str(), "json.txt");
 
   // PrintUpdateMsg is a simple "control update processor" that just prints the
   // control update messages as the come in.  Write your own depending on what
@@ -75,7 +76,8 @@ fn build_gui() -> Result<G::Gui, FError> {
     .add_xy("xyleft".to_string(), Some("xy1".to_string()))?
     .add_xy("xyright".to_string(), Some("xy2".to_string()))?
     .end_sizer()?
-    .end_sizer()?;
+    .end_sizer()?
+    .set_color(G::Color::Text, "FF0000");
   Ok(gui)
 }
 

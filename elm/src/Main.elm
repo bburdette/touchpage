@@ -5,11 +5,11 @@ import Browser.Events as BE
 import Html
 import Json.Decode as JD
 import Json.Encode as JE
-import SvgCommand exposing (Command(..), TextSizeRequest)
+import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgControlPage
-import SvgSlider
-import SvgTextSize exposing (TextSizeReply, decodeTextSizeReply, encodeTextSizeRequest, estimateTextWidth)
+import SvgLabel
+import SvgTextSize exposing (TextSizeReply, decodeTextSizeReply, encodeTextSizeRequest)
 import SvgThings
 import Util exposing (RectSize)
 import WebSocket
@@ -165,7 +165,15 @@ init flags =
         ( sm, cmd ) =
             SvgControlPage.init
                 (SvgThings.Rect 0 0 flags.width flags.height)
-                (SvgControlPage.Spec wsUrl (SvgControl.CsSlider (SvgSlider.Spec "blah" Nothing SvgThings.Vertical)) Nothing)
+                (SvgControlPage.Spec
+                    wsUrl
+                    (SvgControl.CsLabel (SvgLabel.Spec "blah" "no controls loaded!"))
+                    Nothing
+                    Nothing
+                    Nothing
+                    Nothing
+                    Nothing
+                )
     in
     ( { scpModel = sm
       , wsUrl = wsUrl

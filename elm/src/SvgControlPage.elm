@@ -19,15 +19,23 @@ type alias Spec =
     { title : String
     , rootControl : SvgControl.Spec
     , state : Maybe (List SvgControl.Msg)
+    , fillColor : Maybe String
+    , textColor : Maybe String
+    , pressedColor : Maybe String
+    , unpressedColor : Maybe String
     }
 
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.map3 Spec
+    JD.map7 Spec
         (JD.field "title" JD.string)
         (JD.field "rootControl" SvgControl.jsSpec)
         (JD.maybe (JD.field "state" (JD.list SvgControl.jsUpdateMessage)))
+        (JD.maybe (JD.field "fillColor" JD.string))
+        (JD.maybe (JD.field "textColor" JD.string))
+        (JD.maybe (JD.field "pressedColor" JD.string))
+        (JD.maybe (JD.field "unpressedColor" JD.string))
 
 
 type alias Model =
@@ -133,6 +141,13 @@ init rect spec =
 
         ( updmod, cmds ) =
             SvgControl.update_list (Maybe.withDefault [] spec.state) conmod
+
+        colors =
+            SvgThings.colorFun
+                (spec.fillColor |> Maybe.withDefault (SvgThings.darkColors Fill))
+                (spec.textColor |> Maybe.withDefault (SvgThings.darkColors Text))
+                (spec.pressedColor |> Maybe.withDefault (SvgThings.darkColors Pressed))
+                (spec.unpressedColor |> Maybe.withDefault (SvgThings.darkColors Unpressed))
     in
     ( Model spec.title
         rect
@@ -140,7 +155,7 @@ init rect spec =
         spec
         updmod
         (RectSize 0 0)
-        SvgThings.defaultTheme
+        { colorString = colors }
     , Batch (cmd :: cmds)
     )
 

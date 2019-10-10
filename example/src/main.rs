@@ -69,14 +69,10 @@ impl ControlUpdateProcessor for ExampleUpdate {
         location,
         ..
       } => {
-        println!("getname: {:?}", cn.get_name(control_id));
         cn.get_name(control_id).map(|name| {
-          println!("slider name: {}", name);
           if name == "hs1" {
-            println!("attempting label update:");
             location.map(|loc| cn.update_label("lb0", format!("{}", loc).as_str()));
           } else if name == "hs4" {
-            println!("attempting label update:");
             location.map(|loc| cn.update_label("lb1", format!("{}", loc).as_str()));
           };
         });
@@ -84,12 +80,9 @@ impl ControlUpdateProcessor for ExampleUpdate {
       }
       cu::UpdateMsg::Button { control_id, .. } => {
         cn.get_name(control_id).map(|name| {
-          println!("button name: {}", name);
           if name == "b0" {
-            println!("attempting label update:");
             cn.update_label("lb0", "");
           } else if name == "b1" {
-            println!("attempting label update:");
             cn.update_label("lb1", "");
           };
         });
@@ -97,7 +90,6 @@ impl ControlUpdateProcessor for ExampleUpdate {
       }
 
       _ => {
-        // println!("nott slider? {:?}", update);
         ()
       }
     };

@@ -42,10 +42,10 @@ fn main() {
   // PrintUpdateMsg is a simple "control update processor" that just prints the
   // control update messages as the come in.  Write your own depending on what
   // you want the controls to do on the rust side.
-  let meh = PrintUpdateMsg {};
+  let printupdates = PrintUpdateMsg {};
 
   // start the websocket server.  mandatory for receiving control messages.
-  match websocketserver::start(guijson.as_str(), Box::new(meh), "0.0.0.0", "9001", false) {
+  match websocketserver::start(guijson.as_str(), Box::new(printupdates), "0.0.0.0", "9001", false) {
     Ok(_) => (),
     Err(e) => println!("error starting websocket server: {},", e),
   }

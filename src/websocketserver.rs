@@ -11,7 +11,7 @@ use websocket::message::Message;
 use websocket::sync::{Client, Server};
 use websocket::OwnedMessage;
 
-pub fn startserver<'a>(
+pub fn start<'a>(
   guistring: &str,
   cup: Box<dyn ControlUpdateProcessor>,
   ip: &str,
@@ -20,17 +20,17 @@ pub fn startserver<'a>(
 ) -> Result<ControlNexus, Box<dyn std::error::Error>> {
   let guival = serde_json::from_str(guistring)?;
 
-  let blah = try!(json::deserialize_root(&guival));
+  let root = try!(json::deserialize_root(&guival));
 
   println!(
     "title: {} rootcontroltype: {} ",
-    blah.title,
-    blah.root_control.control_type()
+    root.title,
+    root.root_control.control_type()
   );
-  println!("controls: {:?}", blah.root_control);
+  println!("controls: {:?}", root.root_control);
 
   // from control tree, make a map of ids->controls.
-  let mapp = controls::make_control_map(&*blah.root_control);
+  let mapp = controls::make_control_map(&*root.root_control);
   let cnm = controls::control_map_to_name_map(&mapp);
 
   let ci = ControlInfo {

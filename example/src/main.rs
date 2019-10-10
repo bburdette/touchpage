@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
-use touchpage::control_nexus::{ControlInfo, ControlUpdateProcessor, PrintUpdateMsg};
+use touchpage::control_nexus::{ControlNexus, ControlUpdateProcessor, PrintUpdateMsg};
 use touchpage::control_updates as cu;
 use touchpage::controls::Orientation::{Horizontal, Vertical};
 use touchpage::guibuilder as G;
@@ -43,16 +43,12 @@ fn main() {
   // PrintUpdateMsg is a simple "control update processor" that just prints the
   // control update messages as the come in.  Write your own depending on what
   // you want the controls to do on the rust side.
-  let printupdates = PrintUpdateMsg {};
+  // let printupdates = PrintUpdateMsg {};
+  //
+  let cup = ExampleUpdate {};
 
   // start the websocket server.  mandatory for receiving control messages.
-  match websocketserver::start(
-    guijson.as_str(),
-    Box::new(printupdates),
-    "0.0.0.0",
-    "9001",
-    false,
-  ) {
+  match websocketserver::start(guijson.as_str(), Box::new(cup), "0.0.0.0", "9001", false) {
     Ok(_) => (),
     Err(e) => println!("error starting websocket server: {},", e),
   }
@@ -65,19 +61,46 @@ fn main() {
 pub struct ExampleUpdate {}
 
 impl ControlUpdateProcessor for ExampleUpdate {
-  fn on_update_received(&mut self, update: &cu::UpdateMsg, ci: &mut ControlInfo) -> () {
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, cn: &mut ControlNexus) -> () {
     println!("control update: {:?}", update);
     match update {
       cu::UpdateMsg::Slider {
         control_id,
         location,
         ..
-      } => ci.get_name(control_id).map(|name| {
-        if name == "hs1" {
-          location.map(|loc| ci.update_label("lb0", format!("{}", loc)))
-        }
-      }),
-    }
+      } => {
+        println!("getname: {:?}", cn.get_name(control_id));
+        cn.get_name(control_id).map(|name| {
+          println!("slider name: {}", name);
+          if name == "hs1" {
+            println!("attempting label update:");
+            location.map(|loc| cn.update_label("lb0", format!("{}", loc).as_str()));
+          } else if name == "hs4" {
+            println!("attempting label update:");
+            location.map(|loc| cn.update_label("lb1", format!("{}", loc).as_str()));
+          };
+        });
+        ()
+      }
+      cu::UpdateMsg::Button { control_id, .. } => {
+        cn.get_name(control_id).map(|name| {
+          println!("button name: {}", name);
+          if name == "b0" {
+            println!("attempting label update:");
+            cn.update_label("lb0", "");
+          } else if name == "b1" {
+            println!("attempting label update:");
+            cn.update_label("lb1", "");
+          };
+        });
+        ()
+      }
+
+      _ => {
+        // println!("nott slider? {:?}", update);
+        ()
+      }
+    };
   }
 }
 
@@ -88,15 +111,15 @@ fn build_gui() -> Result<G::Gui, FError> {
     .add_sizer(Vertical)?
     .add_sizer(Horizontal)?
     .add_label("lb0".to_string(), "blah".to_string())?
-    .add_label("lb3".to_string(), "blah2".to_string())?
+    .add_label("lb1".to_string(), "blah2".to_string())?
     .end_sizer()?
     .add_sizer(Horizontal)?
-    .add_button("b1".to_string(), None)?
+    .add_button("b0".to_string(), None)?
     .add_slider("hs1".to_string(), None, Vertical)?
     .add_slider("hs2".to_string(), None, Vertical)?
     .add_slider("hs3".to_string(), None, Vertical)?
     .add_slider("hs4".to_string(), None, Vertical)?
-    .add_button("b2".to_string(), None)?
+    .add_button("b1".to_string(), None)?
     .end_sizer()?
     .add_sizer(Horizontal)?
     .add_xy("xyleft".to_string(), Some("xy1".to_string()))?

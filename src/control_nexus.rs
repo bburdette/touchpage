@@ -9,14 +9,14 @@ use websocket::message::Message;
 // Implement a ControlUpdateProcessor if you want the controls to actually do something
 // on the server.
 pub trait ControlUpdateProcessor: Send {
-  fn on_update_received(&mut self, &cu::UpdateMsg, ci: &mut ControlInfo) -> ();
+  fn on_update_received(&mut self, &cu::UpdateMsg, cn: &mut ControlNexus) -> ();
 }
 
 // A basic ControlUpdateProcessor that just prints out the update messages.
 pub struct PrintUpdateMsg {}
 
 impl ControlUpdateProcessor for PrintUpdateMsg {
-  fn on_update_received(&mut self, update: &cu::UpdateMsg, _ci: &mut ControlInfo) -> () {
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, _cn: &mut ControlNexus) -> () {
     println!("control update: {:?}", update);
   }
 }
@@ -38,6 +38,7 @@ impl ControlInfo {
 }
 
 // The control nexus contains all the controls and the broadcaster.
+#[derive(Clone)]
 pub struct ControlNexus {
   pub ci: Arc<Mutex<ControlInfo>>,
   pub bc: broadcaster::Broadcaster,

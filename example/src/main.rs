@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
-use touchpage::control_nexus::{ControlNexus, ControlUpdateProcessor, PrintUpdateMsg};
+use touchpage::control_nexus::{ControlNexus, ControlUpdateProcessor};
 use touchpage::control_updates as cu;
 use touchpage::controls::Orientation::{Horizontal, Vertical};
 use touchpage::guibuilder as G;
@@ -16,13 +16,16 @@ use touchpage::websocketserver;
 
 fn main() {
   // when developing the elm code, I like to load the page from a file.  It requires
-  // restarting the server when the file changes.
-  let mbhtml = match load_string("index.html") {
-    Ok(html) => Some(html),
-    _ => None,
-  };
+  // restarting the server when the file changes.  At least you don't have to recompile
+  // the server though.
+  /*  let mbhtml = match load_string("index.html") {
+        Ok(html) => Some(html),
+        _ => None,
+      };
+  */
+
   // html == None means use the precompiled elm/html in string_defaults.rs
-  // let mbhtml = None;
+  let mbhtml = None;
 
   let rootv: Result<String, FError> = build_gui()
     .and_then(|gui| gui.to_root())
@@ -40,11 +43,7 @@ fn main() {
   // see the json created above, if you want.
   // write_string(guijson.as_str(), "json.txt");
 
-  // PrintUpdateMsg is a simple "control update processor" that just prints the
-  // control update messages as the come in.  Write your own depending on what
-  // you want the controls to do on the rust side.
-  // let printupdates = PrintUpdateMsg {};
-  //
+  // the 'ControlUpdateProcessor' does something when an update message comes in.
   let cup = ExampleUpdate {};
 
   // start the websocket server.  mandatory for receiving control messages.

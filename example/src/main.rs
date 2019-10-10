@@ -61,7 +61,7 @@ pub struct ExampleUpdate {}
 
 impl ControlUpdateProcessor for ExampleUpdate {
   fn on_update_received(&mut self, update: &cu::UpdateMsg, cn: &mut ControlNexus) -> () {
-    println!("control update: {:?}", update);
+    // println!("control update: {:?}", update);
     match update {
       cu::UpdateMsg::Slider {
         control_id,

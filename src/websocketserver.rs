@@ -38,20 +38,13 @@ pub fn start<'a>(
   };
 
   let cmshare = Arc::new(Mutex::new(ci));
-  let wscmshare = cmshare.clone();
-  // for sending, bind to this.  if we bind to localhost, we can't
-  // send messages to other machines.
   let bc = broadcaster::Broadcaster::new();
-  let wsbc = bc.clone();
 
   let cn_ret = ControlNexus {
     ci: cmshare,
     bc: bc,
   };
-  let cn_ws = ControlNexus {
-    ci: wscmshare,
-    bc: wsbc,
-  };
+  let cn_ws = cn_ret.clone();
 
   let mut websockets_ip = String::from(ip);
   websockets_ip.push_str(":");
@@ -118,13 +111,7 @@ fn websockets_main(
   let server = Server::bind(&ipaddr[..])?;
   for request in server.filter_map(Result::ok) {
     let mut scn = acn.clone();
-    // let mut broadcaster
-    // = broadcaster.clone();
-/*    let controlnexus = ControlInfo {
-      ci: sci,
-      bc: broadcaster,
-    };
-*/    let cup = cup.clone();
+    let cup = cup.clone();
     // Spawn a new thread for each connection.
     thread::spawn(move || {
       if !request.protocols().contains(&"rust-websocket".to_string()) {

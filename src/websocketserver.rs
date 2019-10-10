@@ -180,12 +180,12 @@ fn websockets_main(
                       }
                     }
                     let mut scup = cup.lock().unwrap();
-                    let sci = match sci.lock() {
+                    let mut sci = match sci.lock() {
                       Ok(sci) => sci,
                       Err(poisoned) => poisoned.into_inner(),
                     };
 
-                    scup.on_update_received(&updmsg, &*sci);
+                    scup.on_update_received(&updmsg, &mut *sci);
                   }
                   _ => println!("decode_update_message failed on websockets msg: {:?}", txt),
                 }

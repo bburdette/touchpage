@@ -6,7 +6,8 @@ use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
-use touchpage::control_nexus::PrintUpdateMsg;
+use touchpage::control_nexus::{ControlInfo, ControlUpdateProcessor, PrintUpdateMsg};
+use touchpage::control_updates as cu;
 use touchpage::controls::Orientation::{Horizontal, Vertical};
 use touchpage::guibuilder as G;
 use touchpage::json as J;
@@ -18,7 +19,7 @@ fn main() {
   // restarting the server when the file changes.
   let mbhtml = match load_string("index.html") {
     Ok(html) => Some(html),
-    _ => None,  
+    _ => None,
   };
   // html == None means use the precompiled elm/html in string_defaults.rs
   // let mbhtml = None;
@@ -45,7 +46,13 @@ fn main() {
   let printupdates = PrintUpdateMsg {};
 
   // start the websocket server.  mandatory for receiving control messages.
-  match websocketserver::start(guijson.as_str(), Box::new(printupdates), "0.0.0.0", "9001", false) {
+  match websocketserver::start(
+    guijson.as_str(),
+    Box::new(printupdates),
+    "0.0.0.0",
+    "9001",
+    false,
+  ) {
     Ok(_) => (),
     Err(e) => println!("error starting websocket server: {},", e),
   }
@@ -53,6 +60,25 @@ fn main() {
   // start the webserver.  not necessary if you want to serve up the html with your
   // own server.
   webserver::start("0.0.0.0", "8000", "9001", mbhtml, true);
+}
+
+pub struct ExampleUpdate {}
+
+impl ControlUpdateProcessor for ExampleUpdate {
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, ci: &mut ControlInfo) -> () {
+    println!("control update: {:?}", update);
+    match update {
+      cu::UpdateMsg::Slider {
+        control_id,
+        location,
+        ..
+      } => ci.get_name(control_id).map(|name| {
+        if name == "hs1" {
+          location.map(|loc| ci.update_label("lb0", format!("{}", loc)))
+        }
+      }),
+    }
+  }
 }
 
 // build the UI with a series of rust function calls.
@@ -78,7 +104,7 @@ fn build_gui() -> Result<G::Gui, FError> {
     .end_sizer()?
     .end_sizer()?
     .set_color(G::Color::Controls, "001F00")
-    .set_color(G::Color::Text, "1F0000");  
+    .set_color(G::Color::Text, "1F0000");
   Ok(gui)
 }
 

@@ -97,7 +97,7 @@ impl ControlUpdateProcessor for ExampleUpdate {
 fn build_gui() -> Result<G::Gui, FError> {
   let mut gui = G::Gui::new_gui("test".to_string());
   gui
-    .add_sizer(Vertical, Some(vec![0.1, 2.5, 0.4]))?
+    .add_sizer(Vertical, Some(vec![0.1, 0.5, 0.4]))?
     .add_sizer(Horizontal, None)?
     .add_label("lb0".to_string(), "sliderpos1".to_string())?
     .add_label("lb1".to_string(), "sliderpos2".to_string())?

@@ -6920,9 +6920,10 @@ var author$project$Main$init = function (flags) {
 				elm$core$List$head,
 				elm$core$List$tail(
 					A2(elm$core$String$split, ':', flags.N)))));
+	var rmargin = 4;
 	var _n0 = A2(
 		author$project$SvgControlPage$init,
-		A4(author$project$SvgThings$Rect, 0, 0, flags.X, flags.M),
+		A4(author$project$SvgThings$Rect, 0, 0, flags.X - rmargin, flags.M - rmargin),
 		A8(
 			author$project$SvgControlPage$Spec,
 			wsUrl,
@@ -8433,7 +8434,8 @@ var author$project$SvgControlPage$view = function (model) {
 		elm$html$Html$div,
 		_List_fromArray(
 			[
-				A2(elm$html$Html$Attributes$style, 'margin', '0')
+				A2(elm$html$Html$Attributes$style, 'margin', '0'),
+				A2(elm$html$Html$Attributes$style, 'touch-action', 'none')
 			]),
 		_List_fromArray(
 			[

@@ -162,9 +162,12 @@ init flags =
                 |> Maybe.map (\loc -> "ws:" ++ loc ++ ":" ++ String.fromInt flags.wsport)
                 |> Maybe.withDefault ""
 
+        rmargin =
+            4
+
         ( sm, cmd ) =
             SvgControlPage.init
-                (SvgThings.Rect 0 0 flags.width flags.height)
+                (SvgThings.Rect 0 0 (flags.width - rmargin) (flags.height - rmargin))
                 (SvgControlPage.Spec
                     wsUrl
                     (SvgControl.CsLabel (SvgLabel.Spec "blah" "no controls loaded!"))

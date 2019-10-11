@@ -165,7 +165,10 @@ init rect spec =
 
 view : Model -> Html.Html Msg
 view model =
-    Html.div [ style "margin" "0" ]
+    Html.div
+        [ style "margin" "0"
+        , style "touch-action" "none"
+        ]
         [ Svg.svg
             [ SA.width model.srect.w
             , SA.height model.srect.h

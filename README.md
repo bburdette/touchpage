@@ -12,7 +12,7 @@ As of 0.2.0, touch controls are configurable from rust, instead of having to edi
 
 The elm code is already compiled into js, so there's no need to compile just to use it.  But if you do want to change the elm code, the elm build requires ambr, part of the amber cargo package.  Install that with 'cargo install amber'.
 
-From the project directory, use ./build-elm.sh to build the elm and make an index.html to use in the example project - see the example code for details.  Run the rust server with ./runit.sh.  So to sum up:
+From the project directory, use ./build-elm.sh to build the elm and make an index.html to use in the example project.  You'll have to change the example main.rs a little to use it.  Run the rust server with ./runit.sh.  So to sum up:
 
     0) cargo install amber
     1) cd elm/

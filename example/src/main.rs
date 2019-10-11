@@ -88,9 +88,7 @@ impl ControlUpdateProcessor for ExampleUpdate {
         ()
       }
 
-      _ => {
-        ()
-      }
+      _ => (),
     };
   }
 }
@@ -99,12 +97,12 @@ impl ControlUpdateProcessor for ExampleUpdate {
 fn build_gui() -> Result<G::Gui, FError> {
   let mut gui = G::Gui::new_gui("test".to_string());
   gui
-    .add_sizer(Vertical)?
-    .add_sizer(Horizontal)?
-    .add_label("lb0".to_string(), "blah".to_string())?
-    .add_label("lb1".to_string(), "blah2".to_string())?
+    .add_sizer(Vertical, Some(vec![0.1, 2.5, 0.4]))?
+    .add_sizer(Horizontal, None)?
+    .add_label("lb0".to_string(), "sliderpos1".to_string())?
+    .add_label("lb1".to_string(), "sliderpos2".to_string())?
     .end_sizer()?
-    .add_sizer(Horizontal)?
+    .add_sizer(Horizontal, None)?
     .add_button("b0".to_string(), None)?
     .add_slider("hs1".to_string(), None, Vertical)?
     .add_slider("hs2".to_string(), None, Vertical)?
@@ -112,7 +110,7 @@ fn build_gui() -> Result<G::Gui, FError> {
     .add_slider("hs4".to_string(), None, Vertical)?
     .add_button("b1".to_string(), None)?
     .end_sizer()?
-    .add_sizer(Horizontal)?
+    .add_sizer(Horizontal, None)?
     .add_xy("xyleft".to_string(), Some("xy1".to_string()))?
     .add_xy("xyright".to_string(), Some("xy2".to_string()))?
     .end_sizer()?
@@ -127,15 +125,9 @@ const ERRORUI: &'static str = r##"
 {
   "title": "test",
   "rootControl": 
-    { "type": "sizer",
-      "orientation": "vertical",
-      "proportions": [0.1,0.3,0.6],
-      "controls": [
-       { "type": "label"
+    { "type": "label"
        , "name": "lb3"
        , "label": "error loading controls!"
-       }
-      ]
     }
 }"##;
 

@@ -402,6 +402,7 @@ pub struct Sizer {
   pub control_id: Vec<i32>,
   pub controls: Vec<Box<dyn Control>>,
   pub orientation: Orientation,
+  pub proportions: Option<Vec<f32>>
 }
 
 impl Control for Sizer {
@@ -423,6 +424,17 @@ impl Control for Sizer {
       ),
     };
     btv.insert(String::from("controls"), Value::Array(ctrlvals));
+
+    self.proportions.as_ref().map(
+      |props| {
+      let mut vals = Vec::new();
+      for p in props {
+        vals.push(Value::F64(*p as f64))
+      }
+      btv.insert(String::from("proportions"), Value::Array(vals))
+      }
+      );
+    
     Value::Object(btv)
   }
   fn control_type(&self) -> &'static str {
@@ -436,6 +448,7 @@ impl Control for Sizer {
       control_id: self.control_id.clone(),
       controls: Vec::new(),
       orientation: self.orientation,
+      proportions: None,
     })
   }
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>> {

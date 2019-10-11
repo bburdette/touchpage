@@ -148,10 +148,26 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
         _ => Vertical,
       };
 
+      let mut proportions = Vec::new();
+      obj.get("proportions").and_then(|val| {
+        val.as_array().map(|vals| {
+          for v in vals {
+            serde_json::from_value(v.clone())
+              .map(|f| proportions.push(f))
+              .unwrap();
+          }
+        })
+      });
+
       Ok(Box::new(Sizer {
         control_id: id.clone(),
         controls: controlv,
         orientation: orientation,
+        proportions: if proportions.is_empty() {
+          None
+        } else {
+          Some(proportions)
+        },
       }))
     }
     _ => Err(err_msg(format!("objtype '{}' not supported!", objtype))),

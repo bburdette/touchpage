@@ -145,12 +145,13 @@ impl Gui {
     self.add_control(newlabel)
   }
 
-  pub fn add_sizer(&mut self, orientation: Orientation) -> Result<&mut Gui, FError> {
+  pub fn add_sizer(&mut self, orientation: Orientation, proportions: Option<Vec<f32>>) -> Result<&mut Gui, FError> {
     let id = self.next_id()?;
     let newsizer = Box::new(Sizer {
       control_id: id.clone(),
       controls: Vec::new(),
       orientation: orientation,
+      proportions: proportions,
     });
     self.add_control(newsizer)?;
     self.sizerstack.push(id);

@@ -170,7 +170,7 @@ init flags =
                 (SvgThings.Rect 0 0 (flags.width - rmargin) (flags.height - rmargin))
                 (SvgControlPage.Spec
                     wsUrl
-                    (SvgControl.CsLabel (SvgLabel.Spec "blah" "no controls loaded!"))
+                    (SvgControl.CsLabel (SvgLabel.Spec "empty" "no controls loaded!"))
                     Nothing
                     Nothing
                     Nothing

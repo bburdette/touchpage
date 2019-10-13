@@ -123,8 +123,6 @@ view theme model =
                 , y model.srect.y
                 , width model.srect.w
                 , height model.srect.h
-                , rx "15"
-                , ry "15"
                 , style ("fill: #" ++ theme.colorString Labels ++ ";")
                 ]
                 []

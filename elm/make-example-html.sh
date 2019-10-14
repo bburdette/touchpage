@@ -1,4 +1,3 @@
-# make the string_defaults.rs file so that main.js gets compiled into the lib.
 
 mkdir -p tempwk
 cp index.template.html tempwk/ihttemp

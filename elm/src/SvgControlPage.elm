@@ -5,13 +5,13 @@ import Html
 import Html.Attributes exposing (style)
 import Json.Decode as JD
 import List exposing (..)
-import Svg
-import Svg.Attributes as SA
+import Svg exposing (Attribute, Svg, g, rect, svg, text)
+import Svg.Attributes as SA exposing (height, viewBox, width, x, y)
 import SvgCommand exposing (Command(..))
 import SvgControl
 import SvgTextSize exposing (TextSizeReply)
 import SvgThings exposing (Orientation(..), UiColor(..), UiTheme)
-import Util exposing (RectSize)
+import Util exposing (RectSize, andMap)
 import VirtualDom as VD
 
 
@@ -24,20 +24,31 @@ type alias Spec =
     , textColor : Maybe String
     , pressedColor : Maybe String
     , unpressedColor : Maybe String
+    , backgroundColor : Maybe String
     }
 
 
 jsSpec : JD.Decoder Spec
 jsSpec =
-    JD.map8 Spec
-        (JD.field "title" JD.string)
-        (JD.field "rootControl" SvgControl.jsSpec)
-        (JD.maybe (JD.field "state" (JD.list SvgControl.jsUpdateMessage)))
-        (JD.maybe (JD.field "controlsColor" JD.string))
-        (JD.maybe (JD.field "labelsColor" JD.string))
-        (JD.maybe (JD.field "textColor" JD.string))
-        (JD.maybe (JD.field "pressedColor" JD.string))
-        (JD.maybe (JD.field "unpressedColor" JD.string))
+    JD.succeed Spec
+        |> andMap
+            (JD.field "title" JD.string)
+        |> andMap
+            (JD.field "rootControl" SvgControl.jsSpec)
+        |> andMap
+            (JD.maybe (JD.field "state" (JD.list SvgControl.jsUpdateMessage)))
+        |> andMap
+            (JD.maybe (JD.field "controlsColor" JD.string))
+        |> andMap
+            (JD.maybe (JD.field "labelsColor" JD.string))
+        |> andMap
+            (JD.maybe (JD.field "textColor" JD.string))
+        |> andMap
+            (JD.maybe (JD.field "pressedColor" JD.string))
+        |> andMap
+            (JD.maybe (JD.field "unpressedColor" JD.string))
+        |> andMap
+            (JD.maybe (JD.field "backgroundColor" JD.string))
 
 
 type alias Model =
@@ -151,6 +162,7 @@ init rect spec =
                 (spec.textColor |> Maybe.withDefault (SvgThings.defaultColors Text))
                 (spec.pressedColor |> Maybe.withDefault (SvgThings.defaultColors Pressed))
                 (spec.unpressedColor |> Maybe.withDefault (SvgThings.defaultColors Unpressed))
+                (spec.backgroundColor |> Maybe.withDefault (SvgThings.defaultColors Background))
     in
     ( Model spec.title
         rect
@@ -170,9 +182,9 @@ view model =
         , style "touch-action" "none"
         ]
         [ Svg.svg
-            [ SA.width model.srect.w
-            , SA.height model.srect.h
-            , SA.viewBox
+            [ width model.srect.w
+            , height model.srect.h
+            , viewBox
                 (model.srect.x
                     ++ " "
                     ++ model.srect.y
@@ -182,7 +194,16 @@ view model =
                     ++ model.srect.h
                 )
             ]
-            [ VD.map CMsg (viewSvgControl model.uiTheme model.control) ]
+            [ rect
+                [ x model.srect.x
+                , y model.srect.y
+                , width model.srect.w
+                , height model.srect.h
+                , SA.style ("fill: #" ++ model.uiTheme.colorString Background ++ ";")
+                ]
+                []
+            , VD.map CMsg (viewSvgControl model.uiTheme model.control)
+            ]
         ]
 
 

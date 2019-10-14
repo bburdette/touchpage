@@ -31,6 +31,7 @@ pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
   insertcolor("textColor");
   insertcolor("pressedColor");
   insertcolor("unpressedColor");
+  insertcolor("backgroundColor");
 
   println!("read in colors! {:?}", colors);
 

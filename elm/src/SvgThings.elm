@@ -12,10 +12,11 @@ type UiColor
     | Text
     | Pressed
     | Unpressed
+    | Background
 
 
-colorFun : String -> String -> String -> String -> String -> UiColor -> String
-colorFun controls labels text pressed unpressed uc =
+colorFun : String -> String -> String -> String -> String -> String -> UiColor -> String
+colorFun controls labels text pressed unpressed background uc =
     case uc of
         Controls ->
             controls
@@ -31,6 +32,9 @@ colorFun controls labels text pressed unpressed uc =
 
         Unpressed ->
             unpressed
+
+        Background ->
+            background
 
 
 
@@ -70,6 +74,9 @@ defaultColors uc =
 
         Unpressed ->
             "C0E4C0"
+
+        Background ->
+            "909090"
 
 
 type alias UiTheme =

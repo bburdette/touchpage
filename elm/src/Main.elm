@@ -177,6 +177,7 @@ init flags =
                     Nothing
                     Nothing
                     Nothing
+                    Nothing
                 )
     in
     ( { scpModel = sm

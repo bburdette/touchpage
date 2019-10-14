@@ -11,6 +11,7 @@ pub enum Color {
   Text,
   Pressed,
   Unpressed,
+  Background,
 }
 
 pub struct Gui {
@@ -176,6 +177,7 @@ impl Gui {
       Color::Text => "textColor",
       Color::Pressed => "pressedColor",
       Color::Unpressed => "unpressedColor",
+      Color::Background => "backgroundColor",
     };
 
     self.colors.insert(cs.to_string(), hexstring.to_string());

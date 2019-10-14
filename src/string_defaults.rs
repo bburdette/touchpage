@@ -4874,7 +4874,7 @@ var elm$json$Json$Encode$object = function (pairs) {
 			pairs));
 };
 var elm$json$Json$Encode$string = _Json_wrap;
-var author$project$WebSocket$encodeCmd = function (wsc) {
+var bburdette$websocket$WebSocket$encodeCmd = function (wsc) {
 	switch (wsc.$) {
 		case 0:
 			var msg = wsc.a;
@@ -4923,12 +4923,12 @@ var author$project$WebSocket$encodeCmd = function (wsc) {
 					]));
 	}
 };
-var author$project$WebSocket$send = F2(
-	function (tocmd, wsc) {
-		return tocmd(
-			author$project$WebSocket$encodeCmd(wsc));
+var bburdette$websocket$WebSocket$send = F2(
+	function (portfn, wsc) {
+		return portfn(
+			bburdette$websocket$WebSocket$encodeCmd(wsc));
 	});
-var author$project$Main$wssend = author$project$WebSocket$send(author$project$Main$sendSocketCommand);
+var author$project$Main$wssend = bburdette$websocket$WebSocket$send(author$project$Main$sendSocketCommand);
 var elm$json$Json$Encode$int = _Json_wrap;
 var elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -4957,7 +4957,7 @@ var author$project$SvgTextSize$encodeTextSizeRequest = function (tsr) {
 				author$project$SvgThings$encodeControlId(tsr.af))
 			]));
 };
-var author$project$WebSocket$Send = function (a) {
+var bburdette$websocket$WebSocket$Send = function (a) {
 	return {$: 1, a: a};
 };
 var elm$core$List$foldrHelper = F4(
@@ -5036,7 +5036,7 @@ var author$project$Main$commandToCmd = function (scmd) {
 		case 0:
 			var dta = scmd.a;
 			return author$project$Main$wssend(
-				author$project$WebSocket$Send(
+				bburdette$websocket$WebSocket$Send(
 					{aU: dta, aq: 'touchpage'}));
 		case 1:
 			var rtw = scmd.a;
@@ -6957,17 +6957,17 @@ var author$project$Main$WsMsg = function (a) {
 	return {$: 0, a: a};
 };
 var author$project$Main$receiveSocketMsg = _Platform_incomingPort('receiveSocketMsg', elm$json$Json$Decode$value);
-var author$project$WebSocket$Data = function (a) {
+var bburdette$websocket$WebSocket$Data = function (a) {
 	return {$: 1, a: a};
 };
-var author$project$WebSocket$Error = function (a) {
+var bburdette$websocket$WebSocket$Error = function (a) {
 	return {$: 0, a: a};
 };
 var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$fail = _Json_fail;
 var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$WebSocket$decodeMsg = A2(
+var bburdette$websocket$WebSocket$decodeMsg = A2(
 	elm$json$Json$Decode$andThen,
 	function (msg) {
 		switch (msg) {
@@ -6976,7 +6976,7 @@ var author$project$WebSocket$decodeMsg = A2(
 					elm$json$Json$Decode$map2,
 					F2(
 						function (a, b) {
-							return author$project$WebSocket$Error(
+							return bburdette$websocket$WebSocket$Error(
 								{aX: b, aq: a});
 						}),
 					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
@@ -6986,7 +6986,7 @@ var author$project$WebSocket$decodeMsg = A2(
 					elm$json$Json$Decode$map2,
 					F2(
 						function (a, b) {
-							return author$project$WebSocket$Data(
+							return bburdette$websocket$WebSocket$Data(
 								{aV: b, aq: a});
 						}),
 					A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
@@ -6997,14 +6997,14 @@ var author$project$WebSocket$decodeMsg = A2(
 		}
 	},
 	A2(elm$json$Json$Decode$field, 'msg', elm$json$Json$Decode$string));
-var author$project$WebSocket$receive = function (wsmMsg) {
+var bburdette$websocket$WebSocket$receive = function (wsmMsg) {
 	return function (v) {
 		return wsmMsg(
-			A2(elm$json$Json$Decode$decodeValue, author$project$WebSocket$decodeMsg, v));
+			A2(elm$json$Json$Decode$decodeValue, bburdette$websocket$WebSocket$decodeMsg, v));
 	};
 };
 var author$project$Main$wsreceive = author$project$Main$receiveSocketMsg(
-	author$project$WebSocket$receive(author$project$Main$WsMsg));
+	bburdette$websocket$WebSocket$receive(author$project$Main$WsMsg));
 var author$project$SvgControlPage$JsonMsg = function (a) {
 	return {$: 0, a: a};
 };
@@ -8515,7 +8515,7 @@ var author$project$SvgTextSize$decodeTextSizeReply = A2(
 		author$project$Util$andMap,
 		A2(elm$json$Json$Decode$field, 'width', elm$json$Json$Decode$float),
 		elm$json$Json$Decode$succeed(author$project$SvgTextSize$TextSizeReply)));
-var author$project$WebSocket$Connect = function (a) {
+var bburdette$websocket$WebSocket$Connect = function (a) {
 	return {$: 0, a: a};
 };
 var elm$browser$Browser$Document = F2(
@@ -9054,7 +9054,7 @@ var author$project$Main$main = elm$browser$Browser$document(
 					_List_fromArray(
 						[
 							author$project$Main$wssend(
-							author$project$WebSocket$Connect(
+							bburdette$websocket$WebSocket$Connect(
 								{aP: mod.Y, aq: 'touchpage', a7: 'rust-websocket'})),
 							author$project$Main$commandToCmd(cmd)
 						])));

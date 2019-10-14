@@ -7,6 +7,7 @@
     "dependencies": {
         "direct": {
             "bburdette/toop": "1.0.1",
+            "bburdette/websocket": "1.0.1",
             "elm/browser": "1.0.1",
             "elm/core": "1.0.2",
             "elm/html": "1.0.0",

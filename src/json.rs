@@ -19,14 +19,27 @@ pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
   let title = t_o.as_string().ok_or(err_msg("'title' not a string!"))?;
   let rc = obj
     .get("rootControl")
-    .ok_or(err_msg("'roolControl' not found"))?;
+    .ok_or(err_msg("'rootControl' not found"))?;
+
+  let mut colors = BTreeMap::new();
+  let mut insertcolor = |colorname : &str| {
+          obj.get(colorname).map(
+            |cs|
+              cs.as_string().map(|_cstr| colors.insert(colorname.to_string(),cs.clone())))};
+  insertcolor("controlsColor");
+  insertcolor("labelsColor");
+  insertcolor("textColor");
+  insertcolor("pressedColor");
+  insertcolor("unpressedColor");
+
+  println!("read in colors! {:?}", colors);
 
   let rootcontrol = deserialize_control(Vec::new(), rc)?;
 
   Ok(Box::new(Root {
     title: String::from(title),
     root_control: rootcontrol,
-    colors: BTreeMap::new(),
+    colors: colors,
   }))
 }
 

@@ -10,22 +10,21 @@ use controls::{
 use failure::err_msg;
 use failure::Error as FError;
 use serde_json::value::Value;
-use std::collections::BTreeMap;
 use string_defaults;
 
 pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
   let obj = data.as_object().ok_or(err_msg("root is not an object"))?;
   let t_o = obj.get("title").ok_or(err_msg("'title' not found"))?;
-  let title = t_o.as_string().ok_or(err_msg("'title' not a string!"))?;
+  let title = t_o.as_str().ok_or(err_msg("'title' not a string!"))?;
   let rc = obj
     .get("rootControl")
     .ok_or(err_msg("'rootControl' not found"))?;
 
-  let mut colors = BTreeMap::new();
+  let mut colors = serde_json::Map::new();
   let mut insertcolor = |colorname : &str| {
           obj.get(colorname).map(
             |cs|
-              cs.as_string().map(|_cstr| colors.insert(colorname.to_string(),cs.clone())))};
+              cs.as_str().map(|_cstr| colors.insert(colorname.to_string(),cs.clone())))};
   insertcolor("controlsColor");
   insertcolor("labelsColor");
   insertcolor("textColor");
@@ -52,11 +51,11 @@ pub fn serialize_root(root: &Root) -> Value {
   Value::Object(btv)
 }
 
-fn get_string<'a>(data: &'a BTreeMap<String, Value>, name: &str) -> Result<&'a str, FError> {
+fn get_string<'a>(data: &'a serde_json::Map<String, Value>, name: &str) -> Result<&'a str, FError> {
   data
     .get(name)
     .ok_or(err_msg(format!("{} not found", name)))?
-    .as_string()
+    .as_str()
     .ok_or(err_msg(format!("{} not a string", name)))
 }
 
@@ -72,7 +71,7 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
       let name = get_string(obj, "name")?;
       let label = match obj.get("label") {
         Some(x) => {
-          let s = x.as_string().ok_or(err_msg("'label' is not a string!"))?;
+          let s = x.as_str().ok_or(err_msg("'label' is not a string!"))?;
           Some(String::from(s))
         }
         None => None,
@@ -88,7 +87,7 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
       let name = get_string(obj, "name")?;
       let label = match obj.get("label") {
         Some(x) => {
-          let s = x.as_string().ok_or(err_msg("'label' is not a string!"))?;
+          let s = x.as_str().ok_or(err_msg("'label' is not a string!"))?;
           Some(String::from(s))
         }
         None => None,
@@ -114,7 +113,7 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
       let name = get_string(obj, "name")?;
       let label = match obj.get("label") {
         Some(x) => {
-          let s = x.as_string().ok_or(err_msg("'label' is not a string!"))?;
+          let s = x.as_str().ok_or(err_msg("'label' is not a string!"))?;
           Some(String::from(s))
         }
         None => None,
@@ -190,9 +189,9 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
 
 pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
   let obj = data.as_object()?;
-  let contype = obj.get("controlType")?.as_string()?;
+  let contype = obj.get("controlType")?.as_str()?;
   let conid = convarrayi32(obj.get("controlId")?.as_array()?);
-  let mbst = obj.get("state").map(|wut| wut.as_string());
+  let mbst = obj.get("state").map(|wut| wut.as_str());
 
   match contype {
     "slider" => {
@@ -204,7 +203,7 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
       };
       let lab = obj
         .get("label")
-        .and_then(|s| s.as_string())
+        .and_then(|s| s.as_str())
         .map(|s| String::from(s));
       Some(cu::UpdateMsg::Slider {
         control_id: conid,
@@ -237,7 +236,7 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
       };
       let lab = obj
         .get("label")
-        .and_then(|s| s.as_string())
+        .and_then(|s| s.as_str())
         .map(|s| String::from(s));
       Some(cu::UpdateMsg::XY {
         control_id: conid,
@@ -254,7 +253,7 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
       };
       let lab = obj
         .get("label")
-        .and_then(|s| s.as_string())
+        .and_then(|s| s.as_str())
         .map(|s| String::from(s));
 
       Some(cu::UpdateMsg::Button {
@@ -268,7 +267,7 @@ pub fn decode_update_message(data: &Value) -> Option<cu::UpdateMsg> {
 }
 
 fn convi32array(inp: &Vec<i32>) -> Vec<Value> {
-  inp.into_iter().map(|x| Value::I64(*x as i64)).collect()
+  inp.into_iter().map(|x| Value::from(*x as i64)).collect()
 }
 
 fn convarrayi32(inp: &Vec<Value>) -> Vec<i32> {
@@ -285,7 +284,7 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       state: ref opt_state,
       label: ref opt_label,
     } => {
-      let mut btv = BTreeMap::new();
+      let mut btv = serde_json::Map::new();
       btv.insert(
         String::from("controlType"),
         Value::String(String::from("button")),
@@ -312,7 +311,7 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       label: ref opt_label,
       location: ref opt_loc,
     } => {
-      let mut btv = BTreeMap::new();
+      let mut btv = serde_json::Map::new();
       btv.insert(
         String::from("controlType"),
         Value::String(String::from("slider")),
@@ -328,7 +327,7 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
         );
       };
       if let &Some(loc) = opt_loc {
-        btv.insert(String::from("location"), Value::F64(loc));
+        btv.insert(String::from("location"), Value::from(loc));
       };
       if let &Some(ref lb) = opt_label {
         btv.insert(String::from("label"), Value::String(lb.clone()));
@@ -342,7 +341,7 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       label: ref opt_label,
       location: ref opt_loc,
     } => {
-      let mut btv = BTreeMap::new();
+      let mut btv = serde_json::Map::new();
       btv.insert(
         String::from("controlType"),
         Value::String(String::from("xy")),
@@ -361,8 +360,8 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
         btv.insert(
           String::from("location"),
           Value::Array(vec![
-            serde_json::to_value(&locx),
-            serde_json::to_value(&locy),
+            Value::from(locx),
+            Value::from(locy),
           ]),
         );
       };
@@ -376,7 +375,7 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       control_id: ref cid,
       label: ref labtext,
     } => {
-      let mut btv = BTreeMap::new();
+      let mut btv = serde_json::Map::new();
       btv.insert(
         String::from("controlType"),
         Value::String(String::from("label")),

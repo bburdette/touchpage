@@ -12,7 +12,7 @@ use std::fmt::Debug;
 pub struct Root {
   pub title: String,
   pub root_control: Box<dyn Control>,
-  pub colors: BTreeMap<String, Value>,
+  pub colors: serde_json::Map<String,Value>,
 }
 
 // --------------------------------------------------------
@@ -52,7 +52,7 @@ pub struct Slider {
 
 impl Control for Slider {
   fn as_json(&self) -> Value {
-    let mut btv = BTreeMap::new();
+    let mut btv = serde_json::Map::new();
     btv.insert(String::from("type"), Value::String("slider".to_string()));
     btv.insert(
       String::from("orientation"),
@@ -160,7 +160,7 @@ pub struct XY {
 
 impl Control for XY {
   fn as_json(&self) -> Value {
-    let mut btv = BTreeMap::new();
+    let mut btv = serde_json::Map::new();
     btv.insert(String::from("type"), Value::String("xy".to_string()));
     btv.insert(String::from("name"), Value::String(self.name.to_string()));
     if let Some(lb) = &self.label {
@@ -252,7 +252,7 @@ pub struct Button {
 
 impl Control for Button {
   fn as_json(&self) -> Value {
-    let mut btv = BTreeMap::new();
+    let mut btv = serde_json::Map::new();
     btv.insert(
       String::from("type"),
       Value::String(self.control_type().to_string()),
@@ -338,7 +338,7 @@ pub struct Label {
 
 impl Control for Label {
   fn as_json(&self) -> Value {
-    let mut btv = BTreeMap::new();
+    let mut btv = serde_json::Map::new();
     btv.insert(
       String::from("type"),
       Value::String(self.control_type().to_string()),
@@ -408,7 +408,7 @@ pub struct Sizer {
 impl Control for Sizer {
   fn as_json(&self) -> Value {
     let ctrlvals = self.controls.iter().map(|c| c.as_json()).collect();
-    let mut btv = BTreeMap::new();
+    let mut btv = serde_json::Map::new();
     btv.insert(
       String::from("type"),
       Value::String(self.control_type().to_string()),
@@ -429,7 +429,7 @@ impl Control for Sizer {
       |props| {
       let mut vals = Vec::new();
       for p in props {
-        vals.push(Value::F64(*p as f64))
+        vals.push(Value::from(*p as f64))
       }
       btv.insert(String::from("proportions"), Value::Array(vals))
       }

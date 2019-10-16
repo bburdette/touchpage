@@ -35,7 +35,7 @@ impl Gui {
     match self.root_control {
       Some(rc) => {
         if self.sizerstack.is_empty() {
-          let mut colors = BTreeMap::new();
+          let mut colors = serde_json::Map::new();
           for (key,value) in self.colors {
             colors.insert(key, Value::String(value)); 
           };

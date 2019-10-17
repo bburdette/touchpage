@@ -10,7 +10,7 @@ First is the [example](https://github.com/bburdette/touchpage/tree/master/exampl
 
 [mousepage](https://github.com/bburdette/mousepage) - start the server on your computer, navigate to the page with your phone, bam your phone is now controlling your computer mouse.
 
-[oscpad](https://github.com/bburdette/oscpad) - A standalone app that control updates into OSC messages and vice versa.  [Overview/tutorial](https://github.com/bburdette/oscpad/wiki/Get-started-with-oscpad)  
+[oscpad](https://github.com/bburdette/oscpad) - A standalone app translates control updates into OSC messages and vice versa.  [Overview/tutorial](https://github.com/bburdette/oscpad/wiki/Get-started-with-oscpad)  
 
 ### If you want to hack on the elm code
 

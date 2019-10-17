@@ -32,8 +32,6 @@ pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
   insertcolor("unpressedColor");
   insertcolor("backgroundColor");
 
-  println!("read in colors! {:?}", colors);
-
   let rootcontrol = deserialize_control(Vec::new(), rc)?;
 
   Ok(Box::new(Root {

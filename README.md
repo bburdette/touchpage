@@ -1,18 +1,22 @@
 # touchpage
 
-#### I'm splitting the oscpad repo into two parts, the OSC stuff and the webserver-UI part.  This is the webserver-UI part, in library form, so that its easy to make standalone rust programs with oscpad style UIs.
+Configurable web touch controls together with a built in webserver.
 
-Configurable web controls with shared state.  [Overview/tutorial here](https://github.com/bburdette/oscpad/wiki/Get-started-with-oscpad)  
+The idea is to have a simple way to configure a set of touch enabled buttons, sliders, and labels, and present them on a web page.  When the user manipulates the controls, websocket messages are sent to the server, which updates internal state, updates all clients with the new changes, and passes the events to your rust program.  On the rust side, you can update the control state, and web users will see the state changes.
 
-The idea is to have a simple way to configure a set of touch enabled buttons, sliders, and labels, which are presented on a web page.  When the user manipulates the controls, websocket messages are sent to the server, which updates internal state, updates all clients with the new changes, and passes the events to your rust program.  The library user can also change the control state, which is reflected in the clients.  
+I've written a few apps that use the lib.
 
-As of 0.2.0, touch controls are configurable from rust, instead of having to edit an undocumented json file.  Check the example folder for that, and other usage details.
+First is the [example](https://github.com/bburdette/touchpage/example) app in this project.  Copy and paste to get started on your own project. 
 
-### Some notes on elm compiling.
+[mousepage](https://github.com/bburdette/mousepage) - start the server on your computer, navigate to the page with your phone, bam your phone is now controlling your computer mouse.
 
-The elm code is already compiled into js, so there's no need to compile just to use it.  But if you do want to change the elm code, the elm build requires ambr, part of the amber cargo package.  Install that with 'cargo install amber'.
+[oscpad](https://github.com/bburdette/oscpad) - A standalone app that control updates into OSC messages and vice versa.  [Oscpad Overview/tutorial](https://github.com/bburdette/oscpad/wiki/Get-started-with-oscpad)  
 
-From the project directory, use ./build-elm.sh to build the elm and make an index.html to use in the example project.  You'll have to change the example main.rs a little to use it.  Run the rust server with ./runit.sh.  So to sum up:
+### If you want to hack on the elm code
+
+The elm code is already compiled into js thats baked in to the rust library, so there's no need to compile the elm unless you want to make changes to it.  If you do decide to work on the elm code, the elm build requires ambr, part of the amber cargo package.  Install that with 'cargo install amber'.
+
+From the project directory, use ./build-elm.sh, which will build the elm and make an index.html to use in the example project.  In the example you'll have to change the main.rs a little to use the html file.  Compile the example and run it with ./runit.sh.  So to sum up:
 
     0) cargo install amber
     1) cd elm/

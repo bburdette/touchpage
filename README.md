@@ -6,7 +6,7 @@ The idea is to have a simple way to configure a set of touch enabled buttons, sl
 
 I've written a few apps that use the lib.
 
-First is the [example](https://github.com/bburdette/touchpage/example) app in this project.  Copy and paste to get started on your own project. 
+First is the [example](https://github.com/bburdette/touchpage/tree/master/example) app in this project.  Copy and paste to get started on your own project. 
 
 [mousepage](https://github.com/bburdette/mousepage) - start the server on your computer, navigate to the page with your phone, bam your phone is now controlling your computer mouse.
 

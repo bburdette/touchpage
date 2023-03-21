@@ -5,13 +5,13 @@ import Browser.Events as BE
 import Html
 import Json.Decode as JD
 import Json.Encode as JE
-import SvgCommand exposing (Command(..))
-import SvgControl
+import SvgControl.SvgCommand as SvgCommand exposing (Command(..))
+import SvgControl.SvgControl as SvgControl
 import SvgControlPage
-import SvgLabel
-import SvgTextSize exposing (TextSizeReply, decodeTextSizeReply, encodeTextSizeRequest)
-import SvgThings
-import Util exposing (RectSize)
+import SvgControl.SvgLabel as SvgLabel
+import SvgControl.SvgTextSize exposing (TextSizeReply, decodeTextSizeReply, encodeTextSizeRequest)
+import SvgControl.SvgThings as SvgThings
+import SvgControl.Util exposing (RectSize)
 import WebSocket
 
 
@@ -55,20 +55,46 @@ type alias Model =
     }
 
 
-commandToCmd : SvgCommand.Command -> Cmd Msg
+-- commandToCmd : Command SvgControl.UpdateMessage SvgControlPage.Msg  -> Cmd Msg
+-- commandToCmd scmd =
+--     case scmd of
+--         Send dta ->
+--             wssend <|
+--                 WebSocket.Send
+--                     { name = "touchpage"
+--                     , content = JE.encode 2 <| SvgControl.encodeUpdateMessage dta
+--                     }
+
+--         RequestTextWidth rtw ->
+--             requestTextSize <|
+--                 encodeTextSizeRequest <|
+--                     rtw
+
+--         None ->
+--             Cmd.none
+
+--         Batch cmds ->
+--             Cmd.batch (List.map commandToCmd cmds)
+
+commandToCmd : SvgCommand.Command SvgControl.UpdateMessage SvgControlPage.Msg -> Cmd Msg
 commandToCmd scmd =
     case scmd of
         Send dta ->
             wssend <|
                 WebSocket.Send
                     { name = "touchpage"
-                    , content = dta
+                    , content = JE.encode 2 <| SvgControl.encodeUpdateMessage dta
                     }
 
         RequestTextWidth rtw ->
             requestTextSize <|
                 encodeTextSizeRequest <|
                     rtw
+
+        GetElement id fn ->
+            Cmd.none
+            -- BD.getElement id
+            --     |> Task.attempt (CoordMsg (\elt -> LayoutEdit.ScpMsg (fn elt)))
 
         None ->
             Cmd.none
@@ -152,7 +178,7 @@ main =
         }
 
 
-init : Flags -> ( Model, Command )
+init : Flags -> ( Model, Command SvgControl.UpdateMessage SvgControlPage.Msg )
 init flags =
     let
         wsUrl =
@@ -166,7 +192,7 @@ init flags =
             4
 
         ( sm, cmd ) =
-            SvgControlPage.init
+            SvgControlPage.init "layout"
                 (SvgThings.Rect 0 0 (flags.width - rmargin) (flags.height - rmargin))
                 (SvgControlPage.Spec
                     wsUrl

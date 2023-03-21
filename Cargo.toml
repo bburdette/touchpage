@@ -24,7 +24,8 @@ include = [ "src/**/*",
 [dependencies]
 actix = "0.7.5"
 actix-web = { version = "0.7.13" }
-websocket = "0.23.0"
+# websocket = "0.26.5"
+tungstenite = "0.18.0"
 serde_json = "1.0"
 serde = "1.0"
 # iron = "0.6.0"

@@ -1,3 +1,4 @@
 target
 elm-stuff
+/Cargo.lock
 *.swp

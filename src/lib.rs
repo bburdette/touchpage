@@ -1,4 +1,4 @@
-extern crate websocket;
+extern crate tungstenite;
 
 #[macro_use]
 extern crate log;

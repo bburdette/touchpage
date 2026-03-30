@@ -3,20 +3,24 @@ use control_updates as cu;
 use controls;
 use failure::Error as FError;
 use json;
-use std::sync::{Arc, Mutex};
-use websocket::message::Message;
+use std::{
+  io::{Read, Write},
+  sync::{Arc, Mutex},
+};
+// use websocket::message::Message;
+use tungstenite::Message;
 
 // Implement a ControlUpdateProcessor if you want the controls to actually do something
 // on the server.
-pub trait ControlUpdateProcessor: Send {
-  fn on_update_received(&mut self, &cu::UpdateMsg, cn: &mut ControlNexus) -> ();
+pub trait ControlUpdateProcessor<Stream: Read + Write>: Send {
+  fn on_update_received(&mut self, um: &cu::UpdateMsg, cn: &mut ControlNexus<Stream>) -> ();
 }
 
 // A basic ControlUpdateProcessor that just prints out the update messages.
 pub struct PrintUpdateMsg {}
 
-impl ControlUpdateProcessor for PrintUpdateMsg {
-  fn on_update_received(&mut self, update: &cu::UpdateMsg, _cn: &mut ControlNexus) -> () {
+impl<Stream: Read + Write> ControlUpdateProcessor<Stream> for PrintUpdateMsg {
+  fn on_update_received(&mut self, update: &cu::UpdateMsg, _cn: &mut ControlNexus<Stream>) -> () {
     println!("control update: {:?}", update);
   }
 }
@@ -39,12 +43,12 @@ impl ControlInfo {
 
 // The control nexus contains all the controls and the broadcaster.
 #[derive(Clone)]
-pub struct ControlNexus {
+pub struct ControlNexus<Stream: Read + Write> {
   pub ci: Arc<Mutex<ControlInfo>>,
-  pub bc: broadcaster::Broadcaster,
+  pub bc: broadcaster::Broadcaster<Stream>,
 }
 
-impl ControlNexus {
+impl<Stream: Read + Write> ControlNexus<Stream> {
   fn get_cid_by_name(&self, name: &str) -> Option<Vec<i32>> {
     let guard = match self.ci.lock() {
       Ok(guard) => guard,
@@ -99,7 +103,7 @@ impl ControlNexus {
       None => (),
     }
   }
-  
+
   pub fn update_label(&self, name: &str, label: &str) {
     match self.get_cid_by_name(name) {
       Some(cid) => self.update(&cu::UpdateMsg::Label {

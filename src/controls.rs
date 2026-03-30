@@ -12,7 +12,7 @@ use std::fmt::Debug;
 pub struct Root {
   pub title: String,
   pub root_control: Box<dyn Control>,
-  pub colors: serde_json::Map<String,Value>,
+  pub colors: serde_json::Map<String, Value>,
 }
 
 // --------------------------------------------------------
@@ -25,7 +25,7 @@ pub trait Control: Debug + Send {
   fn clone_trol(&self) -> Box<dyn Control>;
   fn sub_controls(&self) -> Option<&Vec<Box<dyn Control>>>;
   fn mut_sub_controls(&mut self) -> Option<&mut Vec<Box<dyn Control>>>;
-  fn add_control(&mut self, Box<dyn Control>);
+  fn add_control(&mut self, _: Box<dyn Control>);
   fn update(&mut self, _: &cu::UpdateMsg);
   fn empty_update(&self) -> Option<cu::UpdateMsg>;
   // build full update message of current state.
@@ -40,7 +40,7 @@ pub enum Orientation {
   Horizontal,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Slider {
   pub control_id: Vec<i32>,
   pub name: String,
@@ -149,13 +149,13 @@ impl Control for Slider {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct XY {
   pub control_id: Vec<i32>,
   pub name: String,
   pub label: Option<String>,
   pub pressed: bool,
-  pub location: (f32,f32),
+  pub location: (f32, f32),
 }
 
 impl Control for XY {
@@ -233,7 +233,7 @@ impl Control for XY {
     Some(cu::UpdateMsg::XY {
       control_id: self.control_id.clone(),
       state: Some(state),
-      location: Some(self.location ),
+      location: Some(self.location),
       label: self.label.clone(),
     })
   }
@@ -402,7 +402,7 @@ pub struct Sizer {
   pub control_id: Vec<i32>,
   pub controls: Vec<Box<dyn Control>>,
   pub orientation: Orientation,
-  pub proportions: Option<Vec<f32>>
+  pub proportions: Option<Vec<f32>>,
 }
 
 impl Control for Sizer {
@@ -425,16 +425,14 @@ impl Control for Sizer {
     };
     btv.insert(String::from("controls"), Value::Array(ctrlvals));
 
-    self.proportions.as_ref().map(
-      |props| {
+    self.proportions.as_ref().map(|props| {
       let mut vals = Vec::new();
       for p in props {
         vals.push(Value::from(*p as f64))
       }
       btv.insert(String::from("proportions"), Value::Array(vals))
-      }
-      );
-    
+    });
+
     Value::Object(btv)
   }
   fn control_type(&self) -> &'static str {
@@ -487,7 +485,7 @@ pub fn get_um_id(um: &cu::UpdateMsg) -> &Vec<i32> {
       label: _,
       location: _,
     } => &cid,
-     &cu::UpdateMsg::XY {
+    &cu::UpdateMsg::XY {
       control_id: ref cid,
       state: _,
       label: _,

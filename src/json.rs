@@ -21,10 +21,12 @@ pub fn deserialize_root(data: &Value) -> Result<Box<Root>, FError> {
     .ok_or(err_msg("'rootControl' not found"))?;
 
   let mut colors = serde_json::Map::new();
-  let mut insertcolor = |colorname : &str| {
-          obj.get(colorname).map(
-            |cs|
-              cs.as_str().map(|_cstr| colors.insert(colorname.to_string(),cs.clone())))};
+  let mut insertcolor = |colorname: &str| {
+    obj.get(colorname).map(|cs| {
+      cs.as_str()
+        .map(|_cstr| colors.insert(colorname.to_string(), cs.clone()))
+    })
+  };
   insertcolor("controlsColor");
   insertcolor("labelsColor");
   insertcolor("textColor");
@@ -146,7 +148,8 @@ fn deserialize_control(id: Vec<i32>, data: &Value) -> Result<Box<dyn Control>, F
       for (i, v) in controls.into_iter().enumerate() {
         let mut id = id.clone();
         id.push(i as i32);
-        let c = try!(deserialize_control(id, v));
+        // let c = try!(deserialize_control(id, v));
+        let c = deserialize_control(id, v)?;
         controlv.push(c);
       }
 
@@ -357,10 +360,7 @@ pub fn encode_update_message(um: &cu::UpdateMsg) -> Value {
       if let &Some((locx, locy)) = opt_loc {
         btv.insert(
           String::from("location"),
-          Value::Array(vec![
-            Value::from(locx),
-            Value::from(locy),
-          ]),
+          Value::Array(vec![Value::from(locx), Value::from(locy)]),
         );
       };
       if let &Some(ref lb) = opt_label {

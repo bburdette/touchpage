@@ -1,12 +1,17 @@
+use std::io::{Read, Write};
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
-use websocket::message::Message;
+// use websocket::message::Message;
+use tungstenite::{Message, WebSocket};
 
-pub type SendBlah = Arc<Mutex<websocket::sender::Writer<std::net::TcpStream>>>;
+// pub type SendBlah = Arc<Mutex<websocket::sender::Writer<std::net::TcpStream>>>;
+pub type SendBlah<Stream> = Arc<Mutex<WebSocket<Stream>>>;
+
+// pub type BStream<Stream> = dyn Stream + std::io::Read + std::io::Write;
 
 #[derive(Clone)]
-pub struct Broadcaster {
-  tvs: Arc<Mutex<Vec<SendBlah>>>,
+pub struct Broadcaster<Stream: Read + Write> {
+  tvs: Arc<Mutex<Vec<SendBlah<Stream>>>>,
 }
 
 fn mysockeq(saleft: &SocketAddr, saright: &SocketAddr) -> bool {
@@ -17,14 +22,14 @@ fn mysockeq(saleft: &SocketAddr, saright: &SocketAddr) -> bool {
   }
 }
 
-impl Broadcaster {
-  pub fn new() -> Broadcaster {
+impl<Stream: Read + Write> Broadcaster<Stream> {
+  pub fn new() -> Broadcaster<Stream> {
     Broadcaster {
       tvs: Arc::new(Mutex::new(Vec::new())),
     }
   }
 
-  pub fn register(&mut self, sender: SendBlah) {
+  pub fn register(&mut self, sender: SendBlah<Stream>) {
     let mut tvs = self.tvs.lock().unwrap();
 
     tvs.push(sender);
@@ -34,8 +39,8 @@ impl Broadcaster {
     let mut tvs = self.tvs.lock().unwrap();
 
     for tv in tvs.iter_mut() {
-      let mut tvsend = tv.lock().unwrap();
-      match tvsend.send_message(&msg) {
+      let mut tvsend: WebSocket<Stream> = *tv.lock().unwrap();
+      match tvsend.write_message(msg) {
         Err(e) => {
           println!("error from send_message: {:?}", e);
         }
@@ -48,21 +53,27 @@ impl Broadcaster {
   pub fn broadcast_others(&self, sa: &SocketAddr, msg: Message) {
     let mut tvs = self.tvs.lock().unwrap();
     for tv in tvs.iter_mut() {
-      let mut tvsend = tv.lock().unwrap();
-      let sa_send = tvsend.stream.peer_addr();
-      match sa_send {
-        Ok(ss) => {
-          if !mysockeq(sa, &ss) {
-            match tvsend.send_message(&msg) {
-              Err(e) => {
-                println!("error from send_message: {:?}", e);
-              }
-              _ => {}
-            }
-          }
+      let mut tvsend = *tv.lock().unwrap();
+      match tvsend.write_message(msg) {
+        Err(e) => {
+          println!("error from send_message: {:?}", e);
         }
         _ => {}
       }
     }
+    // let sa_send = tvsend.peer_addr();
+    // match sa_send {
+    //   Ok(ss) => {
+    //     if !mysockeq(sa, &ss) {
+    //       match tvsend.write_message(msg) {
+    //         Err(e) => {
+    //           println!("error from send_message: {:?}", e);
+    //         }
+    //         _ => {}
+    //       }
+    //     }
+    //   }
+    //   _ => {}
+    // }
   }
 }

@@ -1,26 +1,31 @@
-extern crate websocket;
+// extern crate websocket;
 
 use broadcaster;
 use control_nexus::{ControlInfo, ControlNexus, ControlUpdateProcessor};
 use controls;
 use json;
 use serde_json::Value;
+use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use websocket::message::Message;
-use websocket::sync::{Client, Server};
-use websocket::OwnedMessage;
+use tungstenite::handshake::server::{Request, Response};
+use tungstenite::{Message, WebSocket};
+// use websocket::message::Message;
+// use websocket::sync::{Client, Server};
+// use websocket::OwnedMessage;
+use std::net::TcpListener;
+use tungstenite::accept_hdr;
 
 pub fn start<'a>(
   guistring: &str,
-  cup: Box<dyn ControlUpdateProcessor>,
+  cup: Box<dyn ControlUpdateProcessor<std::net::TcpStream>>,
   ip: &str,
   websockets_port: &str,
   block: bool,
-) -> Result<ControlNexus, Box<dyn std::error::Error>> {
+) -> Result<ControlNexus<std::net::TcpStream>, Box<dyn std::error::Error>> {
   let guival = serde_json::from_str(guistring)?;
 
-  let root = try!(json::deserialize_root(&guival));
+  let root = (json::deserialize_root(&guival))?;
 
   println!(
     "starting websocket server for control page: {} ",
@@ -41,10 +46,13 @@ pub fn start<'a>(
   let bc = broadcaster::Broadcaster::new();
 
   let cn_ret = ControlNexus {
+    ci: cmshare.clone(),
+    bc: bc,
+  };
+  let cn_ws = ControlNexus {
     ci: cmshare,
     bc: bc,
   };
-  let cn_ws = cn_ret.clone();
 
   let mut websockets_ip = String::from(ip);
   websockets_ip.push_str(":");
@@ -68,9 +76,41 @@ pub fn start<'a>(
   Ok(cn_ret)
 }
 
-fn sendcontrols(
+// fn sendcontrols(
+//   ci: &Arc<Mutex<ControlInfo>>,
+//   client: &mut Client<std::net::TcpStream>,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//   let sci = ci.lock().unwrap();
+
+//   let updarray = controls::cm_to_update_array(&sci.cm);
+
+//   // build json message containing both guijson and the updarray.
+//   let mut updvals = Vec::new();
+
+//   for upd in updarray {
+//     let um = json::encode_update_message(&upd);
+//     updvals.push(um);
+//   }
+
+//   let mut guival: Value = serde_json::from_str(&sci.guijson[..])?;
+
+//   match guival.as_object_mut() {
+//     Some(obj) => {
+//       obj.insert("state".to_string(), Value::Array(updvals));
+//       ()
+//     }
+//     None => (),
+//   }
+
+//   let guistring = serde_json::ser::to_string(&guival)?;
+//   let message = Message::text(guistring);
+//   client.send_message(&message)?;
+//   Ok(())
+// }
+
+fn sendcontrols<Stream: Read + Write>(
   ci: &Arc<Mutex<ControlInfo>>,
-  client: &mut Client<std::net::TcpStream>,
+  client: &mut WebSocket<Stream>,
 ) -> Result<(), Box<dyn std::error::Error>> {
   let sci = ci.lock().unwrap();
 
@@ -96,20 +136,71 @@ fn sendcontrols(
 
   let guistring = serde_json::ser::to_string(&guival)?;
   let message = Message::text(guistring);
-  client.send_message(&message)?;
+  client.write_message(message)?;
   Ok(())
 }
 
-fn websockets_main(
+fn websockets_main<Stream: Read + Write + Send>(
   ipaddr: String,
-  acn: ControlNexus,
-  cup: Arc<Mutex<Box<dyn ControlUpdateProcessor>>>,
+  acn: ControlNexus<Stream>,
+  cup: Arc<Mutex<Box<dyn ControlUpdateProcessor<Stream>>>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
   println!("websockets address {:?}", ipaddr);
-  let server = Server::bind(&ipaddr[..])?;
-  for request in server.filter_map(Result::ok) {
-    let mut scn = acn.clone();
-    let cup = cup.clone();
+  let server = TcpListener::bind(&ipaddr[..])?;
+  for ts in server.incoming() {
+    match ts {
+      Ok(tcpstream) => {
+        //server.filter_map(Result::ok) {
+        // let mut scn = acn.clone();
+        let cup = cup.clone();
+
+        // Spawn a new thread for each connection.
+        thread::spawn(move || {
+          let callback = |req: &Request, mut response: Response| {
+            println!("Received a new ws handshake");
+            println!("The request's path is: {}", req.uri().path());
+            println!("The request's headers are:");
+            for (ref header, _value) in req.headers() {
+              println!("* {}", header);
+            }
+
+            // Let's add an additional header to our response to the client.
+            // let headers = response.headers_mut();
+            // headers.append("MyCustomHeader", ":)".parse()?);
+            // headers.append("SOME_TUNGSTENITE_HEADER", "header_value".parse().unwrap());
+
+            Ok(response)
+          };
+
+          // Can't do a block that returns a Result.  But we can
+          // do a closure and use the ? operator inside that.
+          let r = || -> Result<(), Box<dyn std::error::Error>> {
+            let mut websocket = accept_hdr(tcpstream, callback)?;
+
+            sendcontrols(&acn.ci, &mut websocket)?;
+
+            loop {
+              let msg = websocket.read_message()?;
+              if msg.is_binary() || msg.is_text() {
+                websocket.write_message(msg)?;
+              }
+            }
+          };
+          // invoke the closure
+          match r() {
+            Err(e) => {
+              error!("{:?}", e);
+            }
+            Ok(_) => (),
+          };
+        });
+      }
+      Err(e) => {
+        error!("{:?}", e);
+      }
+    };
+
+    /*
     // Spawn a new thread for each connection.
     thread::spawn(move || {
       if !request.protocols().contains(&"rust-websocket".to_string()) {
@@ -185,6 +276,7 @@ fn websockets_main(
         }
       }
     });
+    */
   }
 
   Ok(())
